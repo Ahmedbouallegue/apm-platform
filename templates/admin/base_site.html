@@ -1,0 +1,37 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | Topnet APM{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}" style="display:inline-flex;align-items:center;gap:10px">
+    <img src="{% static 'branding/logo-topnet.png' %}" alt="Topnet" width="28" height="28" style="border-radius:50%">
+    Topnet APM
+  </a>
+</h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  :root {
+    --primary: #1e2a6e;
+    --secondary: #2e3192;
+    --accent: #00aeef;
+    --header-bg: #141b45;
+    --header-link-color: #fff;
+    --link-fg: #1e2a6e;
+  }
+  #header {
+    background: linear-gradient(90deg, #141b45, #2e3192) !important;
+  }
+  div.breadcrumbs {
+    background: #24307a !important;
+  }
+  .module caption, inline-group h2, .selector-chosen h2 {
+    background: #1e2a6e !important;
+  }
+</style>
+<link rel="icon" href="{% static 'branding/logo-topnet.png' %}">
+{% endblock %}

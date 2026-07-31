@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Connexion · APM Topnet{% endblock %}
+
+{% block body %}
+<div class="auth-shell">
+  <section class="auth-brand" aria-label="Topnet APM">
+    <div class="auth-brand-inner">
+      <img class="auth-logo" src="{% static 'branding/logo-topnet.png' %}" alt="Topnet Tunisie">
+      <h1>Topnet APM</h1>
+      <p>Plateforme de gestion du patrimoine applicatif pour la DSI — gouvernance, traçabilité et pilotage.</p>
+    </div>
+  </section>
+
+  <section class="auth-panel">
+    <div class="auth-card">
+      <h2>Connexion</h2>
+      <p class="lead">Accédez à l’espace de gestion sécurisé.</p>
+
+      {% if form.errors %}
+        <ul class="errorlist">
+          <li>Identifiant ou mot de passe incorrect.</li>
+        </ul>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="field">
+          <label for="id_username">Identifiant</label>
+          {{ form.username }}
+        </div>
+        <div class="field">
+          <label for="id_password">Mot de passe</label>
+          {{ form.password }}
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Se connecter</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

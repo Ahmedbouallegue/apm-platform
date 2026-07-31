@@ -1,0 +1,4 @@
+-r base.txt
+
+# Production extras (pin tightly in real deploys)
+gunicorn>=22.0,<24

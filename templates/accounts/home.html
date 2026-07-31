@@ -1,0 +1,45 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}Tableau de bord{% endblock %}
+{% block header_title %}Tableau de bord{% endblock %}
+{% block header_sub %}Vue d’ensemble de la plateforme APM{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-accent" href="{% url 'web:user-list' %}">Gérer les utilisateurs</a>
+{% endblock %}
+
+{% block content %}
+<section class="stats">
+  <article class="stat">
+    <div class="label">Utilisateurs</div>
+    <div class="value">{{ stats.users_total }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Comptes actifs</div>
+    <div class="value">{{ stats.users_active }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Administrateurs</div>
+    <div class="value">{{ stats.users_admin }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Profils DSI</div>
+    <div class="value">{{ stats.users_dsi }}</div>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <div>
+      <strong>Bienvenue, {{ request.user.get_full_name|default:request.user.username }}</strong>
+      <div style="color:var(--muted);font-size:.92rem;margin-top:4px">
+        Espace sécurisé Topnet — gestion des accès et du patrimoine applicatif.
+      </div>
+    </div>
+  </div>
+  <div style="padding:22px;color:var(--muted);max-width:62ch">
+    Utilisez le module <strong style="color:var(--ink)">Utilisateurs</strong> pour créer des comptes,
+    attribuer les rôles (Administrateur, DSI, Manager, Lecteur) et contrôler les accès à la plateforme.
+  </div>
+</section>
+{% endblock %}

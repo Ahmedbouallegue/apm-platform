@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% block page_title %}APM{% endblock %} · Topnet{% endblock %}
+
+{% block body %}
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="{% url 'web:home' %}">
+      <img src="{% static 'branding/logo-topnet.png' %}" alt="Topnet">
+      <div>
+        <strong>Topnet APM</strong>
+        <span>Gestion du patrimoine</span>
+      </div>
+    </a>
+
+    <nav class="nav" aria-label="Navigation principale">
+      <a href="{% url 'web:home' %}" class="{% if request.resolver_match.url_name == 'home' %}is-active{% endif %}">Tableau de bord</a>
+      <a href="{% url 'web:user-list' %}" class="{% if 'user' in request.resolver_match.url_name %}is-active{% endif %}">Utilisateurs</a>
+      <a href="/api/docs/" target="_blank" rel="noopener">Documentation API</a>
+      <a href="/admin/">Administration</a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+      <div class="meta">{{ request.user.get_role_display }} · {{ request.user.department|default:"DSI" }}</div>
+      <div style="margin-top:12px">
+        <a class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.2);padding:8px 12px;font-size:.85rem" href="{% url 'web:logout' %}">Déconnexion</a>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h1>{% block header_title %}Espace APM{% endblock %}</h1>
+        <p>{% block header_sub %}Pilotage du patrimoine applicatif{% endblock %}</p>
+      </div>
+      <div>{% block header_actions %}{% endblock %}</div>
+    </header>
+
+    <div class="content">
+      {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+            <div class="flash flash-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}
