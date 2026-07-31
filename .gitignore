@@ -61,7 +61,16 @@ logs/
 
 # Celery
 celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
 celerybeat.pid
+
+# Local caches (pip / user-installed scripts inside the repo)
+.cache/
+.local/
 
 # OS
 desktop.ini
+
+# Reserved Windows device name — Git cannot index it
+NUL

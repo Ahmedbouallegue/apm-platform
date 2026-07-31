@@ -1,0 +1,97 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}{{ server.name }}{% endblock %}
+{% block header_title %}{{ server.name }}{% endblock %}
+{% block header_sub %}{{ server.ip_address }} · {{ server.get_server_type_display }}{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'servers:list' %}">Retour</a>
+  {% if can_write %}
+    <a class="btn btn-primary" href="{% url 'servers:edit' server.pk %}">Modifier</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="stats" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+  <article class="stat">
+    <div class="label">Type</div>
+    <div class="value" style="font-size:1.15rem">
+      <span class="badge badge-srv-{{ server.server_type }}">{{ server.get_server_type_display }}</span>
+    </div>
+  </article>
+  <article class="stat">
+    <div class="label">Datacenter</div>
+    <div class="value" style="font-size:1.2rem">{{ server.datacenter|default:"—" }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">CPU / RAM</div>
+    <div class="value" style="font-size:1.15rem">{{ server.cpu|default:"—" }} · {{ server.ram|default:"—" }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Environnements</div>
+    <div class="value">{{ server.env_count }}</div>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><strong>Fiche serveur</strong></div>
+  <div class="form-grid">
+    <div>
+      <div style="color:var(--muted);font-size:.84rem">Adresse IP</div>
+      <div>{{ server.ip_address }}</div>
+    </div>
+    <div>
+      <div style="color:var(--muted);font-size:.84rem">OS</div>
+      <div>{{ server.os|default:"—" }}</div>
+    </div>
+    <div class="full">
+      <div style="color:var(--muted);font-size:.84rem">Notes</div>
+      <div style="white-space:pre-wrap">{{ server.notes|default:"—" }}</div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" style="margin-top:20px">
+  <div class="panel-head">
+    <strong>Environnements hébergés</strong>
+    {% if can_write %}
+      <a class="btn btn-accent" href="{% url 'environments:create' %}">Lier un environnement</a>
+    {% endif %}
+  </div>
+  {% if environments %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Application</th>
+          <th>Type</th>
+          <th>Nom</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for env in environments %}
+        <tr>
+          <td><a href="{% url 'applications:detail' env.application_id %}">{{ env.application.name }}</a></td>
+          <td><span class="badge badge-env-{{ env.env_type }}">{{ env.get_env_type_display }}</span></td>
+          <td><a href="{% url 'environments:detail' env.pk %}">{{ env.name }}</a></td>
+          <td>{% if env.url %}<a href="{{ env.url }}" target="_blank" rel="noopener">{{ env.url|truncatechars:36 }}</a>{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">Aucun environnement associé à ce serveur.</div>
+  {% endif %}
+
+  {% if can_write %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'servers:delete' server.pk %}" onsubmit="return confirm('Archiver ce serveur ?');">
+      {% csrf_token %}
+      <button class="btn btn-danger" type="submit">Archiver</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

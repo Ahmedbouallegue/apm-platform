@@ -79,3 +79,39 @@ class UserManagementWebTests(TestCase):
         response = self.client.get("/users/")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Gestion des utilisateurs")
+
+
+class PasswordResetWebTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="resetme",
+            email="resetme@topnet.tn",
+            password="Secret123!",
+            role=User.Role.VIEWER,
+        )
+
+    def test_password_reset_page_renders(self):
+        response = self.client.get("/password-reset/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Mot de passe oublié")
+
+    def test_password_reset_sends_email(self):
+        from django.core import mail
+
+        response = self.client.post("/password-reset/", {"email": "resetme@topnet.tn"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Réinitialisation", mail.outbox[0].subject)
+        self.assertIn("resetme", mail.outbox[0].body)
+        self.assertEqual(len(mail.outbox[0].alternatives), 1)
+        self.assertIn("cid:topnet-logo", mail.outbox[0].alternatives[0].content)
+        logo = next(
+            attachment
+            for attachment in mail.outbox[0].attachments
+            if attachment.get("Content-ID") == "<topnet-logo>"
+        )
+        self.assertEqual(logo.get_content_type(), "image/png")
+
+    def test_login_contains_forgot_password_link(self):
+        response = self.client.get("/login/")
+        self.assertContains(response, "/password-reset/")

@@ -1,14 +1,25 @@
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import (
+    LoginView,
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+    PasswordResetView,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import ListView
 
-from apps.accounts.forms import UserCreateForm, UserUpdateForm
+from apps.accounts.forms import (
+    BrandPasswordResetForm,
+    BrandSetPasswordForm,
+    UserCreateForm,
+    UserUpdateForm,
+)
 from apps.accounts.models import User
 from apps.accounts.selectors.users import user_list
 from apps.accounts.services.users import user_activate, user_create, user_deactivate, user_update
@@ -36,6 +47,30 @@ class BrandLoginView(LoginView):
         return reverse_lazy("web:home")
 
 
+class BrandPasswordResetView(PasswordResetView):
+    template_name = "accounts/password_reset.html"
+    email_template_name = "accounts/email/password_reset_email.txt"
+    html_email_template_name = "accounts/email/password_reset_email.html"
+    subject_template_name = "accounts/email/password_reset_subject.txt"
+    form_class = BrandPasswordResetForm
+    success_url = reverse_lazy("web:password-reset-done")
+    extra_email_context = {"brand": "Topnet APM"}
+
+
+class BrandPasswordResetDoneView(PasswordResetDoneView):
+    template_name = "accounts/password_reset_done.html"
+
+
+class BrandPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = "accounts/password_reset_confirm.html"
+    form_class = BrandSetPasswordForm
+    success_url = reverse_lazy("web:password-reset-complete")
+
+
+class BrandPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = "accounts/password_reset_complete.html"
+
+
 def logout_view(request):
     logout(request)
     messages.info(request, "Session terminée.")
@@ -45,11 +80,16 @@ def logout_view(request):
 @method_decorator(login_required, name="dispatch")
 class HomeView(View):
     def get(self, request):
+        from apps.applications.models import Application
+        from apps.technologies.models import Technology
+
         stats = {
             "users_total": User.objects.count(),
-            "users_active": User.objects.filter(is_active=True).count(),
-            "users_admin": User.objects.filter(role=User.Role.ADMIN).count(),
-            "users_dsi": User.objects.filter(role=User.Role.DSI).count(),
+            "apps_total": Application.objects.filter(is_deleted=False).count(),
+            "apps_production": Application.objects.filter(
+                is_deleted=False, status=Application.Status.PRODUCTION
+            ).count(),
+            "techs_total": Technology.objects.count(),
         }
         return render(request, "accounts/home.html", {"stats": stats})
 

@@ -25,8 +25,9 @@ REST_FRAMEWORK = {
     ),
 }
 
-# Local email backend
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# Email: SMTP via .env (fallback console if no credentials)
+if not EMAIL_HOST_USER:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Optional: run Celery tasks synchronously when Redis is down locally
 # CELERY_TASK_ALWAYS_EAGER = True

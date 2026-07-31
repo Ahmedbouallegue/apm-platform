@@ -24,7 +24,7 @@
         </ul>
       {% endif %}
 
-      <form method="post" novalidate>
+      <form method="post" class="js-validate" novalidate>
         {% csrf_token %}
         <div class="field">
           <label for="id_username">Identifiant</label>
@@ -34,6 +34,9 @@
           <label for="id_password">Mot de passe</label>
           {{ form.password }}
         </div>
+        <p class="auth-forgot">
+          <a href="{% url 'web:password-reset' %}">Mot de passe oublié ?</a>
+        </p>
         <button class="btn btn-primary btn-block" type="submit">Se connecter</button>
       </form>
     </div>

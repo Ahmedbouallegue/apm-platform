@@ -1,0 +1,128 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}{{ application.name }}{% endblock %}
+{% block header_title %}{{ application.name }}{% endblock %}
+{% block header_sub %}Fiche application · patrimoine applicatif{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'applications:list' %}">Retour</a>
+  {% if can_write %}
+    <a class="btn btn-primary" href="{% url 'applications:edit' application.pk %}">Modifier</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="stats" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+  <article class="stat">
+    <div class="label">Statut</div>
+    <div class="value" style="font-size:1.2rem">
+      <span class="badge badge-status-{{ application.status }}">{{ application.get_status_display }}</span>
+    </div>
+  </article>
+  <article class="stat">
+    <div class="label">Criticité</div>
+    <div class="value" style="font-size:1.2rem">
+      <span class="badge badge-crit-{{ application.criticality }}">{{ application.get_criticality_display }}</span>
+    </div>
+  </article>
+  <article class="stat">
+    <div class="label">Utilisateurs</div>
+    <div class="value">{{ application.user_count }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Technologies</div>
+    <div class="value">{{ application.technologies.count }}</div>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <strong>Informations générales</strong>
+  </div>
+  <div class="form-grid">
+    <div>
+      <div class="label" style="color:var(--muted);font-size:.84rem">Direction métier</div>
+      <div>{{ application.business_unit|default:"—" }}</div>
+    </div>
+    <div>
+      <div class="label" style="color:var(--muted);font-size:.84rem">Responsable</div>
+      <div>
+        {% if application.owner %}
+          {{ application.owner.get_full_name|default:application.owner.username }}
+          <span style="color:var(--muted)">({{ application.owner.email }})</span>
+        {% else %}—{% endif %}
+      </div>
+    </div>
+    <div>
+      <div class="label" style="color:var(--muted);font-size:.84rem">Mise en production</div>
+      <div>{{ application.go_live_date|date:"d/m/Y"|default:"—" }}</div>
+    </div>
+    <div>
+      <div class="label" style="color:var(--muted);font-size:.84rem">Fin de vie</div>
+      <div>{{ application.end_of_life_date|date:"d/m/Y"|default:"—" }}</div>
+    </div>
+    <div class="full">
+      <div class="label" style="color:var(--muted);font-size:.84rem">Description</div>
+      <div style="white-space:pre-wrap">{{ application.description|default:"Aucune description." }}</div>
+    </div>
+    <div class="full">
+      <div class="label" style="color:var(--muted);font-size:.84rem;margin-bottom:8px">Technologies</div>
+      {% if application.technologies.all %}
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          {% for tech in application.technologies.all %}
+            <span class="badge badge-dsi">{{ tech }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <span style="color:var(--muted)">Aucune technologie associée.</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="panel-head" style="border-top:1px solid var(--line)">
+    <strong>Environnements</strong>
+    {% if can_write %}
+      <a class="btn btn-accent" href="{% url 'environments:create' %}?application={{ application.pk }}">Ajouter</a>
+    {% endif %}
+  </div>
+  {% if environments %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Nom</th>
+          <th>URL</th>
+          <th>Infra</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for env in environments %}
+        <tr>
+          <td><span class="badge badge-env-{{ env.env_type }}">{{ env.get_env_type_display }}</span></td>
+          <td><a href="{% url 'environments:detail' env.pk %}">{{ env.name }}</a></td>
+          <td>{% if env.url %}<a href="{{ env.url }}" target="_blank" rel="noopener">{{ env.url|truncatechars:36 }}</a>{% else %}—{% endif %}</td>
+          <td>
+            {% if env.docker %}<span class="badge badge-dsi">Docker</span>{% endif %}
+            {% if env.kubernetes %}<span class="badge badge-manager">K8s</span>{% endif %}
+            {% if not env.docker and not env.kubernetes %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty" style="padding:24px">Aucun environnement pour cette application.</div>
+  {% endif %}
+
+  {% if can_write %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'applications:delete' application.pk %}" onsubmit="return confirm('Archiver cette application ?');">
+      {% csrf_token %}
+      <button class="btn btn-danger" type="submit">Archiver</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

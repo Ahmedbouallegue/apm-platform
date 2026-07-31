@@ -40,7 +40,7 @@ services:
     env_file:
       - .env
     environment:
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-config.settings.development}
+      DJANGO_SETTINGS_MODULE: config.settings.development
       DATABASE_URL: postgres://${POSTGRES_USER:-apm}:${POSTGRES_PASSWORD:-apm}@db:5432/${POSTGRES_DB:-apm}
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
@@ -76,7 +76,7 @@ services:
     env_file:
       - .env
     environment:
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-config.settings.development}
+      DJANGO_SETTINGS_MODULE: config.settings.development
       DATABASE_URL: postgres://${POSTGRES_USER:-apm}:${POSTGRES_PASSWORD:-apm}@db:5432/${POSTGRES_DB:-apm}
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
@@ -102,7 +102,7 @@ services:
     env_file:
       - .env
     environment:
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-config.settings.development}
+      DJANGO_SETTINGS_MODULE: config.settings.development
       DATABASE_URL: postgres://${POSTGRES_USER:-apm}:${POSTGRES_PASSWORD:-apm}@db:5432/${POSTGRES_DB:-apm}
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0

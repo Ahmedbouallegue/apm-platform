@@ -1,0 +1,106 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}Serveurs{% endblock %}
+{% block header_title %}Gestion des serveurs{% endblock %}
+{% block header_sub %}Inventaire Physique · VM · Cloud{% endblock %}
+
+{% block header_actions %}
+  {% if can_write %}
+    <a class="btn btn-accent" href="{% url 'servers:create' %}">Nouveau serveur</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head">
+    <form class="filters" method="get">
+      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Nom, IP, datacenter…">
+      <select class="field-input" name="type">
+        <option value="">Tous les types</option>
+        {% for value, label in server_types %}
+          <option value="{{ value }}" {% if type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <input class="field-input" type="text" name="datacenter" value="{{ datacenter }}" placeholder="Datacenter">
+      <select class="field-input" name="active">
+        <option value="">Tous les statuts</option>
+        <option value="1" {% if active == "1" %}selected{% endif %}>Actifs</option>
+        <option value="0" {% if active == "0" %}selected{% endif %}>Inactifs</option>
+      </select>
+      <button class="btn btn-primary" type="submit">Filtrer</button>
+    </form>
+  </div>
+
+  {% if servers %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Serveur</th>
+          <th>Type</th>
+          <th>OS / Capacité</th>
+          <th>Datacenter</th>
+          <th>Environnements</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for srv in servers %}
+        <tr>
+          <td>
+            <a href="{% url 'servers:detail' srv.pk %}"><strong>{{ srv.name }}</strong></a>
+            <div style="color:var(--muted);font-size:.84rem">{{ srv.ip_address }}</div>
+          </td>
+          <td><span class="badge badge-srv-{{ srv.server_type }}">{{ srv.get_server_type_display }}</span></td>
+          <td>
+            {{ srv.os|default:"—" }}
+            <div style="color:var(--muted);font-size:.84rem">{{ srv.cpu|default:"—" }} · {{ srv.ram|default:"—" }}</div>
+          </td>
+          <td>{{ srv.datacenter|default:"—" }}</td>
+          <td>{{ srv.env_count }}</td>
+          <td>
+            {% if srv.is_active %}
+              <span class="badge badge-on">Actif</span>
+            {% else %}
+              <span class="badge badge-off">Inactif</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="row-actions">
+              <a class="btn btn-ghost" href="{% url 'servers:detail' srv.pk %}">Voir</a>
+              {% if can_write %}
+                <a class="btn btn-ghost" href="{% url 'servers:edit' srv.pk %}">Modifier</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a class="btn btn-ghost" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&type={{ type }}&datacenter={{ datacenter }}&active={{ active }}">Précédent</a>
+    {% endif %}
+    <span style="align-self:center;color:var(--muted)">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a class="btn btn-ghost" href="?page={{ page_obj.next_page_number }}&q={{ q }}&type={{ type }}&datacenter={{ datacenter }}&active={{ active }}">Suivant</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+    <div class="empty">
+      Aucun serveur enregistré.
+      {% if can_write %}
+        <div style="margin-top:14px">
+          <a class="btn btn-accent" href="{% url 'servers:create' %}">Créer le premier serveur</a>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

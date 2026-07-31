@@ -37,6 +37,7 @@ Design pro/sérieux aux couleurs Topnet (navy / cyan / orange) :
 | Connexion | http://localhost:8000/login/ |
 | Tableau de bord | http://localhost:8000/ |
 | Gestion utilisateurs | http://localhost:8000/users/ |
+| Assistant APM (RAG) | http://localhost:8000/assistant/ |
 
 Créer un administrateur :
 
@@ -134,8 +135,29 @@ celery -A config worker -l info
 | `notifications` | Notifications |
 | `audit` | Logs d’audit |
 | `dashboard` | KPIs / tableaux de bord |
+| `assistant` | Assistant RAG (chat APM) |
 
-## Variables d’environnement
+## Assistant RAG
+
+L'assistant indexe le patrimoine (applications, technologies, environnements, serveurs, notes métier) et répond en citant ses sources.
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/assistant/ask/` | Poser une question |
+| POST | `/api/assistant/reindex/` | Réindexer le corpus |
+| GET | `/api/assistant/sessions/` | Sessions chat |
+| GET/POST | `/api/assistant/notes/` | Notes manuelles |
+
+Fournisseur IA (`AI_PROVIDER`) :
+
+- `local` (défaut) — embeddings hashing + réponse extractive, sans clé API
+- `openai` — embeddings + chat OpenAI (`OPENAI_API_KEY`)
+- `ollama` — modèle local via Ollama
+
+```bash
+docker compose exec web python manage.py reindex_rag
+```
+
 
 Voir `.env.example`. Ne jamais committer `.env`.
 

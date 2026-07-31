@@ -1,0 +1,79 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block header_title %}{{ title }}{% endblock %}
+{% block header_sub %}Configuration d’un environnement applicatif{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'environments:list' %}">Retour à la liste</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <form method="post" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
+    {% endif %}
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="id_application">Application</label>
+        {{ form.application }}
+        {{ form.application.errors }}
+      </div>
+      <div class="field">
+        <label for="id_server">Serveur</label>
+        {{ form.server }}
+        {{ form.server.errors }}
+      </div>
+      <div class="field">
+        <label for="id_env_type">Type</label>
+        {{ form.env_type }}
+        {{ form.env_type.errors }}
+      </div>
+      <div class="field">
+        <label for="id_name">Nom</label>
+        {{ form.name }}
+        {{ form.name.errors }}
+      </div>
+      <div class="field">
+        <label for="id_url">URL</label>
+        {{ form.url }}
+        {{ form.url.errors }}
+      </div>
+      <div class="field">
+        <label for="id_ip_address">Adresse IP</label>
+        {{ form.ip_address }}
+        {{ form.ip_address.errors }}
+      </div>
+      <div class="field">
+        <label for="id_hosting_provider">Hébergeur</label>
+        {{ form.hosting_provider }}
+      </div>
+      <div class="field">
+        <label for="id_os">OS</label>
+        {{ form.os }}
+      </div>
+      <div class="field">
+        <label for="id_cpu">CPU</label>
+        {{ form.cpu }}
+      </div>
+      <div class="field">
+        <label for="id_ram">RAM</label>
+        {{ form.ram }}
+      </div>
+      <div class="field check-row">
+        <label>{{ form.docker }} Docker</label>
+        <label>{{ form.kubernetes }} Kubernetes</label>
+        <label>{{ form.is_active }} Actif</label>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{% url 'environments:list' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

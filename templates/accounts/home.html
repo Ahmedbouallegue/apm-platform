@@ -5,7 +5,7 @@
 {% block header_sub %}Vue d’ensemble de la plateforme APM{% endblock %}
 
 {% block header_actions %}
-  <a class="btn btn-accent" href="{% url 'web:user-list' %}">Gérer les utilisateurs</a>
+  <a class="btn btn-accent" href="{% url 'applications:create' %}">Nouvelle application</a>
 {% endblock %}
 
 {% block content %}
@@ -15,16 +15,16 @@
     <div class="value">{{ stats.users_total }}</div>
   </article>
   <article class="stat">
-    <div class="label">Comptes actifs</div>
-    <div class="value">{{ stats.users_active }}</div>
+    <div class="label">Applications</div>
+    <div class="value">{{ stats.apps_total }}</div>
   </article>
   <article class="stat">
-    <div class="label">Administrateurs</div>
-    <div class="value">{{ stats.users_admin }}</div>
+    <div class="label">En production</div>
+    <div class="value">{{ stats.apps_production }}</div>
   </article>
   <article class="stat">
-    <div class="label">Profils DSI</div>
-    <div class="value">{{ stats.users_dsi }}</div>
+    <div class="label">Technologies</div>
+    <div class="value">{{ stats.techs_total }}</div>
   </article>
 </section>
 
@@ -33,13 +33,16 @@
     <div>
       <strong>Bienvenue, {{ request.user.get_full_name|default:request.user.username }}</strong>
       <div style="color:var(--muted);font-size:.92rem;margin-top:4px">
-        Espace sécurisé Topnet — gestion des accès et du patrimoine applicatif.
+        Espace sécurisé Topnet — gestion du patrimoine applicatif.
       </div>
     </div>
   </div>
-  <div style="padding:22px;color:var(--muted);max-width:62ch">
-    Utilisez le module <strong style="color:var(--ink)">Utilisateurs</strong> pour créer des comptes,
-    attribuer les rôles (Administrateur, DSI, Manager, Lecteur) et contrôler les accès à la plateforme.
+  <div style="padding:22px;color:var(--muted);max-width:70ch">
+    Le module <strong style="color:var(--ink)">Applications</strong> inventorie le SI ;
+    <strong style="color:var(--ink)">Technologies</strong> centralise le référentiel technique
+    (langages, frameworks, BDD…) lié aux applications.
+    L’<a href="{% url 'assistant:chat' %}"><strong style="color:var(--ink)">Assistant APM</strong></a>
+    répond aux questions sur le patrimoine via RAG.
   </div>
 </section>
 {% endblock %}

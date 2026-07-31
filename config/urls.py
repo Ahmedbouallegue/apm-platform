@@ -23,6 +23,11 @@ def healthcheck(_request):
 urlpatterns = [
     path("", include("django_prometheus.urls")),
     path("", include("apps.accounts.urls_web")),
+    path("", include("apps.applications.urls_web")),
+    path("", include("apps.technologies.urls_web")),
+    path("", include("apps.environments.urls_web")),
+    path("", include("apps.servers.urls_web")),
+    path("", include("apps.assistant.urls_web")),
     path("admin/", admin.site.urls),
     path("api/health/", healthcheck, name="healthcheck"),
     # OpenAPI / Swagger
@@ -54,8 +59,10 @@ urlpatterns = [
     path("api/notifications/", include("apps.notifications.urls")),
     path("api/audit/", include("apps.audit.urls")),
     path("api/dashboard/", include("apps.dashboard.urls")),
+    path("api/assistant/", include("apps.assistant.urls")),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # Also expose source static/ during local DEBUG (WhiteNoise serves STATIC_ROOT).
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

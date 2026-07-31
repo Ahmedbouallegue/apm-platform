@@ -1,0 +1,105 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}Applications{% endblock %}
+{% block header_title %}Gestion des applications{% endblock %}
+{% block header_sub %}Catalogue du patrimoine applicatif Topnet{% endblock %}
+
+{% block header_actions %}
+  {% if can_write %}
+    <a class="btn btn-accent" href="{% url 'applications:create' %}">Nouvelle application</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head">
+    <form class="filters" method="get">
+      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Rechercher une application…">
+      <select class="field-input" name="status">
+        <option value="">Tous les statuts</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="criticality">
+        <option value="">Toutes criticités</option>
+        {% for value, label in criticalities %}
+          <option value="{{ value }}" {% if criticality == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Filtrer</button>
+    </form>
+  </div>
+
+  {% if applications %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Application</th>
+          <th>Statut</th>
+          <th>Criticité</th>
+          <th>Direction</th>
+          <th>Responsable</th>
+          <th>Utilisateurs</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in applications %}
+        <tr>
+          <td>
+            <a href="{% url 'applications:detail' app.pk %}"><strong>{{ app.name }}</strong></a>
+            {% if app.go_live_date %}
+              <div style="color:var(--muted);font-size:.84rem">MEP {{ app.go_live_date|date:"d/m/Y" }}</div>
+            {% endif %}
+          </td>
+          <td><span class="badge badge-status-{{ app.status }}">{{ app.get_status_display }}</span></td>
+          <td><span class="badge badge-crit-{{ app.criticality }}">{{ app.get_criticality_display }}</span></td>
+          <td>{{ app.business_unit|default:"—" }}</td>
+          <td>
+            {% if app.owner %}
+              {{ app.owner.get_full_name|default:app.owner.username }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>{{ app.user_count }}</td>
+          <td>
+            <div class="row-actions">
+              <a class="btn btn-ghost" href="{% url 'applications:detail' app.pk %}">Voir</a>
+              {% if can_write %}
+                <a class="btn btn-ghost" href="{% url 'applications:edit' app.pk %}">Modifier</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a class="btn btn-ghost" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&status={{ status }}&criticality={{ criticality }}">Précédent</a>
+    {% endif %}
+    <span style="align-self:center;color:var(--muted)">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a class="btn btn-ghost" href="?page={{ page_obj.next_page_number }}&q={{ q }}&status={{ status }}&criticality={{ criticality }}">Suivant</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+    <div class="empty">
+      Aucune application dans le catalogue.
+      {% if can_write %}
+        <div style="margin-top:14px">
+          <a class="btn btn-accent" href="{% url 'applications:create' %}">Créer la première application</a>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

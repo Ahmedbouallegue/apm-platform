@@ -1,0 +1,65 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block header_title %}{{ title }}{% endblock %}
+{% block header_sub %}Inventaire infrastructure{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'servers:list' %}">Retour à la liste</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <form method="post" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
+    {% endif %}
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="id_name">Nom</label>
+        {{ form.name }}
+        {{ form.name.errors }}
+      </div>
+      <div class="field">
+        <label for="id_ip_address">Adresse IP</label>
+        {{ form.ip_address }}
+        {{ form.ip_address.errors }}
+      </div>
+      <div class="field">
+        <label for="id_server_type">Type</label>
+        {{ form.server_type }}
+      </div>
+      <div class="field">
+        <label for="id_datacenter">Datacenter</label>
+        {{ form.datacenter }}
+      </div>
+      <div class="field">
+        <label for="id_os">OS</label>
+        {{ form.os }}
+      </div>
+      <div class="field">
+        <label for="id_cpu">CPU</label>
+        {{ form.cpu }}
+      </div>
+      <div class="field">
+        <label for="id_ram">RAM</label>
+        {{ form.ram }}
+      </div>
+      <div class="field check-row">
+        <label>{{ form.is_active }} Serveur actif</label>
+      </div>
+      <div class="field full">
+        <label for="id_notes">Notes</label>
+        {{ form.notes }}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{% url 'servers:list' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

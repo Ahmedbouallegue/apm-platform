@@ -1,0 +1,78 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block header_title %}{{ title }}{% endblock %}
+{% block header_sub %}Saisie du catalogue applicatif{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'applications:list' %}">Retour à la liste</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <form method="post" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
+    {% endif %}
+
+    <div class="form-grid">
+      <div class="field full">
+        <label for="id_name">Nom</label>
+        {{ form.name }}
+        {{ form.name.errors }}
+      </div>
+
+      <div class="field full">
+        <label for="id_description">Description</label>
+        {{ form.description }}
+      </div>
+
+      <div class="field">
+        <label for="id_status">Statut</label>
+        {{ form.status }}
+      </div>
+      <div class="field">
+        <label for="id_criticality">Criticité</label>
+        {{ form.criticality }}
+      </div>
+
+      <div class="field">
+        <label for="id_business_unit">Direction métier</label>
+        {{ form.business_unit }}
+      </div>
+      <div class="field">
+        <label for="id_owner">Responsable</label>
+        {{ form.owner }}
+      </div>
+
+      <div class="field">
+        <label for="id_go_live_date">Date de mise en production</label>
+        {{ form.go_live_date }}
+      </div>
+      <div class="field">
+        <label for="id_end_of_life_date">Date de fin de vie</label>
+        {{ form.end_of_life_date }}
+      </div>
+
+      <div class="field">
+        <label for="id_user_count">Nombre d'utilisateurs</label>
+        {{ form.user_count }}
+      </div>
+      <div class="field">
+        <label for="id_technologies">Technologies</label>
+        {{ form.technologies }}
+        <div style="color:var(--muted);font-size:.8rem;margin-top:6px">
+          Maintenir Ctrl pour sélection multiple.
+          <a href="{% url 'technologies:list' %}">Gérer les technologies</a>.
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{% url 'applications:list' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

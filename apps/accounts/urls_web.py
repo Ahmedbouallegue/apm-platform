@@ -3,6 +3,10 @@ from django.urls import path
 from apps.accounts.forms import BrandAuthenticationForm
 from apps.accounts.views.web import (
     BrandLoginView,
+    BrandPasswordResetCompleteView,
+    BrandPasswordResetConfirmView,
+    BrandPasswordResetDoneView,
+    BrandPasswordResetView,
     HomeView,
     UserCreateView,
     UserListView,
@@ -21,6 +25,26 @@ urlpatterns = [
         name="login",
     ),
     path("logout/", logout_view, name="logout"),
+    path(
+        "password-reset/",
+        BrandPasswordResetView.as_view(),
+        name="password-reset",
+    ),
+    path(
+        "password-reset/done/",
+        BrandPasswordResetDoneView.as_view(),
+        name="password-reset-done",
+    ),
+    path(
+        "password-reset/<uidb64>/<token>/",
+        BrandPasswordResetConfirmView.as_view(),
+        name="password-reset-confirm",
+    ),
+    path(
+        "password-reset/complete/",
+        BrandPasswordResetCompleteView.as_view(),
+        name="password-reset-complete",
+    ),
     path("users/", UserListView.as_view(), name="user-list"),
     path("users/new/", UserCreateView.as_view(), name="user-create"),
     path("users/<int:pk>/edit/", UserUpdateView.as_view(), name="user-edit"),

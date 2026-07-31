@@ -1,0 +1,73 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}{{ technology }}{% endblock %}
+{% block header_title %}{{ technology }}{% endblock %}
+{% block header_sub %}Fiche technologie · référentiel technique{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'technologies:list' %}">Retour</a>
+  {% if can_write %}
+    <a class="btn btn-primary" href="{% url 'technologies:edit' technology.pk %}">Modifier</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="stats" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+  <article class="stat">
+    <div class="label">Type</div>
+    <div class="value" style="font-size:1.15rem">
+      <span class="badge badge-dsi">{{ technology.get_tech_type_display }}</span>
+    </div>
+  </article>
+  <article class="stat">
+    <div class="label">Version</div>
+    <div class="value" style="font-size:1.4rem">{{ technology.version|default:"—" }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Applications liées</div>
+    <div class="value">{{ technology.app_count }}</div>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><strong>Description</strong></div>
+  <div style="padding:22px;white-space:pre-wrap">{{ technology.description|default:"Aucune description." }}</div>
+</section>
+
+<section class="panel" style="margin-top:20px">
+  <div class="panel-head"><strong>Applications utilisant cette technologie</strong></div>
+  {% if linked_apps %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Application</th>
+          <th>Statut</th>
+          <th>Criticité</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in linked_apps %}
+        <tr>
+          <td><a href="{% url 'applications:detail' app.pk %}"><strong>{{ app.name }}</strong></a></td>
+          <td><span class="badge badge-status-{{ app.status }}">{{ app.get_status_display }}</span></td>
+          <td><span class="badge badge-crit-{{ app.criticality }}">{{ app.get_criticality_display }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">Aucune application liée pour le moment.</div>
+  {% endif %}
+
+  {% if can_write %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'technologies:delete' technology.pk %}" onsubmit="return confirm('Supprimer cette technologie ?');">
+      {% csrf_token %}
+      <button class="btn btn-danger" type="submit">Supprimer</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

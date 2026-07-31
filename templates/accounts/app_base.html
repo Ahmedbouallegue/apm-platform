@@ -16,6 +16,11 @@
 
     <nav class="nav" aria-label="Navigation principale">
       <a href="{% url 'web:home' %}" class="{% if request.resolver_match.url_name == 'home' %}is-active{% endif %}">Tableau de bord</a>
+      <a href="{% url 'applications:list' %}" class="{% if request.resolver_match.namespace == 'applications' %}is-active{% endif %}">Applications</a>
+      <a href="{% url 'environments:list' %}" class="{% if request.resolver_match.namespace == 'environments' %}is-active{% endif %}">Environnements</a>
+      <a href="{% url 'servers:list' %}" class="{% if request.resolver_match.namespace == 'servers' %}is-active{% endif %}">Serveurs</a>
+      <a href="{% url 'technologies:list' %}" class="{% if request.resolver_match.namespace == 'technologies' %}is-active{% endif %}">Technologies</a>
+      <a href="{% url 'assistant:chat' %}" class="{% if request.resolver_match.namespace == 'assistant' %}is-active{% endif %}">Assistant APM</a>
       <a href="{% url 'web:user-list' %}" class="{% if 'user' in request.resolver_match.url_name %}is-active{% endif %}">Utilisateurs</a>
       <a href="/api/docs/" target="_blank" rel="noopener">Documentation API</a>
       <a href="/admin/">Administration</a>

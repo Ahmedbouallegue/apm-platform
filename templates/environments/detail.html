@@ -1,0 +1,93 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}{{ environment }}{% endblock %}
+{% block header_title %}{{ environment.name }}{% endblock %}
+{% block header_sub %}{{ environment.application.name }} · {{ environment.get_env_type_display }}{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'environments:list' %}">Retour</a>
+  {% if can_write %}
+    <a class="btn btn-primary" href="{% url 'environments:edit' environment.pk %}">Modifier</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="stats" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+  <article class="stat">
+    <div class="label">Type</div>
+    <div class="value" style="font-size:1.15rem">
+      <span class="badge badge-env-{{ environment.env_type }}">{{ environment.get_env_type_display }}</span>
+    </div>
+  </article>
+  <article class="stat">
+    <div class="label">Statut</div>
+    <div class="value" style="font-size:1.15rem">
+      {% if environment.is_active %}
+        <span class="badge badge-on">Actif</span>
+      {% else %}
+        <span class="badge badge-off">Inactif</span>
+      {% endif %}
+    </div>
+  </article>
+  <article class="stat">
+    <div class="label">Docker</div>
+    <div class="value" style="font-size:1.2rem">{% if environment.docker %}Oui{% else %}Non{% endif %}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Kubernetes</div>
+    <div class="value" style="font-size:1.2rem">{% if environment.kubernetes %}Oui{% else %}Non{% endif %}</div>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><strong>Détails techniques</strong></div>
+  <div class="form-grid">
+    <div>
+      <div style="color:var(--muted);font-size:.84rem">Application</div>
+      <div><a href="{% url 'applications:detail' environment.application_id %}">{{ environment.application.name }}</a></div>
+    </div>
+    <div>
+      <div style="color:var(--muted);font-size:.84rem">Serveur</div>
+      <div>
+        {% if environment.server %}
+          <a href="{% url 'servers:detail' environment.server_id %}">{{ environment.server.name }}</a>
+          <span style="color:var(--muted)">({{ environment.server.ip_address }})</span>
+        {% else %}—{% endif %}
+      </div>
+    </div>
+    <div>
+      <div style="color:var(--muted);font-size:.84rem">Hébergeur</div>
+      <div>{{ environment.hosting_provider|default:"—" }}</div>
+    </div>
+    <div>
+      <div style="color:var(--muted);font-size:.84rem">URL</div>
+      <div>
+        {% if environment.url %}
+          <a href="{{ environment.url }}" target="_blank" rel="noopener">{{ environment.url }}</a>
+        {% else %}—{% endif %}
+      </div>
+    </div>
+    <div>
+      <div style="color:var(--muted);font-size:.84rem">Adresse IP</div>
+      <div>{{ environment.ip_address|default:"—" }}</div>
+    </div>
+    <div>
+      <div style="color:var(--muted);font-size:.84rem">OS</div>
+      <div>{{ environment.os|default:"—" }}</div>
+    </div>
+    <div>
+      <div style="color:var(--muted);font-size:.84rem">CPU / RAM</div>
+      <div>{{ environment.cpu|default:"—" }} · {{ environment.ram|default:"—" }}</div>
+    </div>
+  </div>
+
+  {% if can_write %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'environments:delete' environment.pk %}" onsubmit="return confirm('Supprimer cet environnement ?');">
+      {% csrf_token %}
+      <button class="btn btn-danger" type="submit">Supprimer</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
