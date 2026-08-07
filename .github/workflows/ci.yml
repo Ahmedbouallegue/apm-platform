@@ -147,6 +147,8 @@ jobs:
 
       - name: Validate Compose (dev + prod)
         run: |
+          # .env is gitignored; compose requires env_file for config validation
+          cp .env.example .env
           docker compose -f docker-compose.yml config --quiet
           POSTGRES_PASSWORD=ci-test docker compose -f docker-compose.prod.yml config --quiet
 
