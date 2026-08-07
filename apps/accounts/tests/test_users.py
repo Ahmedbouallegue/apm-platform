@@ -138,7 +138,7 @@ class UserManagementWebTests(TestCase):
         self.assertEqual(user.first_name, "New")
 
     def test_viewer_cannot_export_csv(self):
-        viewer = User.objects.create_user(
+        User.objects.create_user(
             username="webviewer",
             email="webviewer@topnet.tn",
             password="Secret123!",

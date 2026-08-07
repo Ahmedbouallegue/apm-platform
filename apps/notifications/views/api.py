@@ -5,7 +5,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.views import AppHealthView
-from apps.notifications.models import Notification
 from apps.notifications.permissions import CanManageNotifications, CanWriteNotifications
 from apps.notifications.selectors.notifications import notification_list
 from apps.notifications.serializers import NotificationSerializer, NotificationWriteSerializer

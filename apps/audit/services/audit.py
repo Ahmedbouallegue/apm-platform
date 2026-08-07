@@ -1,5 +1,4 @@
 from django.db import transaction
-from django.utils import timezone
 
 from apps.audit.models import AuditLog
 

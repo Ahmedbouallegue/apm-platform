@@ -1,7 +1,6 @@
 import json
 import math
 import re
-from typing import Optional
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
@@ -93,7 +92,7 @@ class FaceAuthWebTests(TestCase):
         )
         self.descriptor = make_descriptor(0.4)
 
-    def _csrf_token(self, path: Optional[str] = None) -> str:
+    def _csrf_token(self, path: str | None = None) -> str:
         response = self.client.get(path or reverse("web:login"))
         self.assertIn(response.status_code, {200, 302})
         if "csrftoken" in self.client.cookies:

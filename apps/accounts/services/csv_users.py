@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import csv
 import io
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password

@@ -20,6 +20,10 @@ exclude = [
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"config/settings/*.py" = ["F405", "F403"]
 
 [tool.coverage.run]
 source = ["apps"]

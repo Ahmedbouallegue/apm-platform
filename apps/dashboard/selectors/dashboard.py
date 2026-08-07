@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date, timedelta
-from typing import Sequence
 
 from django.db.models import Count, QuerySet
 from django.db.models.functions import TruncMonth

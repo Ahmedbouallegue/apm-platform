@@ -1,15 +1,13 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, status, viewsets
-from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.core.views import AppHealthView
 from apps.documents.permissions import CanManageDocuments, CanWriteDocuments
 from apps.documents.selectors.documents import document_list, tag_list
 from apps.documents.serializers import DocumentSerializer, DocumentWriteSerializer, TagSerializer
-from apps.documents.services.documents import document_soft_delete, tag_create
+from apps.documents.services.documents import document_soft_delete
 
 
 class HealthView(AppHealthView):

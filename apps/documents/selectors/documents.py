@@ -1,4 +1,4 @@
-from django.db.models import Prefetch, Q, QuerySet
+from django.db.models import Q, QuerySet
 
 from apps.documents.models import Document, Tag
 

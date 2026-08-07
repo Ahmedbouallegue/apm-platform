@@ -3,7 +3,6 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.applications.models import Application
 from apps.servers.models import Server
 
 User = get_user_model()
@@ -65,7 +64,7 @@ class ValidationAPITests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_reject_invalid_phone_web_form(self):
-        admin = User.objects.create_user(
+        User.objects.create_user(
             username="adminform",
             password="Secret123!",
             role=User.Role.ADMIN,
