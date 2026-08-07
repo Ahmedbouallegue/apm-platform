@@ -2,6 +2,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.audit.services.audit import audit_log_create
+from apps.dashboard.selectors.dashboard import invalidate_dashboard_stats
 from apps.domains.models import Domain
 
 
@@ -17,6 +18,7 @@ def domain_create(*, data: dict, user=None) -> Domain:
         details=f"Domaine « {domain.fqdn} » créé",
         user=user,
     )
+    invalidate_dashboard_stats()
     return domain
 
 
@@ -33,6 +35,7 @@ def domain_update(*, domain: Domain, data: dict, user=None) -> Domain:
         details=f"Domaine « {domain.fqdn} » mis à jour",
         user=user,
     )
+    invalidate_dashboard_stats()
     return domain
 
 
@@ -52,4 +55,5 @@ def domain_soft_delete(*, domain: Domain, user=None) -> Domain:
         details=f"Domaine « {domain.fqdn} » archivé",
         user=user,
     )
+    invalidate_dashboard_stats()
     return domain

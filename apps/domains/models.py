@@ -50,6 +50,12 @@ class Domain(TimeStampedModel, SoftDeleteModel):
         ordering = ["fqdn"]
         verbose_name = "Nom de domaine"
         verbose_name_plural = "Noms de domaine"
+        indexes = [
+            models.Index(
+                fields=["is_deleted", "is_active", "expires_at"],
+                name="domain_active_expiry_idx",
+            ),
+        ]
 
     def __str__(self) -> str:
         return self.fqdn

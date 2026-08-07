@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from apps.audit.services.audit import audit_log_create
 from apps.contracts.models import Contract
+from apps.dashboard.selectors.dashboard import invalidate_dashboard_stats
 
 
 @transaction.atomic
@@ -17,6 +18,7 @@ def contract_create(*, data: dict, user=None) -> Contract:
         details=f"Contrat « {contract.reference} » créé",
         user=user,
     )
+    invalidate_dashboard_stats()
     return contract
 
 
@@ -33,6 +35,7 @@ def contract_update(*, contract: Contract, data: dict, user=None) -> Contract:
         details=f"Contrat « {contract.reference} » mis à jour",
         user=user,
     )
+    invalidate_dashboard_stats()
     return contract
 
 
@@ -52,4 +55,5 @@ def contract_soft_delete(*, contract: Contract, user=None) -> Contract:
         details=f"Contrat « {contract.reference} » archivé",
         user=user,
     )
+    invalidate_dashboard_stats()
     return contract

@@ -70,9 +70,17 @@ Rôles : `admin`, `dsi`, `manager` (lecture), `viewer`.
 
 ## Démarrage rapide (Docker)
 
+Documentation détaillée : [`docs/docker.md`](docs/docker.md).
+
 ```bash
 cp .env.example .env
 docker compose up --build -d
+```
+
+Production (Nginx seul exposé, image figée) :
+
+```bash
+docker compose -f docker-compose.prod.yml up --build -d
 ```
 
 Après modification de fichiers dans `static/` (CSS/JS), régénérer les assets servis par Nginx :
@@ -83,18 +91,18 @@ docker compose exec web python manage.py collectstatic --noinput
 
 Puis hard-refresh navigateur (Ctrl+F5).
 
-Services exposés :
+Services exposés (développement) :
 
 | Service | URL |
 |---------|-----|
-| API via Nginx | http://localhost/ |
-| API directe | http://localhost:8000/ |
+| App via Nginx | http://localhost/ |
+| API / UI directe | http://localhost:8000/ |
 | Swagger | http://localhost:8000/api/docs/ |
 | ReDoc | http://localhost:8000/api/redoc/ |
-| Health | http://localhost:8000/api/health/ |
+| Health | http://localhost/api/health/ |
 | Admin | http://localhost:8000/admin/ |
-| Prometheus | http://localhost:9090/ |
-| Grafana | http://localhost:3000/ (admin/admin) |
+| Prometheus | `docker compose --profile observability up -d` → http://localhost:9090/ |
+| Grafana | idem → http://localhost:3000/ (admin/admin) |
 
 Créer un superutilisateur :
 
@@ -166,11 +174,13 @@ apm-platform/
 ├── apps/                 # Applications métier
 ├── config/               # Projet Django
 │   └── settings/         # base / development / production / test
-├── docker/               # Nginx, Prometheus, Grafana
+├── docker/               # Nginx, entrypoint, Prometheus, Grafana
+├── docs/                 # Architecture, Docker, guide utilisateur
 ├── requirements/         # Dépendances Python
 ├── .github/workflows/    # CI/CD
 ├── Dockerfile
-├── docker-compose.yml
+├── docker-compose.yml        # Dev
+├── docker-compose.prod.yml   # Production
 ├── manage.py
 └── README.md
 ```

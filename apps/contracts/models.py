@@ -78,6 +78,16 @@ class Contract(TimeStampedModel, SoftDeleteModel):
         ordering = ["-end_date", "reference"]
         verbose_name = "Contrat"
         verbose_name_plural = "Contrats"
+        indexes = [
+            models.Index(
+                fields=["is_deleted", "is_active", "end_date"],
+                name="contract_active_end_idx",
+            ),
+            models.Index(
+                fields=["is_deleted", "status"],
+                name="contract_deleted_status_idx",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"{self.reference} — {self.title}"

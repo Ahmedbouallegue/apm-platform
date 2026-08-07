@@ -10,7 +10,9 @@ def vendor_list(
     is_active: bool | None = None,
     include_deleted: bool = False,
 ) -> QuerySet[Vendor]:
-    qs = Vendor.objects.annotate(contract_count=Count("contracts"))
+    qs = Vendor.objects.annotate(
+        contract_count=Count("contracts", filter=Q(contracts__is_deleted=False))
+    )
     if not include_deleted:
         qs = qs.filter(is_deleted=False)
     if search:

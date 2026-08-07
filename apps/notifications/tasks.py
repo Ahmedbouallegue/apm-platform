@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from apps.certificates.models import Certificate
 from apps.contracts.models import Contract
+from apps.dashboard.selectors.dashboard import invalidate_dashboard_stats
 from apps.domains.models import Domain
 from apps.notifications.models import Notification, PlatformSettings
 from apps.notifications.services.notifications import notify_managers
@@ -15,14 +16,18 @@ def ping() -> str:
     return "pong"
 
 
-def _expiry_already_notified(*, fingerprint: str, cooldown_days: int) -> bool:
-    """Avoid flooding when the daily beat re-scans the same resource+threshold."""
+def _recent_expiry_fingerprints(*, cooldown_days: int) -> set[str]:
+    """One query for all recent expiry notifications (avoids N× exists)."""
     since = timezone.now() - timedelta(days=cooldown_days)
-    return Notification.objects.filter(
-        notification_type=Notification.NotificationType.EXPIRY,
-        link=fingerprint,
-        sent_at__gte=since,
-    ).exists()
+    return set(
+        Notification.objects.filter(
+            notification_type=Notification.NotificationType.EXPIRY,
+            sent_at__gte=since,
+        )
+        .exclude(link="")
+        .values_list("link", flat=True)
+        .distinct()
+    )
 
 
 def _matching_threshold(days_left: int, thresholds: list[int]) -> int | None:
@@ -41,31 +46,45 @@ def _threshold_label(threshold: int) -> str:
     return f"J-{threshold}"
 
 
-def _scan_certificates(*, today: date, thresholds: list[int], cooldown: int) -> tuple[int, int]:
+def _scan_certificates(
+    *,
+    today: date,
+    thresholds: list[int],
+    notified: set[str],
+) -> tuple[int, int]:
     created = skipped = 0
-    certs = Certificate.objects.filter(
-        is_deleted=False,
-        is_active=True,
-        expires_at__isnull=False,
-    ).exclude(status=Certificate.Status.REVOKED)
+    horizon = today + timedelta(days=max(thresholds))
+    certs = list(
+        Certificate.objects.filter(
+            is_deleted=False,
+            is_active=True,
+            expires_at__isnull=False,
+            expires_at__lte=horizon,
+        ).exclude(status=Certificate.Status.REVOKED)
+    )
 
+    status_updates: list[Certificate] = []
     for cert in certs:
         days_left = (cert.expires_at - today).days
-        if days_left < 0:
-            if cert.status != Certificate.Status.EXPIRED:
-                cert.status = Certificate.Status.EXPIRED
-                cert.save(update_fields=["status", "updated_at"])
-        elif days_left <= max(thresholds):
-            if cert.status not in {Certificate.Status.EXPIRING, Certificate.Status.EXPIRED}:
-                cert.status = Certificate.Status.EXPIRING
-                cert.save(update_fields=["status", "updated_at"])
+        new_status = None
+        if days_left < 0 and cert.status != Certificate.Status.EXPIRED:
+            new_status = Certificate.Status.EXPIRED
+        elif (
+            days_left >= 0
+            and days_left <= max(thresholds)
+            and cert.status not in {Certificate.Status.EXPIRING, Certificate.Status.EXPIRED}
+        ):
+            new_status = Certificate.Status.EXPIRING
+        if new_status is not None:
+            cert.status = new_status
+            status_updates.append(cert)
 
         threshold = _matching_threshold(days_left, thresholds)
         if threshold is None:
             continue
 
         fingerprint = f"/certificates/{cert.pk}/?seuil={threshold}"
-        if _expiry_already_notified(fingerprint=fingerprint, cooldown_days=cooldown):
+        if fingerprint in notified:
             skipped += 1
             continue
 
@@ -88,35 +107,49 @@ def _scan_certificates(*, today: date, thresholds: list[int], cooldown: int) -> 
             notification_type=Notification.NotificationType.EXPIRY,
             link=fingerprint,
         )
+        notified.add(fingerprint)
         created += 1
+
+    if status_updates:
+        Certificate.objects.bulk_update(status_updates, ["status", "updated_at"])
     return created, skipped
 
 
-def _scan_domains(*, today: date, thresholds: list[int], cooldown: int) -> tuple[int, int]:
+def _scan_domains(
+    *,
+    today: date,
+    thresholds: list[int],
+    notified: set[str],
+) -> tuple[int, int]:
     created = skipped = 0
-    domains = Domain.objects.filter(
-        is_deleted=False,
-        is_active=True,
-        expires_at__isnull=False,
+    horizon = today + timedelta(days=max(thresholds))
+    domains = list(
+        Domain.objects.filter(
+            is_deleted=False,
+            is_active=True,
+            expires_at__isnull=False,
+            expires_at__lte=horizon,
+        )
     )
 
+    status_updates: list[Domain] = []
     for domain in domains:
         days_left = (domain.expires_at - today).days
-        if days_left < 0:
-            if domain.status != Domain.Status.EXPIRED:
-                domain.status = Domain.Status.EXPIRED
-                domain.save(update_fields=["status", "updated_at"])
-        elif days_left <= max(thresholds):
-            if domain.status != Domain.Status.EXPIRING:
-                domain.status = Domain.Status.EXPIRING
-                domain.save(update_fields=["status", "updated_at"])
+        new_status = None
+        if days_left < 0 and domain.status != Domain.Status.EXPIRED:
+            new_status = Domain.Status.EXPIRED
+        elif days_left >= 0 and days_left <= max(thresholds) and domain.status != Domain.Status.EXPIRING:
+            new_status = Domain.Status.EXPIRING
+        if new_status is not None:
+            domain.status = new_status
+            status_updates.append(domain)
 
         threshold = _matching_threshold(days_left, thresholds)
         if threshold is None:
             continue
 
         fingerprint = f"/domains/{domain.pk}/?seuil={threshold}"
-        if _expiry_already_notified(fingerprint=fingerprint, cooldown_days=cooldown):
+        if fingerprint in notified:
             skipped += 1
             continue
 
@@ -139,35 +172,53 @@ def _scan_domains(*, today: date, thresholds: list[int], cooldown: int) -> tuple
             notification_type=Notification.NotificationType.EXPIRY,
             link=fingerprint,
         )
+        notified.add(fingerprint)
         created += 1
+
+    if status_updates:
+        Domain.objects.bulk_update(status_updates, ["status", "updated_at"])
     return created, skipped
 
 
-def _scan_contracts(*, today: date, thresholds: list[int], cooldown: int) -> tuple[int, int]:
+def _scan_contracts(
+    *,
+    today: date,
+    thresholds: list[int],
+    notified: set[str],
+) -> tuple[int, int]:
     created = skipped = 0
-    contracts = Contract.objects.filter(
-        is_deleted=False,
-        is_active=True,
-        end_date__isnull=False,
-    ).exclude(status=Contract.Status.TERMINATED)
+    horizon = today + timedelta(days=max(thresholds))
+    contracts = list(
+        Contract.objects.filter(
+            is_deleted=False,
+            is_active=True,
+            end_date__isnull=False,
+            end_date__lte=horizon,
+        ).exclude(status=Contract.Status.TERMINATED)
+    )
 
+    status_updates: list[Contract] = []
     for contract in contracts:
         days_left = (contract.end_date - today).days
-        if days_left < 0:
-            if contract.status != Contract.Status.EXPIRED:
-                contract.status = Contract.Status.EXPIRED
-                contract.save(update_fields=["status", "updated_at"])
-        elif days_left <= max(thresholds):
-            if contract.status != Contract.Status.EXPIRING:
-                contract.status = Contract.Status.EXPIRING
-                contract.save(update_fields=["status", "updated_at"])
+        new_status = None
+        if days_left < 0 and contract.status != Contract.Status.EXPIRED:
+            new_status = Contract.Status.EXPIRED
+        elif (
+            days_left >= 0
+            and days_left <= max(thresholds)
+            and contract.status != Contract.Status.EXPIRING
+        ):
+            new_status = Contract.Status.EXPIRING
+        if new_status is not None:
+            contract.status = new_status
+            status_updates.append(contract)
 
         threshold = _matching_threshold(days_left, thresholds)
         if threshold is None:
             continue
 
         fingerprint = f"/contracts/{contract.pk}/?seuil={threshold}"
-        if _expiry_already_notified(fingerprint=fingerprint, cooldown_days=cooldown):
+        if fingerprint in notified:
             skipped += 1
             continue
 
@@ -190,7 +241,11 @@ def _scan_contracts(*, today: date, thresholds: list[int], cooldown: int) -> tup
             notification_type=Notification.NotificationType.EXPIRY,
             link=fingerprint,
         )
+        notified.add(fingerprint)
         created += 1
+
+    if status_updates:
+        Contract.objects.bulk_update(status_updates, ["status", "updated_at"])
     return created, skipped
 
 
@@ -216,15 +271,19 @@ def check_expiring_resources(days: int | None = None) -> dict:
     if not thresholds:
         return {"created": {}, "skipped": {}, "thresholds": []}
 
+    notified = _recent_expiry_fingerprints(cooldown_days=cooldown)
     c_created, c_skipped = _scan_certificates(
-        today=today, thresholds=thresholds, cooldown=cooldown
+        today=today, thresholds=thresholds, notified=notified
     )
     d_created, d_skipped = _scan_domains(
-        today=today, thresholds=thresholds, cooldown=cooldown
+        today=today, thresholds=thresholds, notified=notified
     )
     k_created, k_skipped = _scan_contracts(
-        today=today, thresholds=thresholds, cooldown=cooldown
+        today=today, thresholds=thresholds, notified=notified
     )
+
+    if c_created or d_created or k_created or c_skipped or d_skipped or k_skipped:
+        invalidate_dashboard_stats()
 
     return {
         "created": {

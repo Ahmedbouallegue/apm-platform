@@ -60,6 +60,16 @@ class Application(TimeStampedModel, SoftDeleteModel):
         ordering = ["name"]
         verbose_name = "Application"
         verbose_name_plural = "Applications"
+        indexes = [
+            models.Index(
+                fields=["is_deleted", "status"],
+                name="app_deleted_status_idx",
+            ),
+            models.Index(
+                fields=["is_deleted", "criticality"],
+                name="app_deleted_crit_idx",
+            ),
+        ]
 
     def __str__(self) -> str:
         return self.name

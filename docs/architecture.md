@@ -23,4 +23,5 @@
 - Auth API : JWT Bearer (Simple JWT)
 - Docs : `/api/docs/` (Swagger UI)
 - Async : Celery worker + beat
-- Entrée HTTP prod-like : Nginx → Gunicorn
+- Entrée HTTP : Nginx → Gunicorn (voir [`docker.md`](docker.md))
+- Compose : `docker-compose.yml` (dev) / `docker-compose.prod.yml` (prod)

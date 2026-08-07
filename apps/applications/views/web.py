@@ -58,12 +58,14 @@ class ApplicationDetailView(DetailView):
     context_object_name = "application"
 
     def get_queryset(self):
-        return application_list()
+        return application_list().prefetch_related("technologies")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["can_write"] = _can_write_apps(self.request.user)
-        ctx["environments"] = self.object.environments.all().order_by("env_type")
+        ctx["environments"] = (
+            self.object.environments.select_related("server").order_by("env_type")
+        )
         return ctx
 
 

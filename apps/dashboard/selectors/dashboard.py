@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 
-from django.db.models import Count, QuerySet
+from django.conf import settings
+from django.core.cache import cache
+from django.db.models import Count, Q, QuerySet
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 
@@ -14,7 +16,6 @@ from apps.dependencies.models import Dependency
 from apps.documents.models import Document
 from apps.domains.models import Domain
 from apps.incidents.models import Incident
-from apps.notifications.models import Notification
 from apps.technologies.models import Technology
 from apps.vendors.models import Vendor
 
@@ -32,6 +33,12 @@ _FR_MONTHS = {
     11: "Nov",
     12: "Déc",
 }
+
+DASHBOARD_STATS_CACHE_KEY = "dashboard:stats:v1"
+
+
+def invalidate_dashboard_stats() -> None:
+    cache.delete(DASHBOARD_STATS_CACHE_KEY)
 
 
 def _choice_counts(
@@ -64,7 +71,9 @@ def _add_months(d: date, months: int) -> date:
 def _trend_last_n_months(qs: QuerySet, *, date_field: str = "created_at", months: int = 6) -> dict:
     today = timezone.localdate()
     start = _add_months(_month_start(today), -(months - 1))
-    filter_kwargs = {f"{date_field}__date__gte": start}
+    # Datetime lower bound keeps indexes usable (avoids __date__ cast).
+    start_dt = timezone.make_aware(datetime.combine(start, time.min))
+    filter_kwargs = {f"{date_field}__gte": start_dt}
     rows = (
         qs.filter(**filter_kwargs)
         .annotate(month=TruncMonth(date_field))
@@ -91,16 +100,22 @@ def _trend_last_n_months(qs: QuerySet, *, date_field: str = "created_at", months
 
 
 def _certs_expiry_buckets(certs: QuerySet, today: date) -> dict:
-    expired = certs.filter(expires_at__lt=today).count()
-    within_30 = certs.filter(expires_at__gte=today, expires_at__lte=today + timedelta(days=30)).count()
-    within_90 = certs.filter(
-        expires_at__gt=today + timedelta(days=30),
-        expires_at__lte=today + timedelta(days=90),
-    ).count()
-    later = certs.filter(expires_at__gt=today + timedelta(days=90)).count()
+    d30 = today + timedelta(days=30)
+    d90 = today + timedelta(days=90)
+    row = certs.aggregate(
+        expired=Count("id", filter=Q(expires_at__lt=today)),
+        within_30=Count("id", filter=Q(expires_at__gte=today, expires_at__lte=d30)),
+        within_90=Count("id", filter=Q(expires_at__gt=d30, expires_at__lte=d90)),
+        later=Count("id", filter=Q(expires_at__gt=d90)),
+    )
     return {
         "labels": ["Expirés", "≤ 30 jours", "31–90 jours", "> 90 jours"],
-        "values": [expired, within_30, within_90, later],
+        "values": [
+            int(row["expired"] or 0),
+            int(row["within_30"] or 0),
+            int(row["within_90"] or 0),
+            int(row["later"] or 0),
+        ],
         "keys": ["expired", "d30", "d90", "later"],
     }
 
@@ -141,12 +156,16 @@ def _upcoming_expiries(*, today: date, limit: int = 8) -> list[dict]:
     horizon = today + timedelta(days=60)
     items: list[dict] = []
 
-    for cert in Certificate.objects.filter(
-        is_deleted=False,
-        is_active=True,
-        expires_at__gte=today,
-        expires_at__lte=horizon,
-    ).exclude(status=Certificate.Status.REVOKED).order_by("expires_at")[:limit]:
+    for cert in (
+        Certificate.objects.filter(
+            is_deleted=False,
+            is_active=True,
+            expires_at__gte=today,
+            expires_at__lte=horizon,
+        )
+        .exclude(status=Certificate.Status.REVOKED)
+        .order_by("expires_at")[:limit]
+    ):
         items.append(
             {
                 "kind": "Certificat SSL",
@@ -176,12 +195,16 @@ def _upcoming_expiries(*, today: date, limit: int = 8) -> list[dict]:
             }
         )
 
-    for contract in Contract.objects.filter(
-        is_deleted=False,
-        is_active=True,
-        end_date__gte=today,
-        end_date__lte=horizon,
-    ).exclude(status=Contract.Status.TERMINATED).order_by("end_date")[:limit]:
+    for contract in (
+        Contract.objects.filter(
+            is_deleted=False,
+            is_active=True,
+            end_date__gte=today,
+            end_date__lte=horizon,
+        )
+        .exclude(status=Contract.Status.TERMINATED)
+        .order_by("end_date")[:limit]
+    ):
         items.append(
             {
                 "kind": "Contrat",
@@ -197,7 +220,7 @@ def _upcoming_expiries(*, today: date, limit: int = 8) -> list[dict]:
     return items[:limit]
 
 
-def dashboard_stats(*, user=None) -> dict:
+def _compute_dashboard_stats() -> dict:
     today = timezone.localdate()
     soon = today + timedelta(days=30)
 
@@ -220,50 +243,85 @@ def dashboard_stats(*, user=None) -> dict:
     docs_qs = Document.objects.filter(is_deleted=False)
     contracts_all = Contract.objects.filter(is_deleted=False)
 
-    apps_total = apps_qs.count()
-    apps_production = apps_qs.filter(status=Application.Status.PRODUCTION).count()
-    apps_critical = apps_qs.filter(
-        criticality__in=[Application.Criticality.CRITICAL, Application.Criticality.HIGH]
-    ).count()
+    apps_agg = apps_qs.aggregate(
+        apps_total=Count("id"),
+        apps_production=Count("id", filter=Q(status=Application.Status.PRODUCTION)),
+        apps_critical=Count(
+            "id",
+            filter=Q(
+                criticality__in=[
+                    Application.Criticality.CRITICAL,
+                    Application.Criticality.HIGH,
+                ]
+            ),
+        ),
+    )
+    apps_total = int(apps_agg["apps_total"] or 0)
+    apps_production = int(apps_agg["apps_production"] or 0)
+    apps_critical = int(apps_agg["apps_critical"] or 0)
+
+    certs_agg = certs.aggregate(
+        certs_total=Count("id"),
+        certs_expiring=Count(
+            "id",
+            filter=Q(
+                expires_at__lte=soon,
+                expires_at__gte=today,
+                status__in=[Certificate.Status.VALID, Certificate.Status.EXPIRING],
+            ),
+        ),
+        certs_expired=Count("id", filter=Q(expires_at__lt=today)),
+        certs_valid=Count(
+            "id",
+            filter=Q(status=Certificate.Status.VALID, expires_at__gt=soon),
+        ),
+    )
+    domains_agg = domains.aggregate(
+        domains_total=Count("id"),
+        domains_expiring=Count(
+            "id",
+            filter=Q(
+                expires_at__isnull=False,
+                expires_at__lte=soon,
+                expires_at__gte=today,
+            ),
+        ),
+    )
+    contracts_agg = contracts.aggregate(
+        contracts_total=Count("id"),
+        contracts_expiring=Count(
+            "id",
+            filter=Q(
+                end_date__lte=soon,
+                end_date__gte=today,
+                status__in=[Contract.Status.ACTIVE, Contract.Status.EXPIRING],
+            ),
+        ),
+    )
+    incidents_agg = open_incidents.aggregate(
+        incidents_open=Count("id"),
+        incidents_critical=Count("id", filter=Q(impact=Incident.Impact.CRITICAL)),
+    )
+
     techs_total = Technology.objects.count()
-    certs_total = certs.count()
-    domains_total = domains.count()
-    contracts_total = contracts.count()
     vendors_total = Vendor.objects.filter(is_deleted=False).count()
     documents_total = docs_qs.count()
     dependencies_total = Dependency.objects.filter(is_deleted=False).count()
     servers_total = Server.objects.filter(is_deleted=False).count()
     envs_total = Environment.objects.count()
+    users_total = User.objects.count()
 
-    certs_expiring = certs.filter(
-        expires_at__lte=soon,
-        expires_at__gte=today,
-        status__in=[Certificate.Status.VALID, Certificate.Status.EXPIRING],
-    ).count()
-    certs_expired = certs.filter(expires_at__lt=today).count()
-    certs_valid = certs.filter(
-        status=Certificate.Status.VALID,
-        expires_at__gt=soon,
-    ).count()
-    domains_expiring = domains.filter(
-        expires_at__isnull=False,
-        expires_at__lte=soon,
-        expires_at__gte=today,
-    ).count()
-    contracts_expiring = contracts.filter(
-        end_date__lte=soon,
-        end_date__gte=today,
-        status__in=[Contract.Status.ACTIVE, Contract.Status.EXPIRING],
-    ).count()
-    incidents_open = open_incidents.count()
-    incidents_critical = open_incidents.filter(impact=Incident.Impact.CRITICAL).count()
+    certs_total = int(certs_agg["certs_total"] or 0)
+    certs_expiring = int(certs_agg["certs_expiring"] or 0)
+    certs_expired = int(certs_agg["certs_expired"] or 0)
+    certs_valid = int(certs_agg["certs_valid"] or 0)
+    domains_total = int(domains_agg["domains_total"] or 0)
+    domains_expiring = int(domains_agg["domains_expiring"] or 0)
+    contracts_total = int(contracts_agg["contracts_total"] or 0)
+    contracts_expiring = int(contracts_agg["contracts_expiring"] or 0)
+    incidents_open = int(incidents_agg["incidents_open"] or 0)
+    incidents_critical = int(incidents_agg["incidents_critical"] or 0)
     expiry_pressure = certs_expiring + domains_expiring + contracts_expiring
-
-    unread = 0
-    if user is not None and user.is_authenticated:
-        unread = Notification.objects.filter(
-            user=user, status=Notification.Status.UNREAD
-        ).count()
 
     documents_by_category = list(
         docs_qs.values("category").annotate(count=Count("id")).order_by("category")
@@ -358,7 +416,7 @@ def dashboard_stats(*, user=None) -> dict:
     ]
 
     return {
-        "users_total": User.objects.count(),
+        "users_total": users_total,
         "apps_total": apps_total,
         "apps_production": apps_production,
         "apps_critical": apps_critical,
@@ -380,7 +438,6 @@ def dashboard_stats(*, user=None) -> dict:
         "incidents_open": incidents_open,
         "incidents_critical": incidents_critical,
         "dependencies_total": dependencies_total,
-        "notifications_unread": unread,
         "health": health,
         "status_breakdown": status_breakdown,
         "upcoming_expiries": _upcoming_expiries(today=today),
@@ -389,3 +446,25 @@ def dashboard_stats(*, user=None) -> dict:
         "apps_by_criticality": apps_by_criticality,
         "charts": charts,
     }
+
+
+def dashboard_stats(*, user=None) -> dict:
+    ttl = int(getattr(settings, "DASHBOARD_STATS_CACHE_TTL", 120))
+    if ttl > 0:
+        stats = cache.get(DASHBOARD_STATS_CACHE_KEY)
+        if stats is None:
+            stats = _compute_dashboard_stats()
+            cache.set(DASHBOARD_STATS_CACHE_KEY, stats, ttl)
+        else:
+            # Shallow copy so per-request unread does not mutate the cache entry.
+            stats = {**stats}
+    else:
+        stats = _compute_dashboard_stats()
+
+    unread = 0
+    if user is not None and getattr(user, "is_authenticated", False):
+        from apps.notifications.services.badge import unread_count_for_user
+
+        unread = unread_count_for_user(user.pk)
+    stats["notifications_unread"] = unread
+    return stats

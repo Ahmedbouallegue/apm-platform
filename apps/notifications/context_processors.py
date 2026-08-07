@@ -1,4 +1,4 @@
-from apps.notifications.models import Notification
+from apps.notifications.services.badge import unread_count_for_user
 
 
 def notifications_badge(request):
@@ -6,8 +6,4 @@ def notifications_badge(request):
     user = getattr(request, "user", None)
     if user is None or not user.is_authenticated:
         return {"notifications_unread": 0}
-    count = Notification.objects.filter(
-        user=user,
-        status=Notification.Status.UNREAD,
-    ).count()
-    return {"notifications_unread": count}
+    return {"notifications_unread": unread_count_for_user(user.pk)}

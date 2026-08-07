@@ -11,8 +11,11 @@ def certificate_list(
     application_id: int | None = None,
     is_active: bool | None = None,
     include_deleted: bool = False,
+    with_related: bool = False,
 ) -> QuerySet[Certificate]:
-    qs = Certificate.objects.select_related("application", "environment", "domain")
+    qs = Certificate.objects.all()
+    if with_related:
+        qs = qs.select_related("application", "environment", "domain")
     if not include_deleted:
         qs = qs.filter(is_deleted=False)
     if search:

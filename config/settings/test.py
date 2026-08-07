@@ -30,3 +30,10 @@ CACHES = {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     }
 }
+
+# Disable shared caches in tests so assertions see fresh aggregates.
+DASHBOARD_STATS_CACHE_TTL = 0
+NOTIFICATION_BADGE_CACHE_TTL = 0
+CONN_MAX_AGE = 0
+DATABASES["default"]["CONN_MAX_AGE"] = 0
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = False

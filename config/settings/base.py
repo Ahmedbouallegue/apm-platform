@@ -102,6 +102,8 @@ DATABASES = {
         default=f"postgres://{env('POSTGRES_USER', default='apm')}:{env('POSTGRES_PASSWORD', default='apm')}@{env('POSTGRES_HOST', default='localhost')}:{env('POSTGRES_PORT', default='5432')}/{env('POSTGRES_DB', default='apm')}",
     )
 }
+DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -226,9 +228,14 @@ REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": REDIS_URL,
+        "LOCATION": env("REDIS_CACHE_URL", default=REDIS_URL),
+        "TIMEOUT": 120,
     }
 }
+
+# Shared dashboard aggregates (per-user unread is computed separately).
+DASHBOARD_STATS_CACHE_TTL = env.int("DASHBOARD_STATS_CACHE_TTL", default=120)
+NOTIFICATION_BADGE_CACHE_TTL = env.int("NOTIFICATION_BADGE_CACHE_TTL", default=60)
 
 CELERY_BROKER_URL = env("CELERY_BROKER_URL", default=REDIS_URL)
 CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default=REDIS_URL)

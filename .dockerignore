@@ -17,9 +17,9 @@ htmlcov
 media
 staticfiles
 *.sqlite3
-docs
 .github
 *.md
 !README.md
 docker/grafana
 docker/prometheus
+celerybeat-schedule*

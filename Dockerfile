@@ -27,7 +27,10 @@ FROM python:3.13-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    DJANGO_SETTINGS_MODULE=config.settings.production
+    DJANGO_SETTINGS_MODULE=config.settings.production \
+    RUN_MIGRATIONS=0 \
+    RUN_COLLECTSTATIC=0 \
+    SKIP_DB_WAIT=0
 
 WORKDIR /app
 
@@ -43,12 +46,25 @@ COPY --from=base /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.
 COPY --from=base /usr/local/bin /usr/local/bin
 
 COPY --chown=app:app . /app
+COPY docker/entrypoint.sh /entrypoint.sh
 
-RUN mkdir -p /app/staticfiles /app/media \
+RUN sed -i 's/\r$//' /entrypoint.sh \
+    && chmod +x /entrypoint.sh \
+    && mkdir -p /app/staticfiles /app/media \
     && chown -R app:app /app/staticfiles /app/media
 
 USER app
 
 EXPOSE 8000
 
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "60"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD curl -f http://127.0.0.1:8000/api/health/ || exit 1
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["gunicorn", "config.wsgi:application", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "3", \
+     "--threads", "2", \
+     "--timeout", "60", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-"]

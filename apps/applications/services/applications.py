@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from apps.applications.models import Application
 from apps.audit.services.audit import audit_log_create
+from apps.dashboard.selectors.dashboard import invalidate_dashboard_stats
 
 
 @transaction.atomic
@@ -26,6 +27,7 @@ def application_create(
         details=f"Application « {app.name} » créée",
         user=user,
     )
+    invalidate_dashboard_stats()
     return app
 
 
@@ -52,6 +54,7 @@ def application_update(
         details=f"Application « {application.name} » mise à jour",
         user=user,
     )
+    invalidate_dashboard_stats()
     return application
 
 
@@ -68,6 +71,7 @@ def application_soft_delete(*, application: Application, user=None) -> Applicati
         details=f"Application « {application.name} » archivée",
         user=user,
     )
+    invalidate_dashboard_stats()
     return application
 
 
@@ -83,4 +87,5 @@ def application_restore(*, application: Application, user=None) -> Application:
         details=f"Application « {application.name} » restaurée",
         user=user,
     )
+    invalidate_dashboard_stats()
     return application

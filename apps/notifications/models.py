@@ -48,6 +48,13 @@ class Notification(TimeStampedModel):
         ordering = ["-sent_at"]
         verbose_name = "Notification"
         verbose_name_plural = "Notifications"
+        indexes = [
+            models.Index(fields=["user", "status"], name="notif_user_status_idx"),
+            models.Index(
+                fields=["notification_type", "link", "sent_at"],
+                name="notif_expiry_dedupe_idx",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"{self.title} → {self.user}"

@@ -8,7 +8,11 @@ from rest_framework.test import APIClient
 
 from apps.applications.models import Application
 from apps.certificates.models import Certificate
-from apps.dashboard.selectors.dashboard import _health_score, dashboard_stats
+from apps.dashboard.selectors.dashboard import (
+    _health_score,
+    dashboard_stats,
+    invalidate_dashboard_stats,
+)
 from apps.incidents.models import Incident
 
 User = get_user_model()
@@ -29,6 +33,7 @@ CHART_KEYS = [
 
 class DashboardAPITests(TestCase):
     def setUp(self):
+        invalidate_dashboard_stats()
         self.client = APIClient()
         self.manager = User.objects.create_user(
             username="dashmgr", password="Secret123!", role=User.Role.MANAGER
@@ -51,6 +56,9 @@ class DashboardAPITests(TestCase):
 
 
 class DashboardSelectorTests(TestCase):
+    def setUp(self):
+        invalidate_dashboard_stats()
+
     def test_charts_structure(self):
         stats = dashboard_stats()
         self.assertIn("charts", stats)
@@ -104,6 +112,7 @@ class DashboardSelectorTests(TestCase):
             impact=Incident.Impact.CRITICAL,
             application=app,
         )
+        invalidate_dashboard_stats()
         stats = dashboard_stats()
         self.assertIn("health", stats)
         self.assertIn("score", stats["health"])
@@ -115,6 +124,7 @@ class DashboardSelectorTests(TestCase):
 
 class DashboardWebTests(TestCase):
     def setUp(self):
+        invalidate_dashboard_stats()
         self.manager = User.objects.create_user(
             username="webdash", password="Secret123!", role=User.Role.MANAGER
         )

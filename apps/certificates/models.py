@@ -69,6 +69,16 @@ class Certificate(TimeStampedModel, SoftDeleteModel):
         ordering = ["expires_at", "common_name"]
         verbose_name = "Certificat SSL"
         verbose_name_plural = "Certificats SSL"
+        indexes = [
+            models.Index(
+                fields=["is_deleted", "is_active", "expires_at"],
+                name="cert_active_expiry_idx",
+            ),
+            models.Index(
+                fields=["is_deleted", "status"],
+                name="cert_deleted_status_idx",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"{self.common_name} ({self.get_status_display()})"

@@ -71,7 +71,7 @@ class CertificateDetailView(DetailView):
     context_object_name = "certificate"
 
     def get_queryset(self):
-        return certificate_list()
+        return certificate_list(with_related=True)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)

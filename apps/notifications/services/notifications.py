@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from apps.accounts.roles import WRITE_ROLES
 from apps.notifications.models import Notification
+from apps.notifications.services.badge import invalidate_unread_badge
 
 User = get_user_model()
 
@@ -15,6 +16,7 @@ def notification_create(*, data: dict) -> Notification:
     notification = Notification(**data)
     notification.full_clean()
     notification.save()
+    invalidate_unread_badge(notification.user_id)
     return notification
 
 
@@ -22,6 +24,7 @@ def notification_create(*, data: dict) -> Notification:
 def notification_mark_read(*, notification: Notification) -> Notification:
     notification.status = Notification.Status.READ
     notification.save(update_fields=["status", "updated_at"])
+    invalidate_unread_badge(notification.user_id)
     return notification
 
 
@@ -29,6 +32,7 @@ def notification_mark_read(*, notification: Notification) -> Notification:
 def notification_archive(*, notification: Notification) -> Notification:
     notification.status = Notification.Status.ARCHIVED
     notification.save(update_fields=["status", "updated_at"])
+    invalidate_unread_badge(notification.user_id)
     return notification
 
 
@@ -40,20 +44,29 @@ def notify_users(
     notification_type: str = Notification.NotificationType.INFO,
     link: str = "",
 ) -> int:
-    count = 0
-    for user in users:
-        notification_create(
-            data={
-                "user": user,
-                "title": title,
-                "message": message,
-                "notification_type": notification_type,
-                "link": link,
-                "status": Notification.Status.UNREAD,
-            }
+    user_list = list(users)
+    if not user_list:
+        return 0
+
+    now = timezone.now()
+    rows = [
+        Notification(
+            user=user,
+            title=title,
+            message=message,
+            notification_type=notification_type,
+            link=link,
+            status=Notification.Status.UNREAD,
+            sent_at=now,
+            created_at=now,
+            updated_at=now,
         )
-        count += 1
-    return count
+        for user in user_list
+    ]
+    Notification.objects.bulk_create(rows)
+    for user in user_list:
+        invalidate_unread_badge(user.pk)
+    return len(rows)
 
 
 def notify_managers(

@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from apps.audit.services.audit import audit_log_create
 from apps.certificates.models import Certificate
+from apps.dashboard.selectors.dashboard import invalidate_dashboard_stats
 
 
 @transaction.atomic
@@ -17,6 +18,7 @@ def certificate_create(*, data: dict, user=None) -> Certificate:
         details=f"Certificat SSL « {cert.common_name} » créé",
         user=user,
     )
+    invalidate_dashboard_stats()
     return cert
 
 
@@ -33,6 +35,7 @@ def certificate_update(*, certificate: Certificate, data: dict, user=None) -> Ce
         details=f"Certificat SSL « {certificate.common_name} » mis à jour",
         user=user,
     )
+    invalidate_dashboard_stats()
     return certificate
 
 
@@ -52,4 +55,5 @@ def certificate_soft_delete(*, certificate: Certificate, user=None) -> Certifica
         details=f"Certificat SSL « {certificate.common_name} » archivé",
         user=user,
     )
+    invalidate_dashboard_stats()
     return certificate

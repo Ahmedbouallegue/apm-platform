@@ -15,7 +15,7 @@ def application_list(
     owner_id: int | None = None,
     include_deleted: bool = False,
 ) -> QuerySet[Application]:
-    qs = Application.objects.select_related("owner").prefetch_related("technologies")
+    qs = Application.objects.select_related("owner")
     if not include_deleted:
         qs = qs.filter(is_deleted=False)
     if search:
