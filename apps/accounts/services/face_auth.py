@@ -32,7 +32,7 @@ def _ambiguity_margin() -> float:
 def normalize_descriptor(descriptor: Sequence[float]) -> list[float]:
     """Validate and coerce a face-api.js descriptor to a float list."""
     expected = _descriptor_size()
-    if not isinstance(descriptor, (list, tuple)):
+    if not isinstance(descriptor, list | tuple):
         raise FaceAuthError("Descripteur facial invalide.")
     if len(descriptor) != expected:
         raise FaceAuthError(f"Descripteur facial invalide (attendu {expected} dimensions).")
