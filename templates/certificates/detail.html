@@ -1,0 +1,34 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ certificate.common_name }}{% endblock %}
+{% block header_title %}{{ certificate.common_name }}{% endblock %}
+{% block header_sub %}{{ certificate.get_certificate_type_display }} · {{ certificate.get_status_display }}{% endblock %}
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'certificates:list' %}">Retour</a>
+  {% if can_write %}<a class="btn btn-primary" href="{% url 'certificates:edit' certificate.pk %}">Modifier</a>{% endif %}
+{% endblock %}
+{% block content %}
+<section class="stats" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+  <article class="stat"><div class="label">Émetteur</div><div class="value" style="font-size:1.05rem">{{ certificate.issuer|default:"—" }}</div></article>
+  <article class="stat"><div class="label">Expiration</div><div class="value" style="font-size:1.1rem">{{ certificate.expires_at }}</div></article>
+  <article class="stat"><div class="label">Renouvellement</div><div class="value" style="font-size:1.1rem">{% if certificate.auto_renew %}Auto{% else %}Manuel{% endif %}</div></article>
+  <article class="stat"><div class="label">Statut</div><div class="value" style="font-size:1.1rem">{{ certificate.get_status_display }}</div></article>
+</section>
+<section class="panel">
+  <div class="panel-head"><strong>Fiche certificat</strong></div>
+  <div class="form-grid">
+    <div><div style="color:var(--muted);font-size:.84rem">Application</div><div>{% if certificate.application %}<a href="{% url 'applications:detail' certificate.application_id %}">{{ certificate.application.name }}</a>{% else %}—{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Environnement</div><div>{% if certificate.environment %}<a href="{% url 'environments:detail' certificate.environment_id %}">{{ certificate.environment }}</a>{% else %}—{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Domaine</div><div>{% if certificate.domain %}<a href="{% url 'domains:detail' certificate.domain_id %}">{{ certificate.domain.fqdn }}</a>{% else %}—{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Émission</div><div>{{ certificate.issued_at|default:"—" }}</div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">SAN</div><div style="white-space:pre-wrap">{{ certificate.san_domains|default:"—" }}</div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">Notes</div><div style="white-space:pre-wrap">{{ certificate.notes|default:"—" }}</div></div>
+  </div>
+  {% if can_write %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'certificates:delete' certificate.pk %}" onsubmit="return confirm('Archiver ce certificat ?');">
+      {% csrf_token %}<button class="btn btn-danger" type="submit">Archiver</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

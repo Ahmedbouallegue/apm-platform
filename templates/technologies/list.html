@@ -4,16 +4,10 @@
 {% block header_title %}Gestion des technologies{% endblock %}
 {% block header_sub %}Référentiel technique du patrimoine applicatif{% endblock %}
 
-{% block header_actions %}
-  {% if can_write %}
-    <a class="btn btn-accent" href="{% url 'technologies:create' %}">Nouvelle technologie</a>
-  {% endif %}
-{% endblock %}
-
 {% block content %}
 <section class="panel">
-  <div class="panel-head">
-    <form class="filters" method="get">
+  <div class="panel-head panel-head-tools">
+    <form class="filters filters-with-action" method="get">
       <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Rechercher…">
       <select class="field-input" name="type">
         <option value="">Tous les types</option>
@@ -22,6 +16,9 @@
         {% endfor %}
       </select>
       <button class="btn btn-primary" type="submit">Filtrer</button>
+      {% if can_write %}
+        <a class="btn btn-accent filters-action" href="{% url 'technologies:create' %}">Nouvelle technologie</a>
+      {% endif %}
     </form>
   </div>
 

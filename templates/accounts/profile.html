@@ -1,0 +1,156 @@
+{% extends "accounts/app_base.html" %}
+{% load static %}
+
+{% block page_title %}Mon profil{% endblock %}
+{% block header_title %}Mon profil{% endblock %}
+{% block header_sub %}Informations personnelles et sécurité{% endblock %}
+
+{% block content %}
+<section class="stats" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+  <article class="stat">
+    <div class="label">Identifiant</div>
+    <div class="value" style="font-size:1.2rem">{{ request.user.username }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Rôle</div>
+    <div class="value" style="font-size:1.15rem">
+      <span class="badge badge-{{ request.user.role }}">{{ request.user.get_role_display }}</span>
+    </div>
+  </article>
+  <article class="stat">
+    <div class="label">Département</div>
+    <div class="value" style="font-size:1.15rem">{{ request.user.department|default:"DSI" }}</div>
+  </article>
+</section>
+
+<section class="panel resource-form resource-form-profile">
+  <form method="post" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
+    {% endif %}
+
+    <div class="form-intro">
+      <div class="form-intro-icon">
+        {% if request.user.first_name %}
+          {{ request.user.first_name|slice:":1"|upper }}{% if request.user.last_name %}{{ request.user.last_name|slice:":1"|upper }}{% endif %}
+        {% else %}
+          {{ request.user.username|slice:":1"|upper }}
+        {% endif %}
+      </div>
+      <div>
+        <strong>
+          {% if request.user.first_name or request.user.last_name %}
+            {{ request.user.first_name }} {{ request.user.last_name }}
+          {% else %}
+            {{ request.user.username }}
+          {% endif %}
+        </strong>
+        <span>Mettez à jour vos coordonnées. Le rôle est géré par l’administrateur.</span>
+      </div>
+    </div>
+
+    <div class="form-sections">
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">1</span>
+          <span class="form-section-title">Identité</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_first_name">Prénom</label>
+            {{ form.first_name }}
+            {{ form.first_name.errors }}
+          </div>
+          <div class="field">
+            <label for="id_last_name">Nom</label>
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
+          </div>
+          <div class="field">
+            <label for="id_email">Email</label>
+            {{ form.email }}
+            {{ form.email.errors }}
+          </div>
+          <div class="field">
+            <label for="id_phone">Téléphone</label>
+            {{ form.phone }}
+            {{ form.phone.errors }}
+          </div>
+          <div class="field full">
+            <label for="id_department">Département</label>
+            {{ form.department }}
+            {{ form.department.errors }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">2</span>
+          <span class="form-section-title">Sécurité</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_password1">Nouveau mot de passe</label>
+            {{ form.password1 }}
+            {{ form.password1.errors }}
+            <div class="field-hint">Laisser vide pour conserver le mot de passe actuel.</div>
+          </div>
+          <div class="field">
+            <label for="id_password2">Confirmation</label>
+            {{ form.password2 }}
+            {{ form.password2.errors }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{% url 'web:home' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">Enregistrer mon profil</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel face-enroll-panel">
+  <div class="panel-head">
+    <div>
+      <strong>Sécurité biométrique</strong>
+      <span>Connexion alternative par reconnaissance faciale — usage intranet / poste de confiance uniquement (pas d’anti-spoofing avancé).</span>
+    </div>
+    <span
+      class="face-badge{% if face_enrolled %} is-on{% endif %}"
+      data-face-badge
+    >{% if face_enrolled %}Enrôlé{% else %}Non enrôlé{% endif %}</span>
+  </div>
+  <div
+    class="face-panel"
+    data-face-mode="enroll"
+    data-enroll-url="{% url 'web:face-enroll' %}"
+    data-clear-url="{% url 'web:face-clear' %}"
+  >
+    <div class="face-video-wrap">
+      <video data-face-video playsinline muted autoplay></video>
+    </div>
+    <p class="face-status" data-face-status>
+      Activez la caméra, cadrez votre visage, puis enregistrez l’identifiant facial.
+    </p>
+    <div class="face-actions">
+      <button type="button" class="btn btn-ghost" data-face-start>Activer la caméra</button>
+      <button type="button" class="btn btn-primary" data-face-enroll disabled>Enroler mon visage</button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        data-face-clear
+        {% if not face_enrolled %}hidden{% endif %}
+      >Retirer le visage</button>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'js/face-auth.js' %}"></script>
+{% endblock %}

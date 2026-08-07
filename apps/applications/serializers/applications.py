@@ -98,9 +98,13 @@ class ApplicationWriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         from apps.applications.services.applications import application_create
 
-        return application_create(data=validated_data)
+        request = self.context.get("request")
+        actor = request.user if request and request.user.is_authenticated else None
+        return application_create(data=validated_data, user=actor)
 
     def update(self, instance, validated_data):
         from apps.applications.services.applications import application_update
 
-        return application_update(application=instance, data=validated_data)
+        request = self.context.get("request")
+        actor = request.user if request and request.user.is_authenticated else None
+        return application_update(application=instance, data=validated_data, user=actor)

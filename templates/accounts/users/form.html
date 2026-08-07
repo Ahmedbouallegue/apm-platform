@@ -9,70 +9,108 @@
 {% endblock %}
 
 {% block content %}
-<section class="panel">
+<section class="panel resource-form resource-form-user">
   <form method="post" class="js-validate" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}
       <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
     {% endif %}
 
-    <div class="form-grid">
-      {% if mode == "create" %}
-      <div class="field">
-        <label for="id_username">Identifiant</label>
-        {{ form.username }}
-        {{ form.username.errors }}
+    <div class="form-intro">
+      <div class="form-intro-icon">USR</div>
+      <div>
+        <strong>Compte utilisateur APM</strong>
+        <span>Configurez l’identité, le rôle et les droits d’accès à la plateforme.</span>
       </div>
-      {% endif %}
+    </div>
 
-      <div class="field {% if mode != 'create' %}full{% endif %}">
-        <label for="id_email">Email</label>
-        {{ form.email }}
-        {{ form.email.errors }}
+    <div class="form-sections">
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">1</span>
+          <span class="form-section-title">Identité</span>
+        </div>
+        <div class="form-section-grid">
+          {% if mode == "create" %}
+          <div class="field">
+            <label for="id_username">Identifiant</label>
+            {{ form.username }}
+            {{ form.username.errors }}
+          </div>
+          {% endif %}
+          <div class="field {% if mode != 'create' %}full{% endif %}">
+            <label for="id_email">Email</label>
+            {{ form.email }}
+            {{ form.email.errors }}
+          </div>
+          <div class="field">
+            <label for="id_first_name">Prénom</label>
+            {{ form.first_name }}
+          </div>
+          <div class="field">
+            <label for="id_last_name">Nom</label>
+            {{ form.last_name }}
+          </div>
+          <div class="field">
+            <label for="id_phone">Téléphone</label>
+            {{ form.phone }}
+          </div>
+          <div class="field">
+            <label for="id_department">Département</label>
+            {{ form.department }}
+          </div>
+        </div>
       </div>
 
-      <div class="field">
-        <label for="id_first_name">Prénom</label>
-        {{ form.first_name }}
-      </div>
-      <div class="field">
-        <label for="id_last_name">Nom</label>
-        {{ form.last_name }}
-      </div>
-
-      <div class="field">
-        <label for="id_role">Rôle</label>
-        {{ form.role }}
-      </div>
-      <div class="field">
-        <label for="id_department">Département</label>
-        {{ form.department }}
-      </div>
-
-      <div class="field">
-        <label for="id_phone">Téléphone</label>
-        {{ form.phone }}
-      </div>
-      <div class="field check-row">
-        <label>{{ form.is_active }} Compte actif</label>
-        <label>{{ form.is_staff }} Accès admin Django</label>
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">2</span>
+          <span class="form-section-title">Rôle et accès</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field full">
+            <label for="id_role">Rôle</label>
+            {{ form.role }}
+            {{ form.role.errors }}
+            <p class="field-hint">
+              <strong>Administrateur DSI</strong> : users, paramètres, import/export.
+              <strong>Équipe DSI / Technicien</strong> : CRUD patrimoine (pas les comptes).
+              <strong>Lecteur</strong> : consultation seule.
+            </p>
+          </div>
+          <div class="form-toggle-group full">
+            <div class="form-toggle"><label>{{ form.is_active }} Compte actif</label></div>
+            <div class="form-toggle"><label>{{ form.is_staff }} Accès admin Django</label></div>
+          </div>
+        </div>
       </div>
 
-      <div class="field">
-        <label for="id_password1">{% if mode == "create" %}Mot de passe{% else %}Nouveau mot de passe{% endif %}</label>
-        {{ form.password1 }}
-        {{ form.password1.errors }}
-      </div>
-      <div class="field">
-        <label for="id_password2">Confirmation</label>
-        {{ form.password2 }}
-        {{ form.password2.errors }}
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">3</span>
+          <span class="form-section-title">Sécurité</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_password1">{% if mode == "create" %}Mot de passe{% else %}Nouveau mot de passe{% endif %}</label>
+            {{ form.password1 }}
+            {{ form.password1.errors }}
+            {% if mode != "create" %}
+              <div class="field-hint">Laisser vide pour conserver le mot de passe actuel.</div>
+            {% endif %}
+          </div>
+          <div class="field">
+            <label for="id_password2">Confirmation</label>
+            {{ form.password2 }}
+            {{ form.password2.errors }}
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="form-actions">
       <a class="btn btn-ghost" href="{% url 'web:user-list' %}">Annuler</a>
-      <button class="btn btn-primary" type="submit">Enregistrer</button>
+      <button class="btn btn-primary" type="submit">Enregistrer l’utilisateur</button>
     </div>
   </form>
 </section>

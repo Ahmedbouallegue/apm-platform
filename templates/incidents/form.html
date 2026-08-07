@@ -1,0 +1,80 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block header_title %}{{ title }}{% endblock %}
+{% block header_sub %}Incidents SI{% endblock %}
+{% block header_actions %}<a class="btn btn-ghost" href="{% url 'incidents:list' %}">Retour</a>{% endblock %}
+{% block content %}
+<section class="panel resource-form resource-form-incident">
+  <form method="post" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
+    {% endif %}
+
+    <div class="form-intro">
+      <div class="form-intro-icon">INC</div>
+      <div>
+        <strong>Fiche incident</strong>
+        <span>Documentez l’impact, la cause racine et la solution.</span>
+      </div>
+    </div>
+
+    <div class="form-sections">
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">1</span>
+          <span class="form-section-title">Contexte</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field full">
+            <label for="id_title">Titre</label>
+            {{ form.title }}{{ form.title.errors }}
+          </div>
+          <div class="field">
+            <label for="id_application">Application</label>
+            {{ form.application }}{{ form.application.errors }}
+          </div>
+          <div class="field">
+            <label for="id_occurred_at">Date de l’incident</label>
+            {{ form.occurred_at }}{{ form.occurred_at.errors }}
+          </div>
+          <div class="field">
+            <label for="id_impact">Impact</label>
+            {{ form.impact }}
+          </div>
+          <div class="field">
+            <label for="id_status">Statut</label>
+            {{ form.status }}
+          </div>
+          <div class="field full">
+            <label for="id_description">Description</label>
+            {{ form.description }}{{ form.description.errors }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">2</span>
+          <span class="form-section-title">Analyse et résolution</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field full">
+            <label for="id_root_cause">Cause racine</label>
+            {{ form.root_cause }}
+          </div>
+          <div class="field full">
+            <label for="id_solution">Solution</label>
+            {{ form.solution }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{% url 'incidents:list' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

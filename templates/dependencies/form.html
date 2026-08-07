@@ -1,0 +1,71 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block header_title %}{{ title }}{% endblock %}
+{% block header_sub %}Cartographie SI{% endblock %}
+{% block header_actions %}<a class="btn btn-ghost" href="{% url 'dependencies:list' %}">Retour</a>{% endblock %}
+{% block content %}
+<section class="panel resource-form resource-form-dependency">
+  <form method="post" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
+    {% endif %}
+
+    <div class="form-intro">
+      <div class="form-intro-icon">DEP</div>
+      <div>
+        <strong>Lien de dépendance</strong>
+        <span>Reliez une application source à une cible interne ou externe.</span>
+      </div>
+    </div>
+
+    <div class="form-sections">
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">1</span>
+          <span class="form-section-title">Applications</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_source_application">Application source</label>
+            {{ form.source_application }}{{ form.source_application.errors }}
+          </div>
+          <div class="field">
+            <label for="id_dependency_type">Type de dépendance</label>
+            {{ form.dependency_type }}
+          </div>
+          <div class="field">
+            <label for="id_target_application">Application cible</label>
+            {{ form.target_application }}
+          </div>
+          <div class="field">
+            <label for="id_target_external">Cible externe</label>
+            {{ form.target_external }}{{ form.target_external.errors }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">2</span>
+          <span class="form-section-title">Détails</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field full">
+            <label for="id_description">Description</label>
+            {{ form.description }}
+          </div>
+          <div class="form-toggle-group full">
+            <div class="form-toggle"><label>{{ form.is_active }} Dépendance active</label></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{% url 'dependencies:list' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

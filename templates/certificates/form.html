@@ -1,0 +1,32 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block header_title %}{{ title }}{% endblock %}
+{% block header_sub %}Inventaire SSL/TLS{% endblock %}
+{% block header_actions %}<a class="btn btn-ghost" href="{% url 'certificates:list' %}">Retour</a>{% endblock %}
+{% block content %}
+<section class="panel">
+  <form method="post" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>{% endif %}
+    <div class="form-grid">
+      <div class="field"><label>Nom commun (CN)</label>{{ form.common_name }}{{ form.common_name.errors }}</div>
+      <div class="field"><label>Type</label>{{ form.certificate_type }}</div>
+      <div class="field"><label>Émetteur (CA)</label>{{ form.issuer }}</div>
+      <div class="field"><label>Statut</label>{{ form.status }}</div>
+      <div class="field"><label>Émission</label>{{ form.issued_at }}</div>
+      <div class="field"><label>Expiration</label>{{ form.expires_at }}{{ form.expires_at.errors }}</div>
+      <div class="field"><label>Application</label>{{ form.application }}</div>
+      <div class="field"><label>Environnement</label>{{ form.environment }}</div>
+      <div class="field"><label>Domaine</label>{{ form.domain }}</div>
+      <div class="field check-row"><label>{{ form.auto_renew }} Renouvellement auto</label></div>
+      <div class="field check-row"><label>{{ form.is_active }} Certificat actif</label></div>
+      <div class="field full"><label>SAN</label>{{ form.san_domains }}</div>
+      <div class="field full"><label>Notes</label>{{ form.notes }}</div>
+    </div>
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{% url 'certificates:list' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

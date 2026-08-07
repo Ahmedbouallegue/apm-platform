@@ -1,0 +1,89 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block header_title %}{{ title }}{% endblock %}
+{% block header_sub %}Documentation SI{% endblock %}
+{% block header_actions %}<a class="btn btn-ghost" href="{% url 'documents:list' %}">Retour</a>{% endblock %}
+{% block content %}
+<section class="panel resource-form resource-form-document">
+  <form method="post" enctype="multipart/form-data" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
+    {% endif %}
+
+    <div class="form-intro">
+      <div class="form-intro-icon">DOC</div>
+      <div>
+        <strong>Fiche document</strong>
+        <span>Déposez un fichier et rattachez-le à une application et des tags.</span>
+      </div>
+    </div>
+
+    <div class="form-sections">
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">1</span>
+          <span class="form-section-title">Identité</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field full">
+            <label for="id_title">Titre</label>
+            {{ form.title }}{{ form.title.errors }}
+          </div>
+          <div class="field">
+            <label for="id_category">Catégorie</label>
+            {{ form.category }}
+          </div>
+          <div class="field">
+            <label for="id_file_type">Type de fichier</label>
+            {{ form.file_type }}
+          </div>
+          <div class="field full">
+            <label for="id_description">Description</label>
+            {{ form.description }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">2</span>
+          <span class="form-section-title">Fichier et rattachement</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_file">Fichier</label>
+            {{ form.file }}{{ form.file.errors }}
+          </div>
+          <div class="field">
+            <label for="id_application">Application</label>
+            {{ form.application }}
+          </div>
+          <div class="field full">
+            <label for="id_tags">Tags</label>
+            {{ form.tags }}
+            <div class="field-hint">Maintenir Ctrl pour sélection multiple.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">3</span>
+          <span class="form-section-title">État</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="form-toggle-group full">
+            <div class="form-toggle"><label>{{ form.is_active }} Document actif</label></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{% url 'documents:list' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

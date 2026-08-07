@@ -1,0 +1,175 @@
+{% extends "accounts/app_base.html" %}
+{% load static %}
+
+{% block page_title %}Analyses{% endblock %}
+{% block header_title %}Analyses & graphiques{% endblock %}
+{% block header_sub %}KPI détaillés, échéances et répartition du patrimoine{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'web:home' %}">Retour à l’accueil</a>
+{% endblock %}
+
+{% block content %}
+<section class="stats">
+  <article class="stat accent-cyan">
+    <div class="label">Applications</div>
+    <div class="value">{{ stats.apps_total }}</div>
+  </article>
+  <article class="stat accent-green">
+    <div class="label">En production</div>
+    <div class="value">{{ stats.apps_production }}</div>
+  </article>
+  <article class="stat accent-orange">
+    <div class="label">Technologies</div>
+    <div class="value">{{ stats.techs_total }}</div>
+  </article>
+  <article class="stat accent-navy">
+    <div class="label">Documents</div>
+    <div class="value">{{ stats.documents_total }}</div>
+  </article>
+</section>
+
+<section class="section-title">Échéances (30 jours)</section>
+<section class="stats">
+  <article class="stat {% if stats.certs_expiring %}accent-warn{% endif %}">
+    <div class="label">Certificats</div>
+    <div class="value">{{ stats.certs_total }}</div>
+    <div class="stat-hint {% if stats.certs_expiring %}warn{% endif %}">{{ stats.certs_expiring }} à renouveler</div>
+  </article>
+  <article class="stat {% if stats.domains_expiring %}accent-warn{% endif %}">
+    <div class="label">Domaines</div>
+    <div class="value">{{ stats.domains_total }}</div>
+    <div class="stat-hint {% if stats.domains_expiring %}warn{% endif %}">{{ stats.domains_expiring }} à renouveler</div>
+  </article>
+  <article class="stat {% if stats.contracts_expiring %}accent-warn{% endif %}">
+    <div class="label">Contrats</div>
+    <div class="value">{{ stats.contracts_total }}</div>
+    <div class="stat-hint {% if stats.contracts_expiring %}warn{% endif %}">{{ stats.contracts_expiring }} à renouveler</div>
+  </article>
+  <article class="stat">
+    <div class="label">Fournisseurs</div>
+    <div class="value">{{ stats.vendors_total }}</div>
+  </article>
+</section>
+
+<section class="section-title">Supervision</section>
+<section class="stats">
+  <article class="stat {% if stats.incidents_open %}accent-danger{% endif %}">
+    <div class="label">Incidents ouverts</div>
+    <div class="value">{{ stats.incidents_open }}</div>
+  </article>
+  <article class="stat {% if stats.incidents_critical %}accent-danger{% endif %}">
+    <div class="label">Incidents critiques</div>
+    <div class="value">{{ stats.incidents_critical }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Dépendances</div>
+    <div class="value">{{ stats.dependencies_total }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Notifications non lues</div>
+    <div class="value">{{ stats.notifications_unread }}</div>
+  </article>
+</section>
+
+<section class="section-title">Analyses graphiques</section>
+<section class="charts-grid">
+  <article class="chart-card chart-card-wide">
+    <div class="chart-card-head">
+      <strong>Vue d’ensemble du patrimoine</strong>
+      <span>Volumes par module</span>
+    </div>
+    <div class="chart-canvas-wrap">
+      <canvas id="chart-portfolio" aria-label="Vue d’ensemble du patrimoine"></canvas>
+    </div>
+  </article>
+
+  <article class="chart-card">
+    <div class="chart-card-head">
+      <strong>Applications par statut</strong>
+      <span>Répartition du catalogue</span>
+    </div>
+    <div class="chart-canvas-wrap chart-canvas-donut">
+      <canvas id="chart-apps-status" aria-label="Applications par statut"></canvas>
+    </div>
+  </article>
+
+  <article class="chart-card">
+    <div class="chart-card-head">
+      <strong>Applications par criticité</strong>
+      <span>Niveau de criticité métier</span>
+    </div>
+    <div class="chart-canvas-wrap">
+      <canvas id="chart-apps-criticality" aria-label="Applications par criticité"></canvas>
+    </div>
+  </article>
+
+  <article class="chart-card">
+    <div class="chart-card-head">
+      <strong>Incidents par statut</strong>
+      <span>Cycle de vie des incidents</span>
+    </div>
+    <div class="chart-canvas-wrap chart-canvas-donut">
+      <canvas id="chart-incidents-status" aria-label="Incidents par statut"></canvas>
+    </div>
+  </article>
+
+  <article class="chart-card">
+    <div class="chart-card-head">
+      <strong>Incidents par impact</strong>
+      <span>Gravité déclarée</span>
+    </div>
+    <div class="chart-canvas-wrap">
+      <canvas id="chart-incidents-impact" aria-label="Incidents par impact"></canvas>
+    </div>
+  </article>
+
+  <article class="chart-card">
+    <div class="chart-card-head">
+      <strong>Documents par catégorie</strong>
+      <span>Base documentaire</span>
+    </div>
+    <div class="chart-canvas-wrap">
+      <canvas id="chart-documents-category" aria-label="Documents par catégorie"></canvas>
+    </div>
+  </article>
+
+  <article class="chart-card">
+    <div class="chart-card-head">
+      <strong>Échéances certificats SSL</strong>
+      <span>Horizon d’expiration</span>
+    </div>
+    <div class="chart-canvas-wrap">
+      <canvas id="chart-certs-expiry" aria-label="Échéances certificats SSL"></canvas>
+    </div>
+  </article>
+
+  <article class="chart-card">
+    <div class="chart-card-head">
+      <strong>Contrats par statut</strong>
+      <span>Portefeuille contractuel</span>
+    </div>
+    <div class="chart-canvas-wrap chart-canvas-donut">
+      <canvas id="chart-contracts-status" aria-label="Contrats par statut"></canvas>
+    </div>
+  </article>
+
+  <article class="chart-card chart-card-wide">
+    <div class="chart-card-head">
+      <strong>Tendances sur 6 mois</strong>
+      <span>Créations d’applications et d’incidents</span>
+    </div>
+    <div class="chart-canvas-wrap">
+      <canvas id="chart-trends" aria-label="Tendances sur 6 mois"></canvas>
+    </div>
+  </article>
+</section>
+
+{{ charts_json|json_script:"dashboard-charts-data" }}
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/dashboard-charts.js' %}"></script>
+{% endblock %}

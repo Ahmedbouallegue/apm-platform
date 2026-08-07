@@ -1,0 +1,66 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}Notifications{% endblock %}
+{% block header_title %}Notifications{% endblock %}
+{% block header_sub %}Alertes · Expirations · Incidents{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head panel-head-tools">
+    <form class="filters" method="get">
+      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Titre, message…">
+      <select class="field-input" name="status">
+        <option value="">Tous les statuts</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="type">
+        <option value="">Tous les types</option>
+        {% for value, label in types %}
+          <option value="{{ value }}" {% if type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Filtrer</button>
+    </form>
+  </div>
+  {% if notifications %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Type</th>
+          <th>Statut</th>
+          {% if is_admin_dsi %}<th>Destinataire</th>{% endif %}
+          <th>Envoyée le</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for n in notifications %}
+        <tr>
+          <td><a href="{% url 'notifications:detail' n.pk %}"><strong>{{ n.title }}</strong></a></td>
+          <td><span class="badge">{{ n.get_notification_type_display }}</span></td>
+          <td><span class="badge">{{ n.get_status_display }}</span></td>
+          {% if is_admin_dsi %}<td>{{ n.user.get_full_name|default:n.user.username }}</td>{% endif %}
+          <td>{{ n.sent_at|date:"d/m/Y H:i" }}</td>
+          <td>
+            <div class="row-actions">
+              <a class="btn btn-ghost" href="{% url 'notifications:detail' n.pk %}">Voir</a>
+              {% if n.status == "non_lue" %}
+              <form method="post" action="{% url 'notifications:mark_read' n.pk %}" style="display:inline">
+                {% csrf_token %}
+                <button class="btn btn-ghost" type="submit">Marquer lue</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">Aucune notification.</div>
+  {% endif %}
+</section>
+{% endblock %}

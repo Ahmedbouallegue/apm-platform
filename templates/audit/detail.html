@@ -1,0 +1,27 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}Audit #{{ log.pk }}{% endblock %}
+{% block header_title %}{{ log.action }} — {{ log.entity }}{% endblock %}
+{% block header_sub %}{{ log.occurred_at|date:"d/m/Y H:i:s" }}{% endblock %}
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'audit:list' %}">Retour</a>
+{% endblock %}
+{% block content %}
+<section class="panel resource-form resource-form-audit">
+  <div class="form-intro">
+    <div class="form-intro-icon">AUD</div>
+    <div>
+      <strong>Entrée d'audit</strong>
+      <span>Journal append-only — consultation seule.</span>
+    </div>
+  </div>
+  <div class="form-grid" style="padding:22px">
+    <div><div style="color:var(--muted);font-size:.84rem">Action</div><div>{{ log.action }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Entité</div><div>{{ log.entity }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">ID entité</div><div>{{ log.entity_id|default:"—" }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Date</div><div>{{ log.occurred_at|date:"d/m/Y H:i:s" }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Utilisateur</div><div>{% if log.user %}{{ log.user.get_full_name|default:log.user.username }}{% else %}—{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Adresse IP</div><div>{{ log.ip_address|default:"—" }}</div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">Détails</div><div style="white-space:pre-wrap">{{ log.details|default:"—" }}</div></div>
+  </div>
+</section>
+{% endblock %}

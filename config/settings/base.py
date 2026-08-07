@@ -56,7 +56,6 @@ LOCAL_APPS = [
     "apps.notifications",
     "apps.audit",
     "apps.dashboard",
-    "apps.assistant",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -87,6 +86,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.notifications.context_processors.notifications_badge",
+                "apps.accounts.context_processors.access_flags",
             ],
         },
     },
@@ -135,6 +136,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "web:login"
 LOGIN_REDIRECT_URL = "web:home"
 LOGOUT_REDIRECT_URL = "web:login"
+
+# Facial login (face-api.js 128-D descriptors, euclidean distance)
+FACE_MATCH_THRESHOLD = env.float("FACE_MATCH_THRESHOLD", default=0.55)
+FACE_AMBIGUITY_MARGIN = env.float("FACE_AMBIGUITY_MARGIN", default=0.05)
+FACE_LOGIN_MAX_ATTEMPTS = env.int("FACE_LOGIN_MAX_ATTEMPTS", default=10)
+FACE_LOGIN_LOCKOUT_SECONDS = env.int("FACE_LOGIN_LOCKOUT_SECONDS", default=300)
+FACE_DESCRIPTOR_SIZE = 128
 
 # ---------------------------------------------------------------------------
 # Email
@@ -230,20 +238,12 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_ALWAYS_EAGER = env("CELERY_TASK_ALWAYS_EAGER")
-
-# ---------------------------------------------------------------------------
-# Assistant RAG / AI
-# ---------------------------------------------------------------------------
-# AI_PROVIDER: local | openai | ollama
-AI_PROVIDER = env("AI_PROVIDER", default="local")
-AI_EMBEDDING_DIM = env.int("AI_EMBEDDING_DIM", default=384)
-AI_TOP_K = env.int("AI_TOP_K", default=5)
-OPENAI_API_KEY = env("OPENAI_API_KEY", default="")
-OPENAI_EMBEDDING_MODEL = env("OPENAI_EMBEDDING_MODEL", default="text-embedding-3-small")
-OPENAI_CHAT_MODEL = env("OPENAI_CHAT_MODEL", default="gpt-4o-mini")
-OLLAMA_BASE_URL = env("OLLAMA_BASE_URL", default="http://host.docker.internal:11434")
-OLLAMA_EMBED_MODEL = env("OLLAMA_EMBED_MODEL", default="nomic-embed-text")
-OLLAMA_CHAT_MODEL = env("OLLAMA_CHAT_MODEL", default="llama3.2")
+CELERY_BEAT_SCHEDULE = {
+    "check-expiring-resources-daily": {
+        "task": "apps.notifications.tasks.check_expiring_resources",
+        "schedule": 60 * 60 * 24,  # every 24h — seuils J-60 / J-30 / J-0 (PlatformSettings)
+    },
+}
 
 # ---------------------------------------------------------------------------
 # Logging (baseline)

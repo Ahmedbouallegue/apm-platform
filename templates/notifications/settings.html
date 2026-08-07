@@ -1,0 +1,85 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}Paramètres{% endblock %}
+{% block header_title %}Paramètres globaux{% endblock %}
+{% block header_sub %}Seuils d’alerte · Planificateur Celery · Administrateur DSI{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'web:home' %}">Retour</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel resource-form">
+  <form method="post" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
+    {% endif %}
+
+    <div class="form-intro">
+      <div class="form-intro-icon">CFG</div>
+      <div>
+        <strong>Alertes d’expiration automatiques</strong>
+        <span>
+          Le planificateur Celery vérifie chaque jour les certificats SSL, domaines
+          et contrats, puis envoie les alertes J-60, J-30 et J-0.
+        </span>
+      </div>
+    </div>
+
+    <div class="form-sections">
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">1</span>
+          <span class="form-section-title">Seuils d’alerte</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_alert_days_60">{{ form.alert_days_60.label }}</label>
+            {{ form.alert_days_60 }}
+            {{ form.alert_days_60.errors }}
+            <p class="field-hint">{{ form.alert_days_60.help_text }}</p>
+          </div>
+          <div class="field">
+            <label for="id_alert_days_30">{{ form.alert_days_30.label }}</label>
+            {{ form.alert_days_30 }}
+            {{ form.alert_days_30.errors }}
+            <p class="field-hint">{{ form.alert_days_30.help_text }}</p>
+          </div>
+          <div class="field">
+            <label for="id_alert_cooldown_days">{{ form.alert_cooldown_days.label }}</label>
+            {{ form.alert_cooldown_days }}
+            {{ form.alert_cooldown_days.errors }}
+            <p class="field-hint">{{ form.alert_cooldown_days.help_text }}</p>
+          </div>
+          <div class="field full" style="display:flex;align-items:center;gap:10px">
+            {{ form.alert_on_expiry }}
+            <label for="id_alert_on_expiry" style="margin:0">{{ form.alert_on_expiry.label }}</label>
+            {{ form.alert_on_expiry.errors }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">2</span>
+          <span class="form-section-title">Acteur système</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field full">
+            <p class="field-hint" style="margin:0">
+              Acteur : <strong>Planificateur automatique (Celery)</strong>.
+              Tâche : <code>check_expiring_resources</code> — planification quotidienne.
+              Seuils actifs : {% for t in settings_obj.thresholds %}J-{{ t }}{% if not forloop.last %}, {% endif %}{% endfor %}.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

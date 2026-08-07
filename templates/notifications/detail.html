@@ -1,0 +1,31 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ notification.title }}{% endblock %}
+{% block header_title %}{{ notification.title }}{% endblock %}
+{% block header_sub %}{{ notification.get_notification_type_display }} · {{ notification.get_status_display }}{% endblock %}
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'notifications:list' %}">Retour</a>
+  {% if notification.status == "non_lue" %}
+  <form method="post" action="{% url 'notifications:mark_read' notification.pk %}" style="display:inline">
+    {% csrf_token %}
+    <button class="btn btn-primary" type="submit">Marquer comme lue</button>
+  </form>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<section class="panel resource-form resource-form-notification">
+  <div class="form-intro">
+    <div class="form-intro-icon">NOT</div>
+    <div>
+      <strong>Notification</strong>
+      <span>Envoyée le {{ notification.sent_at|date:"d/m/Y à H:i" }}</span>
+    </div>
+  </div>
+  <div class="form-grid" style="padding:22px">
+    <div><div style="color:var(--muted);font-size:.84rem">Type</div><div>{{ notification.get_notification_type_display }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Statut</div><div>{{ notification.get_status_display }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Destinataire</div><div>{{ notification.user.get_full_name|default:notification.user.username }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Lien</div><div>{% if notification.link %}<a href="{{ notification.link }}">{{ notification.link }}</a>{% else %}—{% endif %}</div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">Message</div><div style="white-space:pre-wrap">{{ notification.message }}</div></div>
+  </div>
+</section>
+{% endblock %}

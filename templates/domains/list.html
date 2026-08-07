@@ -1,0 +1,68 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}Domaines{% endblock %}
+{% block header_title %}Noms de domaine{% endblock %}
+{% block header_sub %}Registrar · DNS · Expiration{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head panel-head-tools">
+    <form class="filters filters-with-action" method="get">
+      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="FQDN, registrar, DNS…">
+      <select class="field-input" name="status">
+        <option value="">Tous les statuts</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="application">
+        <option value="">Toutes les applications</option>
+        {% for app in applications %}
+          <option value="{{ app.pk }}" {% if application == app.pk|stringformat:"s" %}selected{% endif %}>{{ app.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Filtrer</button>
+      {% if can_write %}
+        <a class="btn btn-accent filters-action" href="{% url 'domains:create' %}">Nouveau domaine</a>
+      {% endif %}
+    </form>
+  </div>
+  {% if domains %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Domaine</th>
+          <th>Registrar</th>
+          <th>Expiration</th>
+          <th>Application</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in domains %}
+        <tr>
+          <td>
+            <a href="{% url 'domains:detail' d.pk %}"><strong>{{ d.fqdn }}</strong></a>
+            {% if d.is_primary %}<span class="badge">Principal</span>{% endif %}
+            {% if d.auto_renew %}<span class="badge badge-on">Auto-renew</span>{% endif %}
+          </td>
+          <td>{{ d.registrar|default:"—" }}</td>
+          <td>{{ d.expires_at|default:"—" }}</td>
+          <td>{% if d.application %}<a href="{% url 'applications:detail' d.application_id %}">{{ d.application.name }}</a>{% else %}—{% endif %}</td>
+          <td><span class="badge">{{ d.get_status_display }}</span></td>
+          <td>
+            <div class="row-actions">
+              <a class="btn btn-ghost" href="{% url 'domains:detail' d.pk %}">Voir</a>
+              {% if can_write %}<a class="btn btn-ghost" href="{% url 'domains:edit' d.pk %}">Modifier</a>{% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">Aucun domaine.{% if can_write %}<div style="margin-top:14px"><a class="btn btn-accent" href="{% url 'domains:create' %}">Créer le premier</a></div>{% endif %}</div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -22,6 +22,7 @@ Monolithe modulaire Django (Clean Architecture adaptée) :
 - `config/` — settings, URLs, WSGI/ASGI, Celery
 - `apps/` — bounded contexts métier (applications, serveurs, certificats, …)
 - Chaque app : `models` / `serializers` / `views` / `services` / `selectors` / `tasks`
+- Documentation : [`docs/architecture.md`](docs/architecture.md), [`docs/guide-utilisateur.md`](docs/guide-utilisateur.md)
 
 ```
 Client → Nginx → Gunicorn (Django/DRF) → Services → PostgreSQL
@@ -37,7 +38,10 @@ Design pro/sérieux aux couleurs Topnet (navy / cyan / orange) :
 | Connexion | http://localhost:8000/login/ |
 | Tableau de bord | http://localhost:8000/ |
 | Gestion utilisateurs | http://localhost:8000/users/ |
-| Assistant APM (RAG) | http://localhost:8000/assistant/ |
+| Certificats SSL | http://localhost:8000/certificates/ |
+| Domaines | http://localhost:8000/domains/ |
+| Fournisseurs | http://localhost:8000/vendors/ |
+| Contrats | http://localhost:8000/contracts/ |
 
 Créer un administrateur :
 
@@ -70,6 +74,14 @@ Rôles : `admin`, `dsi`, `manager` (lecture), `viewer`.
 cp .env.example .env
 docker compose up --build -d
 ```
+
+Après modification de fichiers dans `static/` (CSS/JS), régénérer les assets servis par Nginx :
+
+```bash
+docker compose exec web python manage.py collectstatic --noinput
+```
+
+Puis hard-refresh navigateur (Ctrl+F5).
 
 Services exposés :
 
@@ -135,29 +147,6 @@ celery -A config worker -l info
 | `notifications` | Notifications |
 | `audit` | Logs d’audit |
 | `dashboard` | KPIs / tableaux de bord |
-| `assistant` | Assistant RAG (chat APM) |
-
-## Assistant RAG
-
-L'assistant indexe le patrimoine (applications, technologies, environnements, serveurs, notes métier) et répond en citant ses sources.
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| POST | `/api/assistant/ask/` | Poser une question |
-| POST | `/api/assistant/reindex/` | Réindexer le corpus |
-| GET | `/api/assistant/sessions/` | Sessions chat |
-| GET/POST | `/api/assistant/notes/` | Notes manuelles |
-
-Fournisseur IA (`AI_PROVIDER`) :
-
-- `local` (défaut) — embeddings hashing + réponse extractive, sans clé API
-- `openai` — embeddings + chat OpenAI (`OPENAI_API_KEY`)
-- `ollama` — modèle local via Ollama
-
-```bash
-docker compose exec web python manage.py reindex_rag
-```
-
 
 Voir `.env.example`. Ne jamais committer `.env`.
 

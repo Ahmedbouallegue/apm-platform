@@ -4,16 +4,10 @@
 {% block header_title %}Gestion des applications{% endblock %}
 {% block header_sub %}Catalogue du patrimoine applicatif Topnet{% endblock %}
 
-{% block header_actions %}
-  {% if can_write %}
-    <a class="btn btn-accent" href="{% url 'applications:create' %}">Nouvelle application</a>
-  {% endif %}
-{% endblock %}
-
 {% block content %}
 <section class="panel">
-  <div class="panel-head">
-    <form class="filters" method="get">
+  <div class="panel-head panel-head-tools">
+    <form class="filters filters-with-action" method="get">
       <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Rechercher une application…">
       <select class="field-input" name="status">
         <option value="">Tous les statuts</option>
@@ -28,6 +22,9 @@
         {% endfor %}
       </select>
       <button class="btn btn-primary" type="submit">Filtrer</button>
+      {% if can_write %}
+        <a class="btn btn-accent filters-action" href="{% url 'applications:create' %}">Nouvelle application</a>
+      {% endif %}
     </form>
   </div>
 

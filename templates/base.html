@@ -7,13 +7,33 @@
   <title>{% block title %}APM · Topnet{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/modern.css' %}">
   <link rel="icon" href="{% static 'branding/logo-topnet.png' %}">
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem("apm-theme") === "dark") {
+          document.documentElement.classList.add("theme-dark-boot");
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
-<body>
+<body class="theme-modern">
+<script>
+  (function () {
+    try {
+      if (localStorage.getItem("apm-theme") === "dark" || document.documentElement.classList.contains("theme-dark-boot")) {
+        document.body.classList.add("theme-dark");
+      }
+    } catch (e) {}
+  })();
+</script>
 {% block body %}{% endblock %}
 <script src="{% static 'js/form-validation.js' %}"></script>
+<script src="{% static 'js/theme-toggle.js' %}"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

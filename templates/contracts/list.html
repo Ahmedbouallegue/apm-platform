@@ -1,0 +1,72 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}Contrats{% endblock %}
+{% block header_title %}Contrats de maintenance & support{% endblock %}
+{% block header_sub %}Maintenance · Support · Licence · SLA{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head panel-head-tools">
+    <form class="filters filters-with-action" method="get">
+      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Référence, titre, fournisseur…">
+      <select class="field-input" name="type">
+        <option value="">Tous les types</option>
+        {% for value, label in contract_types %}
+          <option value="{{ value }}" {% if type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="status">
+        <option value="">Tous les statuts</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="vendor">
+        <option value="">Tous les fournisseurs</option>
+        {% for v in vendors %}
+          <option value="{{ v.pk }}" {% if vendor == v.pk|stringformat:"s" %}selected{% endif %}>{{ v.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Filtrer</button>
+      {% if can_write %}
+        <a class="btn btn-accent filters-action" href="{% url 'contracts:create' %}">Nouveau contrat</a>
+      {% endif %}
+    </form>
+  </div>
+  {% if contracts %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Référence</th>
+          <th>Intitulé</th>
+          <th>Fournisseur</th>
+          <th>Type</th>
+          <th>Fin</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in contracts %}
+        <tr>
+          <td><a href="{% url 'contracts:detail' c.pk %}"><strong>{{ c.reference }}</strong></a></td>
+          <td>{{ c.title }}</td>
+          <td><a href="{% url 'vendors:detail' c.vendor_id %}">{{ c.vendor.name }}</a></td>
+          <td>{{ c.get_contract_type_display }}</td>
+          <td>{{ c.end_date }}</td>
+          <td><span class="badge">{{ c.get_status_display }}</span></td>
+          <td>
+            <div class="row-actions">
+              <a class="btn btn-ghost" href="{% url 'contracts:detail' c.pk %}">Voir</a>
+              {% if can_write %}<a class="btn btn-ghost" href="{% url 'contracts:edit' c.pk %}">Modifier</a>{% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">Aucun contrat.{% if can_write %}<div style="margin-top:14px"><a class="btn btn-accent" href="{% url 'contracts:create' %}">Créer le premier</a></div>{% endif %}</div>
+  {% endif %}
+</section>
+{% endblock %}

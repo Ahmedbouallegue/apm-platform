@@ -1,48 +1,231 @@
 {% extends "accounts/app_base.html" %}
+{% load static %}
 
-{% block page_title %}Tableau de bord{% endblock %}
-{% block header_title %}Tableau de bord{% endblock %}
-{% block header_sub %}Vue d’ensemble de la plateforme APM{% endblock %}
+{% block page_title %}Accueil{% endblock %}
+{% block header_title %}Accueil{% endblock %}
+{% block header_sub %}Pilotage avancé du patrimoine applicatif Topnet{% endblock %}
 
 {% block header_actions %}
-  <a class="btn btn-accent" href="{% url 'applications:create' %}">Nouvelle application</a>
+  <a class="btn btn-ghost" href="{% url 'dashboard:home' %}">Analyses détaillées</a>
+  {% if can_write %}
+    <a class="btn btn-accent" href="{% url 'applications:create' %}">Nouvelle application</a>
+  {% endif %}
 {% endblock %}
 
 {% block content %}
-<section class="stats">
-  <article class="stat">
-    <div class="label">Utilisateurs</div>
-    <div class="value">{{ stats.users_total }}</div>
+{% if is_viewer %}
+  <div class="role-banner" role="status">
+    <strong>Mode lecture</strong>
+    <span>Votre rôle Lecteur permet de consulter le catalogue. La création et la modification sont réservées aux managers / DSI.</span>
+  </div>
+{% endif %}
+
+<section class="home-hero home-hero--{{ stats.health.level }}">
+  <div class="home-hero-main">
+    <p class="hero-kicker">Topnet DSI · Synthèse temps réel</p>
+    <h2>Bonjour, {{ request.user.get_full_name|default:request.user.username }}</h2>
+    <p>
+      Vue consolidée du SI : santé globale, échéances critiques, répartition applicative
+      et pression opérationnelle.
+    </p>
+    <div class="home-hero-actions">
+      <a class="btn btn-primary" href="{% url 'applications:list' %}">Applications</a>
+      <a class="btn btn-ghost hero-ghost" href="{% url 'notifications:list' %}">
+        Notifications
+        {% if stats.notifications_unread %}
+          <span class="hero-count">{{ stats.notifications_unread }}</span>
+        {% endif %}
+      </a>
+    </div>
+  </div>
+  <div class="health-meter" aria-label="Score de santé SI {{ stats.health.score }} sur 100">
+    <div class="health-ring" style="--score: {{ stats.health.score }}">
+      <div class="health-ring-inner">
+        <strong>{{ stats.health.score }}</strong>
+        <span>/ 100</span>
+      </div>
+    </div>
+    <div class="health-meta">
+      <span class="health-badge health-badge--{{ stats.health.level }}">{{ stats.health.label }}</span>
+      <p>Score calculé à partir des incidents ouverts et des échéances SSL / DNS / contrats.</p>
+    </div>
+  </div>
+</section>
+
+<section class="stats home-kpi-row">
+  <article class="stat accent-cyan kpi-advanced">
+    <div class="label">Taux en production</div>
+    <div class="value">{{ stats.apps_production_pct }}%</div>
+    <div class="kpi-bar"><span style="width:{{ stats.apps_production_pct }}%"></span></div>
+    <div class="stat-hint">{{ stats.apps_production }} / {{ stats.apps_total }} applications</div>
   </article>
-  <article class="stat">
-    <div class="label">Applications</div>
-    <div class="value">{{ stats.apps_total }}</div>
+  <article class="stat {% if stats.expiry_pressure %}accent-warn{% else %}accent-green{% endif %} kpi-advanced">
+    <div class="label">Pression échéances (30 j)</div>
+    <div class="value">{{ stats.expiry_pressure }}</div>
+    <div class="stat-hint">
+      SSL {{ stats.certs_expiring }} · DNS {{ stats.domains_expiring }} · Contrats {{ stats.contracts_expiring }}
+    </div>
   </article>
-  <article class="stat">
-    <div class="label">En production</div>
-    <div class="value">{{ stats.apps_production }}</div>
+  <article class="stat {% if stats.incidents_open %}accent-danger{% else %}accent-green{% endif %} kpi-advanced">
+    <div class="label">Incidents ouverts</div>
+    <div class="value">{{ stats.incidents_open }}</div>
+    <div class="stat-hint {% if stats.incidents_critical %}warn{% endif %}">
+      {{ stats.incidents_critical }} critique{{ stats.incidents_critical|pluralize }}
+    </div>
+  </article>
+  <article class="stat accent-orange kpi-advanced">
+    <div class="label">Apps critiques / hautes</div>
+    <div class="value">{{ stats.apps_critical }}</div>
+    <div class="stat-hint">Sur {{ stats.apps_total }} au catalogue</div>
+  </article>
+</section>
+
+<section class="home-grid">
+  <article class="panel home-panel">
+    <div class="panel-head">
+      <strong>Répartition des applications</strong>
+      <span class="panel-sub">Par statut de cycle de vie</span>
+    </div>
+    <div class="breakdown-list">
+      {% for row in stats.status_breakdown %}
+        <div class="breakdown-row">
+          <div class="breakdown-label">
+            <span>{{ row.label }}</span>
+            <strong>{{ row.count }}</strong>
+          </div>
+          <div class="kpi-bar kpi-bar--{{ row.key }}">
+            <span style="width:{{ row.pct }}%"></span>
+          </div>
+        </div>
+      {% empty %}
+        <div class="empty-inline">Aucune application enregistrée.</div>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="panel home-panel">
+    <div class="panel-head">
+      <strong>Horizon SSL</strong>
+      <span class="panel-sub">Buckets d’expiration</span>
+    </div>
+    <div class="chart-canvas-wrap chart-canvas-home">
+      <canvas id="home-chart-certs" aria-label="Échéances certificats SSL"></canvas>
+    </div>
+    <div class="home-mini-stats">
+      <div><span>Valides (&gt;30 j)</span><strong>{{ stats.certs_valid }}</strong></div>
+      <div><span>Expirés</span><strong>{{ stats.certs_expired }}</strong></div>
+      <div><span>Total actifs</span><strong>{{ stats.certs_total }}</strong></div>
+    </div>
+  </article>
+
+  <article class="panel home-panel">
+    <div class="panel-head">
+      <strong>Tendance 6 mois</strong>
+      <span class="panel-sub">Applications &amp; incidents créés</span>
+    </div>
+    <div class="chart-canvas-wrap chart-canvas-home">
+      <canvas id="home-chart-trends" aria-label="Tendances sur 6 mois"></canvas>
+    </div>
+  </article>
+
+  <article class="panel home-panel">
+    <div class="panel-head">
+      <strong>Prochaines échéances</strong>
+      <span class="panel-sub">60 jours · SSL, domaines, contrats</span>
+    </div>
+    {% if stats.upcoming_expiries %}
+    <div class="table-wrap home-deadlines">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Ressource</th>
+            <th>Type</th>
+            <th>Échéance</th>
+            <th>J-</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in stats.upcoming_expiries %}
+          <tr>
+            <td><a href="{{ item.url }}"><strong>{{ item.name }}</strong></a></td>
+            <td><span class="badge badge-home-{{ item.kind_key }}">{{ item.kind }}</span></td>
+            <td>{{ item.date|date:"d/m/Y" }}</td>
+            <td>
+              <span class="days-left {% if item.days_left <= 7 %}is-hot{% elif item.days_left <= 30 %}is-warn{% endif %}">
+                {{ item.days_left }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <div class="empty-inline" style="padding:18px">Aucune échéance dans les 60 prochains jours.</div>
+    {% endif %}
+  </article>
+</section>
+
+<section class="section-title">Infrastructure &amp; patrimoine</section>
+<section class="stats home-infra">
+  <article class="stat accent-navy">
+    <div class="label">Serveurs</div>
+    <div class="value">{{ stats.servers_total }}</div>
+  </article>
+  <article class="stat accent-cyan">
+    <div class="label">Environnements</div>
+    <div class="value">{{ stats.envs_total }}</div>
   </article>
   <article class="stat">
     <div class="label">Technologies</div>
     <div class="value">{{ stats.techs_total }}</div>
   </article>
+  <article class="stat">
+    <div class="label">Dépendances</div>
+    <div class="value">{{ stats.dependencies_total }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Documents</div>
+    <div class="value">{{ stats.documents_total }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Fournisseurs</div>
+    <div class="value">{{ stats.vendors_total }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Utilisateurs</div>
+    <div class="value">{{ stats.users_total }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Non lues</div>
+    <div class="value">{{ stats.notifications_unread }}</div>
+  </article>
 </section>
 
-<section class="panel">
-  <div class="panel-head">
-    <div>
-      <strong>Bienvenue, {{ request.user.get_full_name|default:request.user.username }}</strong>
-      <div style="color:var(--muted);font-size:.92rem;margin-top:4px">
-        Espace sécurisé Topnet — gestion du patrimoine applicatif.
-      </div>
-    </div>
-  </div>
-  <div style="padding:22px;color:var(--muted);max-width:70ch">
-    Le module <strong style="color:var(--ink)">Applications</strong> inventorie le SI ;
-    <strong style="color:var(--ink)">Technologies</strong> centralise le référentiel technique
-    (langages, frameworks, BDD…) lié aux applications.
-    L’<a href="{% url 'assistant:chat' %}"><strong style="color:var(--ink)">Assistant APM</strong></a>
-    répond aux questions sur le patrimoine via RAG.
-  </div>
+<section class="quick-grid">
+  <a class="quick-card" href="{% url 'certificates:list' %}">
+    <strong>Certificats SSL</strong>
+    <span>{{ stats.certs_expiring }} à surveiller sous 30 jours</span>
+  </a>
+  <a class="quick-card" href="{% url 'incidents:list' %}">
+    <strong>Incidents</strong>
+    <span>{{ stats.incidents_open }} ouvert{{ stats.incidents_open|pluralize }}</span>
+  </a>
+  <a class="quick-card" href="{% url 'documents:list' %}">
+    <strong>Documentation</strong>
+    <span>{{ stats.documents_total }} document{{ stats.documents_total|pluralize }}</span>
+  </a>
+  <a class="quick-card" href="{% url 'dashboard:home' %}">
+    <strong>Analyses</strong>
+    <span>Graphiques KPI complets</span>
+  </a>
 </section>
+
+{{ charts_json|json_script:"home-charts-data" }}
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/home-charts.js' %}"></script>
 {% endblock %}

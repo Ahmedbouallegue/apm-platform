@@ -1,0 +1,74 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}Dépendances{% endblock %}
+{% block header_title %}Dépendances applicatives{% endblock %}
+{% block header_sub %}Cartographie · Flux · Intégrations{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head panel-head-tools">
+    <form class="filters filters-with-action" method="get">
+      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Description, applications…">
+      <select class="field-input" name="type">
+        <option value="">Tous les types</option>
+        {% for value, label in dependency_types %}
+          <option value="{{ value }}" {% if type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="source">
+        <option value="">Source (toutes)</option>
+        {% for a in applications %}
+          <option value="{{ a.pk }}" {% if source == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.name }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="target">
+        <option value="">Cible (toutes)</option>
+        {% for a in applications %}
+          <option value="{{ a.pk }}" {% if target == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Filtrer</button>
+      {% if can_write %}
+        <a class="btn btn-accent filters-action" href="{% url 'dependencies:create' %}">Nouvelle dépendance</a>
+      {% endif %}
+    </form>
+  </div>
+  {% if dependencies %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Source</th>
+          <th>Type</th>
+          <th>Cible</th>
+          <th>Actif</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in dependencies %}
+        <tr>
+          <td><a href="{% url 'applications:detail' d.source_application_id %}">{{ d.source_application.name }}</a></td>
+          <td><span class="badge">{{ d.get_dependency_type_display }}</span></td>
+          <td>
+            {% if d.target_application %}
+              <a href="{% url 'applications:detail' d.target_application_id %}">{{ d.target_application.name }}</a>
+            {% else %}
+              {{ d.target_external }}
+            {% endif %}
+          </td>
+          <td>{% if d.is_active %}Oui{% else %}Non{% endif %}</td>
+          <td>
+            <div class="row-actions">
+              <a class="btn btn-ghost" href="{% url 'dependencies:detail' d.pk %}">Voir</a>
+              {% if can_write %}<a class="btn btn-ghost" href="{% url 'dependencies:edit' d.pk %}">Modifier</a>{% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">Aucune dépendance.{% if can_write %}<div style="margin-top:14px"><a class="btn btn-accent" href="{% url 'dependencies:create' %}">Créer la première</a></div>{% endif %}</div>
+  {% endif %}
+</section>
+{% endblock %}

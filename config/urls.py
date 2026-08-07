@@ -27,7 +27,16 @@ urlpatterns = [
     path("", include("apps.technologies.urls_web")),
     path("", include("apps.environments.urls_web")),
     path("", include("apps.servers.urls_web")),
-    path("", include("apps.assistant.urls_web")),
+    path("", include("apps.certificates.urls_web")),
+    path("", include("apps.domains.urls_web")),
+    path("", include("apps.vendors.urls_web")),
+    path("", include("apps.contracts.urls_web")),
+    path("", include("apps.documents.urls_web")),
+    path("", include("apps.incidents.urls_web")),
+    path("", include("apps.dependencies.urls_web")),
+    path("", include("apps.notifications.urls_web")),
+    path("", include("apps.audit.urls_web")),
+    path("", include("apps.dashboard.urls_web")),
     path("admin/", admin.site.urls),
     path("api/health/", healthcheck, name="healthcheck"),
     # OpenAPI / Swagger
@@ -44,7 +53,7 @@ urlpatterns = [
     ),
     # Auth + Users API (JWT)
     path("api/auth/", include("apps.accounts.urls")),
-    # Domain APIs (stubs — filled in later sprints)
+    # Domain APIs
     path("api/applications/", include("apps.applications.urls")),
     path("api/technologies/", include("apps.technologies.urls")),
     path("api/environments/", include("apps.environments.urls")),
@@ -59,7 +68,6 @@ urlpatterns = [
     path("api/notifications/", include("apps.notifications.urls")),
     path("api/audit/", include("apps.audit.urls")),
     path("api/dashboard/", include("apps.dashboard.urls")),
-    path("api/assistant/", include("apps.assistant.urls")),
 ]
 
 if settings.DEBUG:

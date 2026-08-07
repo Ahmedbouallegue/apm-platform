@@ -1,0 +1,33 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ document.title }}{% endblock %}
+{% block header_title %}{{ document.title }}{% endblock %}
+{% block header_sub %}{{ document.get_category_display }}{% endblock %}
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'documents:list' %}">Retour</a>
+  {% if can_write %}<a class="btn btn-primary" href="{% url 'documents:edit' document.pk %}">Modifier</a>{% endif %}
+{% endblock %}
+{% block content %}
+<section class="stats" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+  <article class="stat"><div class="label">Catégorie</div><div class="value" style="font-size:1.1rem">{{ document.get_category_display }}</div></article>
+  <article class="stat"><div class="label">Type</div><div class="value" style="font-size:1.1rem">{{ document.file_type|default:"—" }}</div></article>
+  <article class="stat"><div class="label">Déposé le</div><div class="value" style="font-size:1.1rem">{{ document.uploaded_at|date:"d/m/Y" }}</div></article>
+  <article class="stat"><div class="label">Actif</div><div class="value" style="font-size:1.1rem">{% if document.is_active %}Oui{% else %}Non{% endif %}</div></article>
+</section>
+<section class="panel">
+  <div class="panel-head"><strong>Fiche document</strong></div>
+  <div class="form-grid">
+    <div><div style="color:var(--muted);font-size:.84rem">Application</div><div>{% if document.application %}<a href="{% url 'applications:detail' document.application_id %}">{{ document.application.name }}</a>{% else %}—{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Déposé par</div><div>{% if document.uploaded_by %}{{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}{% else %}—{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Fichier</div><div>{% if document.file %}<a href="{{ document.file.url }}" target="_blank" rel="noopener">Télécharger</a>{% else %}—{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Tags</div><div>{% for t in document.tags.all %}<span class="badge">{{ t.name }}</span> {% empty %}—{% endfor %}</div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">Description</div><div style="white-space:pre-wrap">{{ document.description|default:"—" }}</div></div>
+  </div>
+  {% if can_write %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'documents:delete' document.pk %}" onsubmit="return confirm('Archiver ce document ?');">
+      {% csrf_token %}<button class="btn btn-danger" type="submit">Archiver</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

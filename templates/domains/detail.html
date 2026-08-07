@@ -1,0 +1,50 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ domain.fqdn }}{% endblock %}
+{% block header_title %}{{ domain.fqdn }}{% endblock %}
+{% block header_sub %}{{ domain.get_status_display }}{% endblock %}
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'domains:list' %}">Retour</a>
+  {% if can_write %}<a class="btn btn-primary" href="{% url 'domains:edit' domain.pk %}">Modifier</a>{% endif %}
+{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head"><strong>Fiche domaine</strong></div>
+  <div class="form-grid">
+    <div><div style="color:var(--muted);font-size:.84rem">Registrar</div><div>{{ domain.registrar|default:"—" }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">DNS</div><div>{{ domain.dns_provider|default:"—" }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Enregistrement</div><div>{{ domain.registered_at|default:"—" }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Expiration</div><div>{{ domain.expires_at|default:"—" }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Renouvellement auto</div><div>{% if domain.auto_renew %}Oui{% else %}Non{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Application</div><div>{% if domain.application %}<a href="{% url 'applications:detail' domain.application_id %}">{{ domain.application.name }}</a>{% else %}—{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Environnement</div><div>{% if domain.environment %}<a href="{% url 'environments:detail' domain.environment_id %}">{{ domain.environment }}</a>{% else %}—{% endif %}</div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">Notes</div><div style="white-space:pre-wrap">{{ domain.notes|default:"—" }}</div></div>
+  </div>
+</section>
+<section class="panel" style="margin-top:20px">
+  <div class="panel-head"><strong>Certificats SSL liés</strong></div>
+  {% if certificates %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>CN</th><th>Type</th><th>Expiration</th><th>Statut</th></tr></thead>
+      <tbody>
+        {% for cert in certificates %}
+        <tr>
+          <td><a href="{% url 'certificates:detail' cert.pk %}">{{ cert.common_name }}</a></td>
+          <td>{{ cert.get_certificate_type_display }}</td>
+          <td>{{ cert.expires_at }}</td>
+          <td>{{ cert.get_status_display }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<div class="empty">Aucun certificat lié.</div>{% endif %}
+  {% if can_write %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'domains:delete' domain.pk %}" onsubmit="return confirm('Archiver ce domaine ?');">
+      {% csrf_token %}<button class="btn btn-danger" type="submit">Archiver</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ contract.reference }}{% endblock %}
+{% block header_title %}{{ contract.reference }}{% endblock %}
+{% block header_sub %}{{ contract.title }}{% endblock %}
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'contracts:list' %}">Retour</a>
+  {% if can_write %}<a class="btn btn-primary" href="{% url 'contracts:edit' contract.pk %}">Modifier</a>{% endif %}
+{% endblock %}
+{% block content %}
+<section class="stats" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+  <article class="stat"><div class="label">Type</div><div class="value" style="font-size:1.1rem">{{ contract.get_contract_type_display }}</div></article>
+  <article class="stat"><div class="label">Statut</div><div class="value" style="font-size:1.1rem">{{ contract.get_status_display }}</div></article>
+  <article class="stat"><div class="label">Fin</div><div class="value" style="font-size:1.1rem">{{ contract.end_date }}</div></article>
+  <article class="stat"><div class="label">Coût annuel</div><div class="value" style="font-size:1.1rem">{% if contract.annual_cost %}{{ contract.annual_cost }} {{ contract.currency }}{% else %}—{% endif %}</div></article>
+</section>
+<section class="panel">
+  <div class="panel-head"><strong>Fiche contrat</strong></div>
+  <div class="form-grid">
+    <div><div style="color:var(--muted);font-size:.84rem">Fournisseur</div><div><a href="{% url 'vendors:detail' contract.vendor_id %}">{{ contract.vendor.name }}</a></div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Application</div><div>{% if contract.application %}<a href="{% url 'applications:detail' contract.application_id %}">{{ contract.application.name }}</a>{% else %}—{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Période</div><div>{{ contract.start_date }} → {{ contract.end_date }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">SLA</div><div>{{ contract.sla_level|default:"—" }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Responsable</div><div>{% if contract.owner %}{{ contract.owner.get_full_name|default:contract.owner.username }}{% else %}—{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Renouvellement auto</div><div>{% if contract.auto_renew %}Oui{% else %}Non{% endif %}</div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">Notes</div><div style="white-space:pre-wrap">{{ contract.notes|default:"—" }}</div></div>
+  </div>
+  {% if can_write %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'contracts:delete' contract.pk %}" onsubmit="return confirm('Archiver ce contrat ?');">
+      {% csrf_token %}<button class="btn btn-danger" type="submit">Archiver</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

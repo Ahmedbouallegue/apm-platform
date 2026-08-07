@@ -1,30 +1,25 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, BasePermission
+
+from apps.accounts.roles import can_manage_users, can_write_users, is_admin_dsi
 
 
 class IsAdminOrDSI(BasePermission):
     """Full access for platform administrators and DSI."""
 
     def has_permission(self, request, view) -> bool:
-        user = request.user
-        return bool(
-            user
-            and user.is_authenticated
-            and (user.is_superuser or user.role in {"admin", "dsi"})
-        )
+        return is_admin_dsi(request.user)
 
 
 class CanManageUsers(BasePermission):
     """
     Admin/DSI: full user management.
-    Manager: read-only listing.
+    Manager (Équipe DSI): read-only listing.
     """
 
     def has_permission(self, request, view) -> bool:
         user = request.user
-        if not user or not user.is_authenticated:
+        if not can_manage_users(user):
             return False
-        if user.is_superuser or user.role in {"admin", "dsi"}:
+        if can_write_users(user):
             return True
-        if user.role == "manager" and request.method in SAFE_METHODS:
-            return True
-        return False
+        return request.method in SAFE_METHODS

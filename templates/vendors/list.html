@@ -1,0 +1,75 @@
+{% extends "accounts/app_base.html" %}
+
+{% block page_title %}Fournisseurs{% endblock %}
+{% block header_title %}Gestion des fournisseurs{% endblock %}
+{% block header_sub %}Hébergeurs · Éditeurs · Maintenance · Télécom{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head panel-head-tools">
+    <form class="filters filters-with-action" method="get">
+      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Nom, contact, email…">
+      <select class="field-input" name="type">
+        <option value="">Tous les types</option>
+        {% for value, label in vendor_types %}
+          <option value="{{ value }}" {% if type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="active">
+        <option value="">Tous les statuts</option>
+        <option value="1" {% if active == "1" %}selected{% endif %}>Actifs</option>
+        <option value="0" {% if active == "0" %}selected{% endif %}>Inactifs</option>
+      </select>
+      <button class="btn btn-primary" type="submit">Filtrer</button>
+      {% if can_write %}
+        <a class="btn btn-accent filters-action" href="{% url 'vendors:create' %}">Nouveau fournisseur</a>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if vendors %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Fournisseur</th>
+          <th>Type</th>
+          <th>Contact</th>
+          <th>Contrats</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in vendors %}
+        <tr>
+          <td><a href="{% url 'vendors:detail' v.pk %}"><strong>{{ v.name }}</strong></a></td>
+          <td>{{ v.get_vendor_type_display }}</td>
+          <td>
+            {{ v.contact_name|default:"—" }}
+            <div style="color:var(--muted);font-size:.84rem">{{ v.contact_email|default:"" }}</div>
+          </td>
+          <td>{{ v.contract_count }}</td>
+          <td>
+            {% if v.is_active %}<span class="badge badge-on">Actif</span>
+            {% else %}<span class="badge badge-off">Inactif</span>{% endif %}
+          </td>
+          <td>
+            <div class="row-actions">
+              <a class="btn btn-ghost" href="{% url 'vendors:detail' v.pk %}">Voir</a>
+              {% if can_write %}<a class="btn btn-ghost" href="{% url 'vendors:edit' v.pk %}">Modifier</a>{% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">
+      Aucun fournisseur.
+      {% if can_write %}<div style="margin-top:14px"><a class="btn btn-accent" href="{% url 'vendors:create' %}">Créer le premier</a></div>{% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

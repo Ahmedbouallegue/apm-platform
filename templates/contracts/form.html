@@ -1,0 +1,34 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block header_title %}{{ title }}{% endblock %}
+{% block header_sub %}Contrats SI{% endblock %}
+{% block header_actions %}<a class="btn btn-ghost" href="{% url 'contracts:list' %}">Retour</a>{% endblock %}
+{% block content %}
+<section class="panel">
+  <form method="post" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>{% endif %}
+    <div class="form-grid">
+      <div class="field"><label>Référence</label>{{ form.reference }}{{ form.reference.errors }}</div>
+      <div class="field"><label>Intitulé</label>{{ form.title }}{{ form.title.errors }}</div>
+      <div class="field"><label>Fournisseur</label>{{ form.vendor }}{{ form.vendor.errors }}</div>
+      <div class="field"><label>Application</label>{{ form.application }}</div>
+      <div class="field"><label>Type</label>{{ form.contract_type }}</div>
+      <div class="field"><label>Statut</label>{{ form.status }}</div>
+      <div class="field"><label>Début</label>{{ form.start_date }}{{ form.start_date.errors }}</div>
+      <div class="field"><label>Fin</label>{{ form.end_date }}{{ form.end_date.errors }}</div>
+      <div class="field"><label>Coût annuel</label>{{ form.annual_cost }}</div>
+      <div class="field"><label>Devise</label>{{ form.currency }}</div>
+      <div class="field"><label>SLA</label>{{ form.sla_level }}</div>
+      <div class="field"><label>Responsable</label>{{ form.owner }}</div>
+      <div class="field check-row"><label>{{ form.auto_renew }} Renouvellement auto</label></div>
+      <div class="field check-row"><label>{{ form.is_active }} Contrat actif</label></div>
+      <div class="field full"><label>Notes</label>{{ form.notes }}</div>
+    </div>
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{% url 'contracts:list' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ incident.title }}{% endblock %}
+{% block header_title %}{{ incident.title }}{% endblock %}
+{% block header_sub %}{{ incident.application.name }} · {{ incident.get_status_display }}{% endblock %}
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'incidents:list' %}">Retour</a>
+  {% if can_write %}<a class="btn btn-primary" href="{% url 'incidents:edit' incident.pk %}">Modifier</a>{% endif %}
+{% endblock %}
+{% block content %}
+<section class="stats" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+  <article class="stat"><div class="label">Impact</div><div class="value" style="font-size:1.1rem">{{ incident.get_impact_display }}</div></article>
+  <article class="stat"><div class="label">Statut</div><div class="value" style="font-size:1.1rem">{{ incident.get_status_display }}</div></article>
+  <article class="stat"><div class="label">Survenu le</div><div class="value" style="font-size:1.1rem">{{ incident.occurred_at|date:"d/m/Y H:i" }}</div></article>
+  <article class="stat"><div class="label">Signalé par</div><div class="value" style="font-size:1.1rem">{% if incident.reported_by %}{{ incident.reported_by.get_full_name|default:incident.reported_by.username }}{% else %}—{% endif %}</div></article>
+</section>
+<section class="panel">
+  <div class="panel-head"><strong>Fiche incident</strong></div>
+  <div class="form-grid">
+    <div><div style="color:var(--muted);font-size:.84rem">Application</div><div><a href="{% url 'applications:detail' incident.application_id %}">{{ incident.application.name }}</a></div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">Description</div><div style="white-space:pre-wrap">{{ incident.description }}</div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">Cause racine</div><div style="white-space:pre-wrap">{{ incident.root_cause|default:"—" }}</div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">Solution</div><div style="white-space:pre-wrap">{{ incident.solution|default:"—" }}</div></div>
+  </div>
+  {% if can_write %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'incidents:delete' incident.pk %}" onsubmit="return confirm('Archiver cet incident ?');">
+      {% csrf_token %}<button class="btn btn-danger" type="submit">Archiver</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

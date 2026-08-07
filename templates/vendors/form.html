@@ -1,0 +1,28 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block header_title %}{{ title }}{% endblock %}
+{% block header_sub %}Référentiel fournisseurs{% endblock %}
+{% block header_actions %}<a class="btn btn-ghost" href="{% url 'vendors:list' %}">Retour</a>{% endblock %}
+{% block content %}
+<section class="panel">
+  <form method="post" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>{% endif %}
+    <div class="form-grid">
+      <div class="field"><label>Nom</label>{{ form.name }}{{ form.name.errors }}</div>
+      <div class="field"><label>Type</label>{{ form.vendor_type }}</div>
+      <div class="field"><label>Contact</label>{{ form.contact_name }}</div>
+      <div class="field"><label>Email</label>{{ form.contact_email }}{{ form.contact_email.errors }}</div>
+      <div class="field"><label>Téléphone</label>{{ form.contact_phone }}{{ form.contact_phone.errors }}</div>
+      <div class="field"><label>Site web</label>{{ form.website }}{{ form.website.errors }}</div>
+      <div class="field check-row"><label>{{ form.is_active }} Fournisseur actif</label></div>
+      <div class="field full"><label>Adresse</label>{{ form.address }}</div>
+      <div class="field full"><label>Notes</label>{{ form.notes }}</div>
+    </div>
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{% url 'vendors:list' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

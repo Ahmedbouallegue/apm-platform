@@ -4,16 +4,42 @@
 {% block header_title %}Gestion des utilisateurs{% endblock %}
 {% block header_sub %}Comptes, rôles et accès à la plateforme APM{% endblock %}
 
-{% block header_actions %}
-  {% if can_write %}
-    <a class="btn btn-accent" href="{% url 'web:user-create' %}">Nouvel utilisateur</a>
-  {% endif %}
-{% endblock %}
-
 {% block content %}
+<section class="panel" style="margin-bottom:16px">
+  <div class="panel-head"><strong>Rôles &amp; droits</strong></div>
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Rôle</th>
+          <th>Acteur</th>
+          <th>Droits</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-admin">Administrateur DSI</span></td>
+          <td>Administrateur DSI</td>
+          <td>Utilisateurs, rôles, paramètres globaux, import/export CSV, patrimoine</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-manager">Équipe DSI / Technicien</span></td>
+          <td>Équipe DSI / Technicien</td>
+          <td>CRUD patrimoine, tableaux de bord — pas de gestion des comptes</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-viewer">Lecteur</span></td>
+          <td>Consultation</td>
+          <td>Lecture seule</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <section class="panel">
-  <div class="panel-head">
-    <form class="filters" method="get">
+  <div class="panel-head panel-head-tools">
+    <form class="filters filters-with-action" method="get">
       <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Rechercher…">
       <select class="field-input" name="role">
         <option value="">Tous les rôles</option>
@@ -27,6 +53,11 @@
         <option value="0" {% if active == "0" %}selected{% endif %}>Inactifs</option>
       </select>
       <button class="btn btn-primary" type="submit">Filtrer</button>
+      <a class="btn btn-ghost" href="{% url 'web:user-export-csv' %}?q={{ q }}&role={{ role }}&active={{ active }}">Exporter CSV</a>
+      {% if can_write %}
+        <a class="btn btn-ghost" href="{% url 'web:user-import-csv' %}">Importer CSV</a>
+        <a class="btn btn-accent filters-action" href="{% url 'web:user-create' %}">Nouvel utilisateur</a>
+      {% endif %}
     </form>
   </div>
 

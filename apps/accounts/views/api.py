@@ -61,7 +61,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 {"detail": "Vous ne pouvez pas désactiver votre propre compte."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        user_deactivate(user=user)
+        user_deactivate(user=user, actor=request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAdminOrDSI])
@@ -72,11 +72,11 @@ class UserViewSet(viewsets.ModelViewSet):
                 {"detail": "Vous ne pouvez pas désactiver votre propre compte."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        user_deactivate(user=user)
+        user_deactivate(user=user, actor=request.user)
         return Response(UserSerializer(user).data)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAdminOrDSI])
     def activate(self, request, pk=None):
         user = self.get_object()
-        user_activate(user=user)
+        user_activate(user=user, actor=request.user)
         return Response(UserSerializer(user).data)

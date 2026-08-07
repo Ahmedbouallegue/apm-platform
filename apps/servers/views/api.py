@@ -45,5 +45,5 @@ class ServerViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         server = self.get_object()
-        server_soft_delete(server=server)
+        server_soft_delete(server=server, user=request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)

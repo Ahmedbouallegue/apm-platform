@@ -213,6 +213,80 @@ class UserCreateForm(forms.ModelForm):
         return cleaned
 
 
+class ProfileForm(forms.ModelForm):
+    """Formulaire d'édition du profil de l'utilisateur connecté."""
+
+    password1 = forms.CharField(
+        label="Nouveau mot de passe",
+        required=False,
+        min_length=8,
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "field-input",
+                "placeholder": "Laisser vide pour conserver",
+                "autocomplete": "new-password",
+                "data-validate": "password",
+            }
+        ),
+    )
+    password2 = forms.CharField(
+        label="Confirmation",
+        required=False,
+        min_length=8,
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "field-input",
+                "autocomplete": "new-password",
+                "data-validate": "match:password1",
+            }
+        ),
+    )
+
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "email", "phone", "department")
+        widgets = {
+            "first_name": forms.TextInput(attrs={"class": "field-input", "data-validate": "max:150"}),
+            "last_name": forms.TextInput(attrs={"class": "field-input", "data-validate": "max:150"}),
+            "email": forms.EmailInput(
+                attrs={"class": "field-input", "data-validate": "required|email"}
+            ),
+            "phone": forms.TextInput(
+                attrs={
+                    "class": "field-input",
+                    "placeholder": "+216 71 000 000",
+                    "data-validate": "phone",
+                }
+            ),
+            "department": forms.TextInput(attrs={"class": "field-input", "data-validate": "max:128"}),
+        }
+
+    def clean_email(self):
+        email = validate_email_required(self.cleaned_data.get("email"))
+        qs = User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise ValidationError("Cet email est déjà utilisé.")
+        return email
+
+    def clean_phone(self):
+        return validate_phone(self.cleaned_data.get("phone"))
+
+    def clean(self):
+        cleaned = super().clean()
+        p1 = cleaned.get("password1") or ""
+        p2 = cleaned.get("password2") or ""
+        if p1 or p2:
+            if p1 != p2:
+                self.add_error("password2", "Les mots de passe ne correspondent pas.")
+            elif p1:
+                try:
+                    cleaned["password1"] = validate_password_strength(p1)
+                    validate_password(cleaned["password1"], user=self.instance)
+                except ValidationError as exc:
+                    self.add_error("password1", exc)
+        return cleaned
+
+
 class UserUpdateForm(forms.ModelForm):
     password1 = forms.CharField(
         label="Nouveau mot de passe",
@@ -295,3 +369,29 @@ class UserUpdateForm(forms.ModelForm):
                 except ValidationError as exc:
                     self.add_error("password1", exc)
         return cleaned
+
+
+class UserCsvImportForm(forms.Form):
+    file = forms.FileField(
+        label="Fichier CSV",
+        help_text=(
+            "Colonnes : username, email, first_name, last_name, role, phone, "
+            "department, is_active, password. "
+            "Le mot de passe est obligatoire pour les nouveaux comptes."
+        ),
+        widget=forms.ClearableFileInput(
+            attrs={
+                "class": "field-input",
+                "accept": ".csv,text/csv",
+            }
+        ),
+    )
+
+    def clean_file(self):
+        uploaded = self.cleaned_data["file"]
+        name = (uploaded.name or "").lower()
+        if not name.endswith(".csv"):
+            raise ValidationError("Seuls les fichiers .csv sont acceptés.")
+        if uploaded.size and uploaded.size > 2 * 1024 * 1024:
+            raise ValidationError("Fichier trop volumineux (max. 2 Mo).")
+        return uploaded

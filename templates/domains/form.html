@@ -1,0 +1,31 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block header_title %}{{ title }}{% endblock %}
+{% block header_sub %}Inventaire DNS{% endblock %}
+{% block header_actions %}<a class="btn btn-ghost" href="{% url 'domains:list' %}">Retour</a>{% endblock %}
+{% block content %}
+<section class="panel">
+  <form method="post" class="js-validate" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>{% endif %}
+    <div class="form-grid">
+      <div class="field"><label>FQDN</label>{{ form.fqdn }}{{ form.fqdn.errors }}</div>
+      <div class="field"><label>Statut</label>{{ form.status }}</div>
+      <div class="field"><label>Registrar</label>{{ form.registrar }}</div>
+      <div class="field"><label>DNS</label>{{ form.dns_provider }}</div>
+      <div class="field"><label>Enregistrement</label>{{ form.registered_at }}</div>
+      <div class="field"><label>Expiration</label>{{ form.expires_at }}{{ form.expires_at.errors }}</div>
+      <div class="field"><label>Application</label>{{ form.application }}</div>
+      <div class="field"><label>Environnement</label>{{ form.environment }}</div>
+      <div class="field check-row"><label>{{ form.is_primary }} Domaine principal</label></div>
+      <div class="field check-row"><label>{{ form.auto_renew }} Renouvellement automatique</label></div>
+      <div class="field check-row"><label>{{ form.is_active }} Domaine actif</label></div>
+      <div class="field full"><label>Notes</label>{{ form.notes }}</div>
+    </div>
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{% url 'domains:list' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

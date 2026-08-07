@@ -1,0 +1,47 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}{{ vendor.name }}{% endblock %}
+{% block header_title %}{{ vendor.name }}{% endblock %}
+{% block header_sub %}{{ vendor.get_vendor_type_display }}{% endblock %}
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'vendors:list' %}">Retour</a>
+  {% if can_write %}<a class="btn btn-primary" href="{% url 'vendors:edit' vendor.pk %}">Modifier</a>{% endif %}
+{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head"><strong>Fiche fournisseur</strong></div>
+  <div class="form-grid">
+    <div><div style="color:var(--muted);font-size:.84rem">Contact</div><div>{{ vendor.contact_name|default:"—" }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Email</div><div>{{ vendor.contact_email|default:"—" }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Téléphone</div><div>{{ vendor.contact_phone|default:"—" }}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Site</div><div>{% if vendor.website %}<a href="{{ vendor.website }}" target="_blank" rel="noopener">{{ vendor.website }}</a>{% else %}—{% endif %}</div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">Notes</div><div style="white-space:pre-wrap">{{ vendor.notes|default:"—" }}</div></div>
+  </div>
+</section>
+<section class="panel" style="margin-top:20px">
+  <div class="panel-head"><strong>Contrats associés</strong></div>
+  {% if contracts %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Référence</th><th>Intitulé</th><th>Type</th><th>Fin</th></tr></thead>
+      <tbody>
+        {% for c in contracts %}
+        <tr>
+          <td><a href="{% url 'contracts:detail' c.pk %}">{{ c.reference }}</a></td>
+          <td>{{ c.title }}</td>
+          <td>{{ c.get_contract_type_display }}</td>
+          <td>{{ c.end_date }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<div class="empty">Aucun contrat lié.</div>{% endif %}
+  {% if can_write %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'vendors:delete' vendor.pk %}" onsubmit="return confirm('Archiver ce fournisseur ?');">
+      {% csrf_token %}<button class="btn btn-danger" type="submit">Archiver</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

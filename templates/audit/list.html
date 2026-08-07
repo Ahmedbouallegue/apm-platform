@@ -1,0 +1,50 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}Journal d'audit{% endblock %}
+{% block header_title %}Journal d'audit{% endblock %}
+{% block header_sub %}Actions · Entités · Traçabilité{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head panel-head-tools">
+    <form class="filters" method="get">
+      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Action, entité, détails…">
+      <input class="field-input" type="text" name="action" value="{{ action }}" placeholder="Action">
+      <input class="field-input" type="text" name="entity" value="{{ entity }}" placeholder="Entité">
+      <button class="btn btn-primary" type="submit">Filtrer</button>
+    </form>
+  </div>
+  {% if logs %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Action</th>
+          <th>Entité</th>
+          <th>ID</th>
+          <th>Utilisateur</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>{{ log.occurred_at|date:"d/m/Y H:i" }}</td>
+          <td><span class="badge">{{ log.action }}</span></td>
+          <td>{{ log.entity }}</td>
+          <td>{{ log.entity_id|default:"—" }}</td>
+          <td>{% if log.user %}{{ log.user.get_full_name|default:log.user.username }}{% else %}—{% endif %}</td>
+          <td>
+            <div class="row-actions">
+              <a class="btn btn-ghost" href="{% url 'audit:detail' log.pk %}">Voir</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">Aucune entrée d'audit.</div>
+  {% endif %}
+</section>
+{% endblock %}

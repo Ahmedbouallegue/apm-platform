@@ -9,56 +9,90 @@
 {% endblock %}
 
 {% block content %}
-<section class="panel">
+<section class="panel resource-form resource-form-server">
   <form method="post" class="js-validate" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}
       <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
     {% endif %}
 
-    <div class="form-grid">
-      <div class="field">
-        <label for="id_name">Nom</label>
-        {{ form.name }}
-        {{ form.name.errors }}
+    <div class="form-intro">
+      <div class="form-intro-icon">SRV</div>
+      <div>
+        <strong>Inventaire serveur</strong>
+        <span>Renseignez l’identité, le type et la capacité de l’hôte.</span>
       </div>
-      <div class="field">
-        <label for="id_ip_address">Adresse IP</label>
-        {{ form.ip_address }}
-        {{ form.ip_address.errors }}
+    </div>
+
+    <div class="form-sections">
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">1</span>
+          <span class="form-section-title">Identité du serveur</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_name">Nom</label>
+            {{ form.name }}
+            {{ form.name.errors }}
+          </div>
+          <div class="field">
+            <label for="id_ip_address">Adresse IP</label>
+            {{ form.ip_address }}
+            {{ form.ip_address.errors }}
+          </div>
+          <div class="field">
+            <label for="id_server_type">Type de serveur</label>
+            {{ form.server_type }}
+          </div>
+          <div class="field">
+            <label for="id_datacenter">Datacenter</label>
+            {{ form.datacenter }}
+          </div>
+        </div>
       </div>
-      <div class="field">
-        <label for="id_server_type">Type</label>
-        {{ form.server_type }}
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">2</span>
+          <span class="form-section-title">Capacité technique</span>
+        </div>
+        <div class="form-section-grid cols-3">
+          <div class="field">
+            <label for="id_os">Système d’exploitation</label>
+            {{ form.os }}
+          </div>
+          <div class="field">
+            <label for="id_cpu">CPU</label>
+            {{ form.cpu }}
+          </div>
+          <div class="field">
+            <label for="id_ram">RAM</label>
+            {{ form.ram }}
+          </div>
+        </div>
       </div>
-      <div class="field">
-        <label for="id_datacenter">Datacenter</label>
-        {{ form.datacenter }}
-      </div>
-      <div class="field">
-        <label for="id_os">OS</label>
-        {{ form.os }}
-      </div>
-      <div class="field">
-        <label for="id_cpu">CPU</label>
-        {{ form.cpu }}
-      </div>
-      <div class="field">
-        <label for="id_ram">RAM</label>
-        {{ form.ram }}
-      </div>
-      <div class="field check-row">
-        <label>{{ form.is_active }} Serveur actif</label>
-      </div>
-      <div class="field full">
-        <label for="id_notes">Notes</label>
-        {{ form.notes }}
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">3</span>
+          <span class="form-section-title">État et notes</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="form-toggle-group full">
+            <div class="form-toggle"><label>{{ form.is_active }} Serveur actif</label></div>
+          </div>
+          <div class="field full">
+            <label for="id_notes">Notes d’exploitation</label>
+            {{ form.notes }}
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="form-actions">
       <a class="btn btn-ghost" href="{% url 'servers:list' %}">Annuler</a>
-      <button class="btn btn-primary" type="submit">Enregistrer</button>
+      <button class="btn btn-primary" type="submit">Enregistrer le serveur</button>
     </div>
   </form>
 </section>

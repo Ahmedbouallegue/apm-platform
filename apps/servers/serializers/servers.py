@@ -79,9 +79,13 @@ class ServerWriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         from apps.servers.services.servers import server_create
 
-        return server_create(data=validated_data)
+        return server_create(data=validated_data, user=getattr(self.context.get("request"), "user", None))
 
     def update(self, instance, validated_data):
         from apps.servers.services.servers import server_update
 
-        return server_update(server=instance, data=validated_data)
+        return server_update(
+            server=instance,
+            data=validated_data,
+            user=getattr(self.context.get("request"), "user", None),
+        )

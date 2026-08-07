@@ -87,7 +87,7 @@ class ServerCreateView(View):
     def post(self, request):
         form = ServerForm(request.POST)
         if form.is_valid():
-            server = server_create(data=form.cleaned_data)
+            server = server_create(data=form.cleaned_data, user=request.user)
             messages.success(request, f"Serveur « {server.name} » créé.")
             return redirect("servers:detail", pk=server.pk)
         return render(
@@ -119,7 +119,7 @@ class ServerUpdateView(View):
         server = get_object_or_404(server_list(), pk=pk)
         form = ServerForm(request.POST, instance=server)
         if form.is_valid():
-            server_update(server=server, data=form.cleaned_data)
+            server_update(server=server, data=form.cleaned_data, user=request.user)
             messages.success(request, "Serveur mis à jour.")
             return redirect("servers:detail", pk=server.pk)
         return render(
@@ -140,6 +140,6 @@ class ServerDeleteView(View):
     def post(self, request, pk):
         server = get_object_or_404(server_list(), pk=pk)
         label = server.name
-        server_soft_delete(server=server)
+        server_soft_delete(server=server, user=request.user)
         messages.warning(request, f"Serveur « {label} » archivé.")
         return redirect("servers:list")

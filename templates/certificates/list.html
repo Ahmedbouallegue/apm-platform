@@ -1,0 +1,66 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}Certificats SSL{% endblock %}
+{% block header_title %}Certificats SSL / TLS{% endblock %}
+{% block header_sub %}Émission · Expiration · Renouvellement{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head panel-head-tools">
+    <form class="filters filters-with-action" method="get">
+      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="CN, SAN, CA…">
+      <select class="field-input" name="status">
+        <option value="">Tous les statuts</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="type">
+        <option value="">Tous les types</option>
+        {% for value, label in certificate_types %}
+          <option value="{{ value }}" {% if type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="application">
+        <option value="">Toutes les applications</option>
+        {% for app in applications %}
+          <option value="{{ app.pk }}" {% if application == app.pk|stringformat:"s" %}selected{% endif %}>{{ app.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Filtrer</button>
+      {% if can_write %}
+        <a class="btn btn-accent filters-action" href="{% url 'certificates:create' %}">Nouveau certificat</a>
+      {% endif %}
+    </form>
+  </div>
+  {% if certificates %}
+  <div class="cert-grid">
+    {% for c in certificates %}
+    <article class="cert-card cert-card--{{ c.status }}">
+      <div class="cert-card-top">
+        <span class="badge badge-cert-{{ c.status }}">{{ c.get_status_display }}</span>
+        <span class="cert-card-type">{{ c.get_certificate_type_display }}</span>
+      </div>
+      <h3 class="cert-card-title">
+        <a href="{% url 'certificates:detail' c.pk %}">{{ c.common_name }}</a>
+      </h3>
+      <dl class="cert-card-meta">
+        <div>
+          <dt>Émetteur</dt>
+          <dd>{{ c.issuer|default:"—" }}</dd>
+        </div>
+        <div>
+          <dt>Expiration</dt>
+          <dd>{{ c.expires_at }}</dd>
+        </div>
+      </dl>
+      <div class="cert-card-actions">
+        <a class="btn btn-ghost" href="{% url 'certificates:detail' c.pk %}">Voir</a>
+        {% if can_write %}<a class="btn btn-ghost" href="{% url 'certificates:edit' c.pk %}">Modifier</a>{% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="empty">Aucun certificat.{% if can_write %}<div style="margin-top:14px"><a class="btn btn-accent" href="{% url 'certificates:create' %}">Créer le premier</a></div>{% endif %}</div>
+  {% endif %}
+</section>
+{% endblock %}

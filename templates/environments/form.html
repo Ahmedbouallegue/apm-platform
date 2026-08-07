@@ -9,70 +9,104 @@
 {% endblock %}
 
 {% block content %}
-<section class="panel">
+<section class="panel resource-form resource-form-environment">
   <form method="post" class="js-validate" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}
       <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
     {% endif %}
 
-    <div class="form-grid">
-      <div class="field">
-        <label for="id_application">Application</label>
-        {{ form.application }}
-        {{ form.application.errors }}
+    <div class="form-intro">
+      <div class="form-intro-icon">ENV</div>
+      <div>
+        <strong>Environnement technique</strong>
+        <span>Liez l’application à un serveur et précisez l’infrastructure cible.</span>
       </div>
-      <div class="field">
-        <label for="id_server">Serveur</label>
-        {{ form.server }}
-        {{ form.server.errors }}
+    </div>
+
+    <div class="form-sections">
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">1</span>
+          <span class="form-section-title">Rattachement</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_application">Application</label>
+            {{ form.application }}
+            {{ form.application.errors }}
+          </div>
+          <div class="field">
+            <label for="id_server">Serveur</label>
+            {{ form.server }}
+            {{ form.server.errors }}
+          </div>
+          <div class="field">
+            <label for="id_env_type">Type d’environnement</label>
+            {{ form.env_type }}
+            {{ form.env_type.errors }}
+          </div>
+          <div class="field">
+            <label for="id_name">Nom</label>
+            {{ form.name }}
+            {{ form.name.errors }}
+          </div>
+        </div>
       </div>
-      <div class="field">
-        <label for="id_env_type">Type</label>
-        {{ form.env_type }}
-        {{ form.env_type.errors }}
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">2</span>
+          <span class="form-section-title">Accès et hébergement</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_url">URL</label>
+            {{ form.url }}
+            {{ form.url.errors }}
+          </div>
+          <div class="field">
+            <label for="id_ip_address">Adresse IP</label>
+            {{ form.ip_address }}
+            {{ form.ip_address.errors }}
+          </div>
+          <div class="field">
+            <label for="id_hosting_provider">Hébergeur</label>
+            {{ form.hosting_provider }}
+          </div>
+          <div class="field">
+            <label for="id_os">Système d’exploitation</label>
+            {{ form.os }}
+          </div>
+        </div>
       </div>
-      <div class="field">
-        <label for="id_name">Nom</label>
-        {{ form.name }}
-        {{ form.name.errors }}
-      </div>
-      <div class="field">
-        <label for="id_url">URL</label>
-        {{ form.url }}
-        {{ form.url.errors }}
-      </div>
-      <div class="field">
-        <label for="id_ip_address">Adresse IP</label>
-        {{ form.ip_address }}
-        {{ form.ip_address.errors }}
-      </div>
-      <div class="field">
-        <label for="id_hosting_provider">Hébergeur</label>
-        {{ form.hosting_provider }}
-      </div>
-      <div class="field">
-        <label for="id_os">OS</label>
-        {{ form.os }}
-      </div>
-      <div class="field">
-        <label for="id_cpu">CPU</label>
-        {{ form.cpu }}
-      </div>
-      <div class="field">
-        <label for="id_ram">RAM</label>
-        {{ form.ram }}
-      </div>
-      <div class="field check-row">
-        <label>{{ form.docker }} Docker</label>
-        <label>{{ form.kubernetes }} Kubernetes</label>
-        <label>{{ form.is_active }} Actif</label>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">3</span>
+          <span class="form-section-title">Capacité et options</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_cpu">CPU</label>
+            {{ form.cpu }}
+          </div>
+          <div class="field">
+            <label for="id_ram">RAM</label>
+            {{ form.ram }}
+          </div>
+          <div class="form-toggle-group full">
+            <div class="form-toggle"><label>{{ form.docker }} Docker</label></div>
+            <div class="form-toggle"><label>{{ form.kubernetes }} Kubernetes</label></div>
+            <div class="form-toggle"><label>{{ form.is_active }} Environnement actif</label></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="form-actions">
       <a class="btn btn-ghost" href="{% url 'environments:list' %}">Annuler</a>
-      <button class="btn btn-primary" type="submit">Enregistrer</button>
+      <button class="btn btn-primary" type="submit">Enregistrer l’environnement</button>
     </div>
   </form>
 </section>

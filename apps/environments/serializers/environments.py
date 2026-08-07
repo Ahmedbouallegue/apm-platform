@@ -103,9 +103,13 @@ class EnvironmentWriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         from apps.environments.services.environments import environment_create
 
-        return environment_create(data=validated_data)
+        return environment_create(data=validated_data, user=getattr(self.context.get("request"), "user", None))
 
     def update(self, instance, validated_data):
         from apps.environments.services.environments import environment_update
 
-        return environment_update(environment=instance, data=validated_data)
+        return environment_update(
+            environment=instance,
+            data=validated_data,
+            user=getattr(self.context.get("request"), "user", None),
+        )

@@ -103,7 +103,7 @@ class EnvironmentCreateView(View):
     def post(self, request):
         form = EnvironmentForm(request.POST)
         if form.is_valid():
-            env = environment_create(data=form.cleaned_data)
+            env = environment_create(data=form.cleaned_data, user=request.user)
             messages.success(request, f"Environnement « {env} » créé.")
             return redirect("environments:detail", pk=env.pk)
         return render(
@@ -135,7 +135,7 @@ class EnvironmentUpdateView(View):
         env = get_object_or_404(environment_list(), pk=pk)
         form = EnvironmentForm(request.POST, instance=env)
         if form.is_valid():
-            environment_update(environment=env, data=form.cleaned_data)
+            environment_update(environment=env, data=form.cleaned_data, user=request.user)
             messages.success(request, "Environnement mis à jour.")
             return redirect("environments:detail", pk=env.pk)
         return render(
@@ -156,6 +156,6 @@ class EnvironmentDeleteView(View):
     def post(self, request, pk):
         env = get_object_or_404(environment_list(), pk=pk)
         label = str(env)
-        environment_delete(environment=env)
+        environment_delete(environment=env, user=request.user)
         messages.warning(request, f"Environnement « {label} » supprimé.")
         return redirect("environments:list")

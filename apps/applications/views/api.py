@@ -49,11 +49,11 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         application = self.get_object()
-        application_soft_delete(application=application)
+        application_soft_delete(application=application, user=request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"], permission_classes=[CanWriteApplications])
     def restore(self, request, pk=None):
         application = self.get_queryset().get(pk=pk)
-        application_restore(application=application)
+        application_restore(application=application, user=request.user)
         return Response(ApplicationSerializer(application).data)

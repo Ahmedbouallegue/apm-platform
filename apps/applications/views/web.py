@@ -84,7 +84,11 @@ class ApplicationCreateView(View):
         if form.is_valid():
             data = form.cleaned_data
             technologies = data.pop("technologies")
-            application_create(data=data, technology_ids=list(technologies.values_list("pk", flat=True)))
+            application_create(
+                data=data,
+                technology_ids=list(technologies.values_list("pk", flat=True)),
+                user=request.user,
+            )
             messages.success(request, "Application créée avec succès.")
             return redirect("applications:list")
         return render(
@@ -118,6 +122,7 @@ class ApplicationUpdateView(View):
                 application=app,
                 data=data,
                 technology_ids=list(technologies.values_list("pk", flat=True)),
+                user=request.user,
             )
             messages.success(request, "Application mise à jour.")
             return redirect("applications:detail", pk=app.pk)
@@ -133,6 +138,6 @@ class ApplicationUpdateView(View):
 class ApplicationDeleteView(View):
     def post(self, request, pk):
         app = get_object_or_404(application_list(), pk=pk)
-        application_soft_delete(application=app)
+        application_soft_delete(application=app, user=request.user)
         messages.warning(request, f"Application « {app.name} » archivée.")
         return redirect("applications:list")

@@ -79,6 +79,74 @@ class UserManagementWebTests(TestCase):
         response = self.client.get("/users/")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Gestion des utilisateurs")
+        self.assertContains(response, "Exporter CSV")
+        self.assertContains(response, "Importer CSV")
+
+    def test_export_csv(self):
+        self.client.login(username="webadmin", password="Secret123!")
+        response = self.client.get("/users/export.csv")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv; charset=utf-8")
+        body = response.content.decode("utf-8")
+        self.assertIn("username,email,first_name", body)
+        self.assertIn("webadmin", body)
+
+    def test_import_csv_creates_user(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        self.client.login(username="webadmin", password="Secret123!")
+        csv_data = (
+            "username,email,first_name,last_name,role,phone,department,is_active,password\n"
+            "csvuser,csvuser@topnet.tn,Csv,User,viewer,,DSI,1,Secret123!\n"
+        )
+        uploaded = SimpleUploadedFile(
+            "users.csv",
+            csv_data.encode("utf-8"),
+            content_type="text/csv",
+        )
+        response = self.client.post("/users/import/", {"file": uploaded})
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.get(username="csvuser")
+        self.assertEqual(user.email, "csvuser@topnet.tn")
+        self.assertEqual(user.role, User.Role.VIEWER)
+        self.assertTrue(user.check_password("Secret123!"))
+
+    def test_import_csv_updates_existing(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        User.objects.create_user(
+            username="csvupd",
+            email="old@topnet.tn",
+            password="Secret123!",
+            role=User.Role.VIEWER,
+        )
+        self.client.login(username="webadmin", password="Secret123!")
+        csv_data = (
+            "username,email,first_name,last_name,role,phone,department,is_active,password\n"
+            "csvupd,new@topnet.tn,New,Name,manager,,Ops,1,\n"
+        )
+        uploaded = SimpleUploadedFile(
+            "users.csv",
+            csv_data.encode("utf-8"),
+            content_type="text/csv",
+        )
+        response = self.client.post("/users/import/", {"file": uploaded})
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.get(username="csvupd")
+        self.assertEqual(user.email, "new@topnet.tn")
+        self.assertEqual(user.role, User.Role.MANAGER)
+        self.assertEqual(user.first_name, "New")
+
+    def test_viewer_cannot_export_csv(self):
+        viewer = User.objects.create_user(
+            username="webviewer",
+            email="webviewer@topnet.tn",
+            password="Secret123!",
+            role=User.Role.VIEWER,
+        )
+        self.client.login(username="webviewer", password="Secret123!")
+        response = self.client.get("/users/export.csv")
+        self.assertEqual(response.status_code, 302)
 
 
 class PasswordResetWebTests(TestCase):

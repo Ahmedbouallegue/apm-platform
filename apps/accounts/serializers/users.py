@@ -93,7 +93,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         from apps.accounts.services.users import user_create
 
-        return user_create(**validated_data)
+        return user_create(actor=getattr(self.context.get("request"), "user", None), **validated_data)
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -148,7 +148,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         data = dict(validated_data)
         if password:
             data["password"] = password
-        return user_update(user=instance, data=data)
+        return user_update(
+            user=instance,
+            data=data,
+            actor=getattr(self.context.get("request"), "user", None),
+        )
 
 
 class MeSerializer(UserSerializer):

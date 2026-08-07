@@ -1,0 +1,31 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}Dépendance{% endblock %}
+{% block header_title %}{{ dependency.source_application.name }} → {% if dependency.target_application %}{{ dependency.target_application.name }}{% else %}{{ dependency.target_external }}{% endif %}{% endblock %}
+{% block header_sub %}{{ dependency.get_dependency_type_display }}{% endblock %}
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'dependencies:list' %}">Retour</a>
+  {% if can_write %}<a class="btn btn-primary" href="{% url 'dependencies:edit' dependency.pk %}">Modifier</a>{% endif %}
+{% endblock %}
+{% block content %}
+<section class="stats" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+  <article class="stat"><div class="label">Type</div><div class="value" style="font-size:1.1rem">{{ dependency.get_dependency_type_display }}</div></article>
+  <article class="stat"><div class="label">Actif</div><div class="value" style="font-size:1.1rem">{% if dependency.is_active %}Oui{% else %}Non{% endif %}</div></article>
+  <article class="stat"><div class="label">Cible</div><div class="value" style="font-size:1.1rem">{% if dependency.target_application %}Application{% else %}Externe{% endif %}</div></article>
+</section>
+<section class="panel">
+  <div class="panel-head"><strong>Fiche dépendance</strong></div>
+  <div class="form-grid">
+    <div><div style="color:var(--muted);font-size:.84rem">Application source</div><div><a href="{% url 'applications:detail' dependency.source_application_id %}">{{ dependency.source_application.name }}</a></div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Application cible</div><div>{% if dependency.target_application %}<a href="{% url 'applications:detail' dependency.target_application_id %}">{{ dependency.target_application.name }}</a>{% else %}—{% endif %}</div></div>
+    <div><div style="color:var(--muted);font-size:.84rem">Cible externe</div><div>{{ dependency.target_external|default:"—" }}</div></div>
+    <div class="full"><div style="color:var(--muted);font-size:.84rem">Description</div><div style="white-space:pre-wrap">{{ dependency.description|default:"—" }}</div></div>
+  </div>
+  {% if can_write %}
+  <div class="form-actions">
+    <form method="post" action="{% url 'dependencies:delete' dependency.pk %}" onsubmit="return confirm('Archiver cette dépendance ?');">
+      {% csrf_token %}<button class="btn btn-danger" type="submit">Archiver</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

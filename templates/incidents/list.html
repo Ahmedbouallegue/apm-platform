@@ -1,0 +1,70 @@
+{% extends "accounts/app_base.html" %}
+{% block page_title %}Incidents{% endblock %}
+{% block header_title %}Incidents majeurs{% endblock %}
+{% block header_sub %}Historique · Impact · Résolution{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head panel-head-tools">
+    <form class="filters filters-with-action" method="get">
+      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Titre, description, application…">
+      <select class="field-input" name="status">
+        <option value="">Tous les statuts</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="impact">
+        <option value="">Tous les impacts</option>
+        {% for value, label in impacts %}
+          <option value="{{ value }}" {% if impact == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="field-input" name="application">
+        <option value="">Toutes les applications</option>
+        {% for a in applications %}
+          <option value="{{ a.pk }}" {% if application == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Filtrer</button>
+      {% if can_write %}
+        <a class="btn btn-accent filters-action" href="{% url 'incidents:create' %}">Nouvel incident</a>
+      {% endif %}
+    </form>
+  </div>
+  {% if incidents %}
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Application</th>
+          <th>Impact</th>
+          <th>Statut</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in incidents %}
+        <tr>
+          <td><a href="{% url 'incidents:detail' i.pk %}"><strong>{{ i.title }}</strong></a></td>
+          <td><a href="{% url 'applications:detail' i.application_id %}">{{ i.application.name }}</a></td>
+          <td><span class="badge">{{ i.get_impact_display }}</span></td>
+          <td><span class="badge">{{ i.get_status_display }}</span></td>
+          <td>{{ i.occurred_at|date:"d/m/Y H:i" }}</td>
+          <td>
+            <div class="row-actions">
+              <a class="btn btn-ghost" href="{% url 'incidents:detail' i.pk %}">Voir</a>
+              {% if can_write %}<a class="btn btn-ghost" href="{% url 'incidents:edit' i.pk %}">Modifier</a>{% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">Aucun incident.{% if can_write %}<div style="margin-top:14px"><a class="btn btn-accent" href="{% url 'incidents:create' %}">Créer le premier</a></div>{% endif %}</div>
+  {% endif %}
+</section>
+{% endblock %}
