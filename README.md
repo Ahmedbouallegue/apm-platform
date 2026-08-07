@@ -158,14 +158,21 @@ celery -A config worker -l info
 
 Voir `.env.example`. Ne jamais committer `.env`.
 
-## Qualité & CI
+## Qualité & CI/CD
+
+Documentation : [`docs/ci-cd.md`](docs/ci-cd.md).
 
 ```bash
 ruff check .
-pytest
+python -m pytest -q --cov=apps
 ```
 
-Le workflow GitHub Actions (`.github/workflows/ci.yml`) exécute lint, checks Django, tests et build Docker.
+| Workflow | Rôle |
+|----------|------|
+| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Lint → tests (Postgres/Redis) → build Docker + check Nginx |
+| [`.github/workflows/cd.yml`](.github/workflows/cd.yml) | Push image vers **GHCR** sur `main` / tags `v*` |
+
+Déclencheurs CI : push & pull request sur `main` / `develop` (+ manuel).
 
 ## Structure du dépôt
 
@@ -175,9 +182,9 @@ apm-platform/
 ├── config/               # Projet Django
 │   └── settings/         # base / development / production / test
 ├── docker/               # Nginx, entrypoint, Prometheus, Grafana
-├── docs/                 # Architecture, Docker, guide utilisateur
+├── docs/                 # Architecture, Docker, CI/CD, guide utilisateur
 ├── requirements/         # Dépendances Python
-├── .github/workflows/    # CI/CD
+├── .github/workflows/    # CI (lint/tests/docker) + CD (GHCR)
 ├── Dockerfile
 ├── docker-compose.yml        # Dev
 ├── docker-compose.prod.yml   # Production
@@ -187,7 +194,7 @@ apm-platform/
 
 ## Sprint 0
 
-Socle technique prêt : architecture, apps, Docker, Redis, Celery, Nginx, DRF, JWT, Swagger, env, CI.
+Socle technique prêt : architecture, apps, Docker, Redis, Celery, Nginx, DRF, JWT, Swagger, env, CI/CD.
 
 Les modèles métier détaillés et les cas d’usage APM arrivent dans les sprints suivants.
 
