@@ -6,6 +6,7 @@
 
 {% block header_actions %}
   <a class="btn btn-ghost" href="{% url 'servers:list' %}">Retour</a>
+  <a class="btn btn-accent" href="{% url 'servers:monitoring' server.pk %}">Monitoring</a>
   {% if can_write %}
     <a class="btn btn-primary" href="{% url 'servers:edit' server.pk %}">Modifier</a>
   {% endif %}

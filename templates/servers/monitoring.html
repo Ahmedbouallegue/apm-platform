@@ -1,0 +1,169 @@
+{% extends "accounts/app_base.html" %}
+{% load static %}
+
+{% block page_title %}Monitoring — {{ server.name }}{% endblock %}
+{% block header_title %}Monitoring — {{ server.name }}{% endblock %}
+{% block header_sub %}{{ server.ip_address }} · Métriques temps réel{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'servers:detail' server.pk %}">← Fiche serveur</a>
+  <select id="time-range" class="btn btn-ghost" style="appearance:auto;padding:6px 12px">
+    <option value="1">1 heure</option>
+    <option value="6">6 heures</option>
+    <option value="24" selected>24 heures</option>
+    <option value="72">3 jours</option>
+    <option value="168">7 jours</option>
+  </select>
+{% endblock %}
+
+{% block content %}
+<section class="stats" style="grid-template-columns: repeat(5, minmax(0, 1fr));">
+  <article class="stat" id="gauge-cpu">
+    <div class="label">CPU</div>
+    <div class="value" id="val-cpu">—</div>
+  </article>
+  <article class="stat" id="gauge-ram">
+    <div class="label">RAM</div>
+    <div class="value" id="val-ram">—</div>
+  </article>
+  <article class="stat" id="gauge-disk">
+    <div class="label">Disque</div>
+    <div class="value" id="val-disk">—</div>
+  </article>
+  <article class="stat">
+    <div class="label">Load avg</div>
+    <div class="value" id="val-load">—</div>
+  </article>
+  <article class="stat">
+    <div class="label">Uptime</div>
+    <div class="value" id="val-uptime">—</div>
+  </article>
+</section>
+
+<section class="panel" style="margin-top:20px">
+  <div class="panel-head"><strong>CPU %</strong></div>
+  <div style="padding:16px;height:260px">
+    <canvas id="chart-cpu"></canvas>
+  </div>
+</section>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px">
+  <section class="panel">
+    <div class="panel-head"><strong>RAM %</strong></div>
+    <div style="padding:16px;height:220px">
+      <canvas id="chart-ram"></canvas>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><strong>Disque %</strong></div>
+    <div style="padding:16px;height:220px">
+      <canvas id="chart-disk"></canvas>
+    </div>
+  </section>
+</div>
+
+<section class="panel" style="margin-top:20px">
+  <div class="panel-head"><strong>Réseau (octets cumulés)</strong></div>
+  <div style="padding:16px;height:260px">
+    <canvas id="chart-net"></canvas>
+  </div>
+</section>
+
+{% if not latest_metric %}
+<section class="panel" style="margin-top:20px">
+  <div class="empty" style="padding:32px;text-align:center">
+    <p style="font-size:1.1rem;margin-bottom:12px">Aucune métrique reçue pour ce serveur.</p>
+    <p style="color:var(--muted)">Installez l'agent VM et configurez-le avec le hostname <strong>{{ server.name }}</strong> ou l'IP <strong>{{ server.ip_address }}</strong>.</p>
+  </div>
+</section>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+  const SERVER_PK = {{ server.pk }};
+  const URL = "{% url 'servers:monitoring' server.pk %}";
+  let refreshTimer;
+
+  const chartOpts = (label, color) => ({
+    type: 'line',
+    data: { labels: [], datasets: [{ label, data: [], borderColor: color, backgroundColor: color + '22', fill: true, tension: .3, pointRadius: 0 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { display: true, ticks: { maxTicksToAutoSkip: true, maxRotation: 0 } }, y: { beginAtZero: true } },
+      plugins: { legend: { display: false } },
+      animation: false,
+    }
+  });
+
+  const cpuChart  = new Chart(document.getElementById('chart-cpu'),  chartOpts('CPU %', '#6366f1'));
+  const ramChart  = new Chart(document.getElementById('chart-ram'),  chartOpts('RAM %', '#f59e0b'));
+  const diskChart = new Chart(document.getElementById('chart-disk'), chartOpts('Disque %', '#10b981'));
+  const netChart  = new Chart(document.getElementById('chart-net'), {
+    type: 'line',
+    data: { labels: [], datasets: [
+      { label: 'Envoyé', data: [], borderColor: '#6366f1', tension: .3, pointRadius: 0 },
+      { label: 'Reçu',   data: [], borderColor: '#f59e0b', tension: .3, pointRadius: 0 },
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { ticks: { maxRotation: 0 } }, y: { beginAtZero: true } },
+      animation: false,
+    }
+  });
+
+  function colorGauge(id, val) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('gauge-ok', 'gauge-warn', 'gauge-crit');
+    if (val >= 90) el.classList.add('gauge-crit');
+    else if (val >= 70) el.classList.add('gauge-warn');
+    else el.classList.add('gauge-ok');
+  }
+
+  function fmt(d) {
+    return new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function refresh() {
+    const hours = document.getElementById('time-range').value;
+    fetch(URL + '?hours=' + hours, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(r => r.json())
+      .then(data => {
+        const m = data.metrics;
+        const labels = m.map(p => fmt(p.collected_at));
+        cpuChart.data.labels  = labels; cpuChart.data.datasets[0].data  = m.map(p => p.cpu_percent);  cpuChart.update();
+        ramChart.data.labels  = labels; ramChart.data.datasets[0].data  = m.map(p => p.memory_percent); ramChart.update();
+        diskChart.data.labels = labels; diskChart.data.datasets[0].data = m.map(p => p.disk_percent);  diskChart.update();
+        netChart.data.labels  = labels;
+        netChart.data.datasets[0].data = m.map(p => p.net_bytes_sent);
+        netChart.data.datasets[1].data = m.map(p => p.net_bytes_recv);
+        netChart.update();
+
+        const s = data.summary;
+        if (s && s.cpu !== undefined) {
+          document.getElementById('val-cpu').textContent   = s.cpu.toFixed(1) + ' %';
+          document.getElementById('val-ram').textContent   = s.ram.toFixed(1) + ' %';
+          document.getElementById('val-disk').textContent  = s.disk.toFixed(1) + ' %';
+          document.getElementById('val-load').textContent  = s.load.toFixed(2);
+          document.getElementById('val-uptime').textContent = s.uptime_h + ' h';
+          colorGauge('gauge-cpu', s.cpu);
+          colorGauge('gauge-ram', s.ram);
+          colorGauge('gauge-disk', s.disk);
+        }
+      })
+      .catch(() => {});
+  }
+
+  document.getElementById('time-range').addEventListener('change', refresh);
+  refresh();
+  refreshTimer = setInterval(refresh, 30000);
+})();
+</script>
+
+<style>
+  .gauge-ok   .value { color: var(--green, #10b981); }
+  .gauge-warn .value { color: var(--amber, #f59e0b); }
+  .gauge-crit .value { color: var(--red, #ef4444); font-weight: 700; }
+</style>
+{% endblock %}

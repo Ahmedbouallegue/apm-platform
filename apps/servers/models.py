@@ -34,3 +34,38 @@ class Server(TimeStampedModel, SoftDeleteModel):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.ip_address})"
+
+
+class ServerMetric(models.Model):
+    """Point-in-time performance snapshot sent by a VM agent."""
+
+    server = models.ForeignKey(
+        Server,
+        on_delete=models.CASCADE,
+        related_name="metrics",
+        verbose_name="Serveur",
+    )
+    hostname = models.CharField("Hostname agent", max_length=255)
+    cpu_percent = models.FloatField("CPU %")
+    memory_total = models.BigIntegerField("RAM totale (octets)")
+    memory_used = models.BigIntegerField("RAM utilisée (octets)")
+    memory_percent = models.FloatField("RAM %")
+    disk_total = models.BigIntegerField("Disque total (octets)")
+    disk_used = models.BigIntegerField("Disque utilisé (octets)")
+    disk_percent = models.FloatField("Disque %")
+    net_bytes_sent = models.BigIntegerField("Réseau envoyé (octets)", default=0)
+    net_bytes_recv = models.BigIntegerField("Réseau reçu (octets)", default=0)
+    load_avg_1 = models.FloatField("Load average 1 min", default=0)
+    uptime_seconds = models.FloatField("Uptime (secondes)", default=0)
+    collected_at = models.DateTimeField("Collecté le", auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-collected_at"]
+        verbose_name = "Métrique serveur"
+        verbose_name_plural = "Métriques serveurs"
+        indexes = [
+            models.Index(fields=["server", "-collected_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.hostname} — CPU {self.cpu_percent}% @ {self.collected_at}"

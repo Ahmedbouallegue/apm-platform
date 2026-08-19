@@ -1,6 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from datetime import timedelta
+
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import DetailView, ListView
@@ -9,7 +13,7 @@ from apps.accounts.decorators import user_passes_test_or_403
 from apps.accounts.roles import can_read, can_write_patrimoine
 
 from apps.servers.forms import ServerForm
-from apps.servers.models import Server
+from apps.servers.models import Server, ServerMetric
 from apps.servers.selectors.servers import server_list
 from apps.servers.services.servers import server_create, server_soft_delete, server_update
 
@@ -143,3 +147,57 @@ class ServerDeleteView(View):
         server_soft_delete(server=server, user=request.user)
         messages.warning(request, f"Serveur « {label} » archivé.")
         return redirect("servers:list")
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(user_passes_test(_can_view), name="dispatch")
+class ServerMonitoringView(DetailView):
+    template_name = "servers/monitoring.html"
+    context_object_name = "server"
+
+    def get_queryset(self):
+        return server_list()
+
+    def get(self, request, *args, **kwargs):
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return self._json_metrics(request)
+        return super().get(request, *args, **kwargs)
+
+    def _json_metrics(self, request):
+        server = self.get_object()
+        hours = int(request.GET.get("hours", 24))
+        since = timezone.now() - timedelta(hours=hours)
+        qs = ServerMetric.objects.filter(
+            server=server, collected_at__gte=since
+        ).order_by("collected_at")
+        data = list(
+            qs.values(
+                "cpu_percent",
+                "memory_percent",
+                "disk_percent",
+                "load_avg_1",
+                "net_bytes_sent",
+                "net_bytes_recv",
+                "collected_at",
+            )
+        )
+        for d in data:
+            d["collected_at"] = d["collected_at"].isoformat()
+        latest = qs.last()
+        summary = {}
+        if latest:
+            summary = {
+                "cpu": latest.cpu_percent,
+                "ram": latest.memory_percent,
+                "disk": latest.disk_percent,
+                "uptime_h": round(latest.uptime_seconds / 3600, 1),
+                "load": latest.load_avg_1,
+            }
+        return JsonResponse({"metrics": data, "summary": summary})
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["can_write"] = _can_write(self.request.user)
+        latest = ServerMetric.objects.filter(server=self.object).first()
+        ctx["latest_metric"] = latest
+        return ctx

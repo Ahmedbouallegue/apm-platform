@@ -5,6 +5,7 @@ from apps.servers.views.web import (
     ServerDeleteView,
     ServerDetailView,
     ServerListView,
+    ServerMonitoringView,
     ServerUpdateView,
 )
 
@@ -16,4 +17,5 @@ urlpatterns = [
     path("servers/<int:pk>/", ServerDetailView.as_view(), name="detail"),
     path("servers/<int:pk>/edit/", ServerUpdateView.as_view(), name="edit"),
     path("servers/<int:pk>/delete/", ServerDeleteView.as_view(), name="delete"),
+    path("servers/<int:pk>/monitoring/", ServerMonitoringView.as_view(), name="monitoring"),
 ]
