@@ -1,4 +1,3 @@
-from django.db.models import Q
 from rest_framework import serializers
 
 from apps.servers.models import Server, ServerMetric
@@ -21,15 +20,17 @@ class ServerMetricWriteSerializer(serializers.Serializer):
     uptime_seconds = serializers.FloatField(min_value=0, default=0)
 
     def validate_hostname(self, value):
-        try:
-            self._server = Server.objects.get(
-                Q(name__iexact=value) | Q(ip_address=value),
-                is_deleted=False,
-            )
-        except Server.DoesNotExist:
+        server = Server.objects.filter(name__iexact=value, is_deleted=False).first()
+        if server is None:
+            try:
+                server = Server.objects.get(ip_address=value, is_deleted=False)
+            except (Server.DoesNotExist, ValueError):
+                pass
+        if server is None:
             raise serializers.ValidationError(
                 f"Aucun serveur actif ne correspond au hostname « {value} »."
             )
+        self._server = server
         return value
 
     def create(self, validated_data):
