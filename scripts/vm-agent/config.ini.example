@@ -1,0 +1,13 @@
+[api]
+base_url = http://192.168.88.134
+metrics_url = http://192.168.88.134/api/servers/metrics/
+
+[auth]
+username = admin
+password = Admin123!
+# Optionnel : token statique (expire ~1h). Préférez refresh_token :
+# access_token =
+refresh_token =
+
+[agent]
+interval_seconds = 5

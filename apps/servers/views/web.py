@@ -183,7 +183,7 @@ class ServerMonitoringView(DetailView):
         )
         for d in data:
             d["collected_at"] = d["collected_at"].isoformat()
-        latest = qs.last()
+        latest = qs.order_by("-collected_at").first()
         summary = {}
         if latest:
             summary = {
@@ -192,12 +192,13 @@ class ServerMonitoringView(DetailView):
                 "disk": latest.disk_percent,
                 "uptime_h": round(latest.uptime_seconds / 3600, 1),
                 "load": latest.load_avg_1,
+                "collected_at": latest.collected_at.isoformat(),
             }
         return JsonResponse({"metrics": data, "summary": summary})
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["can_write"] = _can_write(self.request.user)
-        latest = ServerMetric.objects.filter(server=self.object).first()
+        latest = ServerMetric.objects.filter(server=self.object).order_by("-collected_at").first()
         ctx["latest_metric"] = latest
         return ctx

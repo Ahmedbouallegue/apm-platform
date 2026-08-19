@@ -7,7 +7,17 @@
 
 {% block header_actions %}
   <a class="btn btn-ghost" href="{% url 'servers:detail' server.pk %}">← Fiche serveur</a>
-  <select id="time-range" class="btn btn-ghost" style="appearance:auto;padding:6px 12px">
+  <span class="monitoring-live" id="monitoring-live" title="Rafraîchissement automatique">
+    <span class="live-dot" id="live-dot"></span>
+    <span id="live-label">Connexion…</span>
+  </span>
+  <select id="refresh-interval" class="btn btn-ghost" style="appearance:auto;padding:6px 12px" title="Intervalle de rafraîchissement">
+    <option value="5000" selected>5 s</option>
+    <option value="10000">10 s</option>
+    <option value="30000">30 s</option>
+    <option value="60000">1 min</option>
+  </select>
+  <select id="time-range" class="btn btn-ghost" style="appearance:auto;padding:6px 12px" title="Historique affiché">
     <option value="1">1 heure</option>
     <option value="6">6 heures</option>
     <option value="24" selected>24 heures</option>
@@ -70,98 +80,57 @@
 </section>
 
 {% if not latest_metric %}
-<section class="panel" style="margin-top:20px">
+<section class="panel" style="margin-top:20px" id="monitoring-empty">
   <div class="empty" style="padding:32px;text-align:center">
     <p style="font-size:1.1rem;margin-bottom:12px">Aucune métrique reçue pour ce serveur.</p>
     <p style="color:var(--muted)">Installez l'agent VM et configurez-le avec le hostname <strong>{{ server.name }}</strong> ou l'IP <strong>{{ server.ip_address }}</strong>.</p>
+  </div>
+</section>
+{% else %}
+<section class="panel" style="margin-top:20px" id="monitoring-empty" hidden>
+  <div class="empty" style="padding:32px;text-align:center">
+    <p style="font-size:1.1rem;margin-bottom:12px">En attente de nouvelles métriques…</p>
   </div>
 </section>
 {% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
-(function() {
-  const SERVER_PK = {{ server.pk }};
-  const URL = "{% url 'servers:monitoring' server.pk %}";
-  let refreshTimer;
-
-  const chartOpts = (label, color) => ({
-    type: 'line',
-    data: { labels: [], datasets: [{ label, data: [], borderColor: color, backgroundColor: color + '22', fill: true, tension: .3, pointRadius: 0 }] },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: { x: { display: true, ticks: { maxTicksToAutoSkip: true, maxRotation: 0 } }, y: { beginAtZero: true } },
-      plugins: { legend: { display: false } },
-      animation: false,
-    }
-  });
-
-  const cpuChart  = new Chart(document.getElementById('chart-cpu'),  chartOpts('CPU %', '#6366f1'));
-  const ramChart  = new Chart(document.getElementById('chart-ram'),  chartOpts('RAM %', '#f59e0b'));
-  const diskChart = new Chart(document.getElementById('chart-disk'), chartOpts('Disque %', '#10b981'));
-  const netChart  = new Chart(document.getElementById('chart-net'), {
-    type: 'line',
-    data: { labels: [], datasets: [
-      { label: 'Envoyé', data: [], borderColor: '#6366f1', tension: .3, pointRadius: 0 },
-      { label: 'Reçu',   data: [], borderColor: '#f59e0b', tension: .3, pointRadius: 0 },
-    ]},
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: { x: { ticks: { maxRotation: 0 } }, y: { beginAtZero: true } },
-      animation: false,
-    }
-  });
-
-  function colorGauge(id, val) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.classList.remove('gauge-ok', 'gauge-warn', 'gauge-crit');
-    if (val >= 90) el.classList.add('gauge-crit');
-    else if (val >= 70) el.classList.add('gauge-warn');
-    else el.classList.add('gauge-ok');
-  }
-
-  function fmt(d) {
-    return new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  }
-
-  function refresh() {
-    const hours = document.getElementById('time-range').value;
-    fetch(URL + '?hours=' + hours, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-      .then(r => r.json())
-      .then(data => {
-        const m = data.metrics;
-        const labels = m.map(p => fmt(p.collected_at));
-        cpuChart.data.labels  = labels; cpuChart.data.datasets[0].data  = m.map(p => p.cpu_percent);  cpuChart.update();
-        ramChart.data.labels  = labels; ramChart.data.datasets[0].data  = m.map(p => p.memory_percent); ramChart.update();
-        diskChart.data.labels = labels; diskChart.data.datasets[0].data = m.map(p => p.disk_percent);  diskChart.update();
-        netChart.data.labels  = labels;
-        netChart.data.datasets[0].data = m.map(p => p.net_bytes_sent);
-        netChart.data.datasets[1].data = m.map(p => p.net_bytes_recv);
-        netChart.update();
-
-        const s = data.summary;
-        if (s && s.cpu !== undefined) {
-          document.getElementById('val-cpu').textContent   = s.cpu.toFixed(1) + ' %';
-          document.getElementById('val-ram').textContent   = s.ram.toFixed(1) + ' %';
-          document.getElementById('val-disk').textContent  = s.disk.toFixed(1) + ' %';
-          document.getElementById('val-load').textContent  = s.load.toFixed(2);
-          document.getElementById('val-uptime').textContent = s.uptime_h + ' h';
-          colorGauge('gauge-cpu', s.cpu);
-          colorGauge('gauge-ram', s.ram);
-          colorGauge('gauge-disk', s.disk);
-        }
-      })
-      .catch(() => {});
-  }
-
-  document.getElementById('time-range').addEventListener('change', refresh);
-  refresh();
-  refreshTimer = setInterval(refresh, 30000);
-})();
+  window.APM_SERVER_MONITORING = {
+    url: "{% url 'servers:monitoring' server.pk %}",
+  };
 </script>
+<script src="{% static 'js/server-monitoring.js' %}"></script>
 
 <style>
+  .monitoring-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.84rem;
+    color: var(--muted);
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--surface-2, rgba(0,0,0,.04));
+  }
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #94a3b8;
+    flex-shrink: 0;
+  }
+  .live-dot.is-live {
+    background: #10b981;
+    animation: pulse-live 1.5s ease-in-out infinite;
+  }
+  .live-dot.is-error {
+    background: #ef4444;
+  }
+  @keyframes pulse-live {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
   .gauge-ok   .value { color: var(--green, #10b981); }
   .gauge-warn .value { color: var(--amber, #f59e0b); }
   .gauge-crit .value { color: var(--red, #ef4444); font-weight: 700; }

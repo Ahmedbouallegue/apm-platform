@@ -37,8 +37,10 @@ PY
 }
 
 if [ "${SKIP_DB_WAIT:-0}" != "1" ]; then
-  set -- $(parse_db_host_port)
-  wait_for_tcp "$1" "$2" "PostgreSQL"
+  # Ne pas écraser les arguments originaux ($@), sinon `exec "$@"` exécutera "db <port>"
+  db_host="$(parse_db_host_port | awk '{print $1}')"
+  db_port="$(parse_db_host_port | awk '{print $2}')"
+  wait_for_tcp "$db_host" "$db_port" "PostgreSQL"
 fi
 
 if [ "${RUN_MIGRATIONS:-0}" = "1" ]; then

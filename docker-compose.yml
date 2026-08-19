@@ -103,6 +103,7 @@ services:
       CELERY_RESULT_BACKEND: redis://redis:6379/0
       RUN_MIGRATIONS: "0"
       RUN_COLLECTSTATIC: "0"
+      SKIP_DB_WAIT: "1"
     volumes:
       - .:/app
       - media_volume:/app/media
@@ -131,6 +132,7 @@ services:
       CELERY_RESULT_BACKEND: redis://redis:6379/0
       RUN_MIGRATIONS: "0"
       RUN_COLLECTSTATIC: "0"
+      SKIP_DB_WAIT: "1"
     volumes:
       - .:/app
     depends_on:
