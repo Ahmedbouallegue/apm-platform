@@ -2,11 +2,12 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from django.views.generic import DetailView, ListView
 
+from apps.accounts.roles import can_read
 from apps.audit.selectors.audit import audit_log_list
 
 
 def _can_view(user) -> bool:
-    return bool(user.is_authenticated)
+    return can_read(user)
 
 
 @method_decorator(login_required, name="dispatch")

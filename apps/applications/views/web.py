@@ -5,6 +5,9 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import DetailView, ListView
 
+from apps.accounts.decorators import user_passes_test_or_403
+from apps.accounts.roles import can_read, can_write_patrimoine
+
 from apps.applications.forms import ApplicationForm
 from apps.applications.models import Application
 from apps.applications.selectors.applications import application_list
@@ -16,14 +19,11 @@ from apps.applications.services.applications import (
 
 
 def _can_view_apps(user) -> bool:
-    return bool(user.is_authenticated)
+    return can_read(user)
 
 
 def _can_write_apps(user) -> bool:
-    return bool(
-        user.is_authenticated
-        and (user.is_superuser or user.role in {"admin", "dsi", "manager"})
-    )
+    return can_write_patrimoine(user)
 
 
 @method_decorator(login_required, name="dispatch")
@@ -70,7 +70,7 @@ class ApplicationDetailView(DetailView):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write_apps), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write_apps), name="dispatch")
 class ApplicationCreateView(View):
     template_name = "applications/form.html"
 
@@ -101,7 +101,7 @@ class ApplicationCreateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write_apps), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write_apps), name="dispatch")
 class ApplicationUpdateView(View):
     template_name = "applications/form.html"
 
@@ -136,7 +136,7 @@ class ApplicationUpdateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write_apps), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write_apps), name="dispatch")
 class ApplicationDeleteView(View):
     def post(self, request, pk):
         app = get_object_or_404(application_list(), pk=pk)

@@ -1,28 +1,19 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
+from apps.accounts.roles import can_read, can_write_patrimoine
+
 
 class CanManageApplications(BasePermission):
-    """
-    Admin/DSI/Manager: full access.
-    Viewer: read-only.
-    """
+    """Admin/DSI/Manager: full access. Viewer: read-only (even if is_superuser)."""
 
     def has_permission(self, request, view) -> bool:
-        user = request.user
-        if not user or not user.is_authenticated:
+        if not can_read(request.user):
             return False
-        if user.is_superuser or user.role in {"admin", "dsi", "manager"}:
+        if request.method in SAFE_METHODS:
             return True
-        if user.role == "viewer" and request.method in SAFE_METHODS:
-            return True
-        return False
+        return can_write_patrimoine(request.user)
 
 
 class CanWriteApplications(BasePermission):
     def has_permission(self, request, view) -> bool:
-        user = request.user
-        return bool(
-            user
-            and user.is_authenticated
-            and (user.is_superuser or user.role in {"admin", "dsi", "manager"})
-        )
+        return can_write_patrimoine(request.user)

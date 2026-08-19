@@ -62,6 +62,15 @@ class DocumentWriteSerializer(serializers.ModelSerializer):
     def validate_title(self, value):
         return require_non_empty(value, "Le nom du fichier")
 
+    def validate_file(self, value):
+        from django.conf import settings
+
+        from apps.core.validators import validate_uploaded_document
+
+        max_bytes = int(getattr(settings, "MAX_UPLOAD_SIZE_BYTES", 10 * 1024 * 1024))
+        validate_uploaded_document(value, max_bytes=max_bytes)
+        return value
+
     def create(self, validated_data):
         from apps.documents.services.documents import document_create
 

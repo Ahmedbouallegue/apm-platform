@@ -15,9 +15,6 @@ from apps.accounts.views.web import (
     UserListView,
     UserToggleActiveView,
     UserUpdateView,
-    face_clear_view,
-    face_enroll_view,
-    face_login_view,
     logout_view,
 )
 
@@ -30,11 +27,8 @@ urlpatterns = [
         BrandLoginView.as_view(authentication_form=BrandAuthenticationForm),
         name="login",
     ),
-    path("login/face/", face_login_view, name="login-face"),
     path("logout/", logout_view, name="logout"),
     path("profile/", ProfileView.as_view(), name="profile"),
-    path("profile/face/enroll/", face_enroll_view, name="face-enroll"),
-    path("profile/face/clear/", face_clear_view, name="face-clear"),
     path(
         "password-reset/",
         BrandPasswordResetView.as_view(),

@@ -1,6 +1,5 @@
-from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import (
     LoginView,
@@ -9,14 +8,12 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
     PasswordResetView,
 )
-from django.core.cache import cache
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.decorators.http import require_POST
 from django.views.generic import ListView
 
 from apps.accounts.forms import (
@@ -28,6 +25,7 @@ from apps.accounts.forms import (
     UserUpdateForm,
 )
 from apps.accounts.models import User
+from apps.accounts.decorators import user_passes_test_or_403
 from apps.accounts.roles import (
     ROLE_DESCRIPTIONS,
     can_manage_users,
@@ -36,13 +34,6 @@ from apps.accounts.roles import (
 )
 from apps.accounts.selectors.users import user_list
 from apps.accounts.services.csv_users import users_from_csv, users_to_csv
-from apps.accounts.services.face_auth import (
-    FaceAuthError,
-    authenticate_by_face,
-    clear_face,
-    enroll_face,
-    user_has_face,
-)
 from apps.accounts.services.users import user_activate, user_create, user_deactivate, user_update
 from apps.notifications.services.notifications import notify_user_login
 
@@ -172,7 +163,6 @@ class ProfileView(View):
             self.template_name,
             {
                 "form": ProfileForm(instance=request.user),
-                "face_enrolled": user_has_face(user=request.user),
             },
         )
 
@@ -190,101 +180,12 @@ class ProfileView(View):
         return render(
             request,
             self.template_name,
-            {"form": form, "face_enrolled": user_has_face(user=request.user)},
+            {"form": form},
         )
-
-
-def _face_login_rate_limited(request) -> bool:
-    key = f"face_login_attempts:{_client_ip(request)}"
-    attempts = cache.get(key, 0)
-    max_attempts = int(getattr(settings, "FACE_LOGIN_MAX_ATTEMPTS", 10))
-    return attempts >= max_attempts
-
-
-def _face_login_register_attempt(request) -> None:
-    key = f"face_login_attempts:{_client_ip(request)}"
-    lockout = int(getattr(settings, "FACE_LOGIN_LOCKOUT_SECONDS", 300))
-    attempts = cache.get(key, 0) + 1
-    cache.set(key, attempts, timeout=lockout)
-
-
-def _face_login_clear_attempts(request) -> None:
-    cache.delete(f"face_login_attempts:{_client_ip(request)}")
-
-
-def _parse_descriptor(request):
-    try:
-        import json
-
-        payload = json.loads(request.body.decode("utf-8") or "{}")
-    except (UnicodeDecodeError, ValueError):
-        return None
-    descriptor = payload.get("descriptor")
-    if not isinstance(descriptor, list):
-        return None
-    return descriptor
-
-
-@login_required
-@require_POST
-def face_enroll_view(request):
-    descriptor = _parse_descriptor(request)
-    if descriptor is None:
-        return JsonResponse({"ok": False, "error": "Requête invalide."}, status=400)
-    try:
-        enroll_face(user=request.user, descriptor=descriptor)
-    except FaceAuthError as exc:
-        return JsonResponse({"ok": False, "error": exc.messages[0]}, status=400)
-    return JsonResponse({"ok": True, "message": "Visage enregistré avec succès."})
-
-
-@login_required
-@require_POST
-def face_clear_view(request):
-    clear_face(user=request.user)
-    return JsonResponse({"ok": True, "message": "Identifiant facial retiré."})
-
-
-@require_POST
-def face_login_view(request):
-    if request.user.is_authenticated:
-        return JsonResponse({"ok": True, "redirect": reverse("web:home")})
-
-    if _face_login_rate_limited(request):
-        return JsonResponse(
-            {
-                "ok": False,
-                "error": "Trop de tentatives. Réessayez dans quelques minutes.",
-            },
-            status=429,
-        )
-
-    descriptor = _parse_descriptor(request)
-    if descriptor is None:
-        _face_login_register_attempt(request)
-        return JsonResponse({"ok": False, "error": "Requête invalide."}, status=400)
-
-    try:
-        user = authenticate_by_face(descriptor)
-    except FaceAuthError as exc:
-        _face_login_register_attempt(request)
-        return JsonResponse({"ok": False, "error": exc.messages[0]}, status=400)
-
-    if user is None:
-        _face_login_register_attempt(request)
-        return JsonResponse(
-            {"ok": False, "error": "Visage non reconnu. Réessayez ou utilisez le mot de passe."},
-            status=401,
-        )
-
-    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-    _face_login_clear_attempts(request)
-    _after_login(request, user, method="face")
-    return JsonResponse({"ok": True, "redirect": reverse("web:home")})
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_manage_users), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_manage_users), name="dispatch")
 class UserListView(ListView):
     template_name = "accounts/users/list.html"
     context_object_name = "users"
@@ -313,7 +214,7 @@ class UserListView(ListView):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_manage_users), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_manage_users), name="dispatch")
 class UserExportCsvView(View):
     def get(self, request):
         search = request.GET.get("q") or None
@@ -333,7 +234,7 @@ class UserExportCsvView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write_users), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write_users), name="dispatch")
 class UserImportCsvView(View):
     template_name = "accounts/users/import.html"
 
@@ -373,7 +274,7 @@ class UserImportCsvView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write_users), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write_users), name="dispatch")
 class UserCreateView(View):
     template_name = "accounts/users/form.html"
 
@@ -401,7 +302,7 @@ class UserCreateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write_users), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write_users), name="dispatch")
 class UserUpdateView(View):
     template_name = "accounts/users/form.html"
 
@@ -434,7 +335,7 @@ class UserUpdateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write_users), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write_users), name="dispatch")
 class UserToggleActiveView(View):
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)

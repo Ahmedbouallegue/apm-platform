@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 from datetime import date
+from pathlib import Path
 
 from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator, URLValidator
@@ -13,6 +14,12 @@ SERVER_NAME_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]{1,253}$")
 VERSION_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._+\-]{0,63}$")
 RESOURCE_RE = re.compile(r"^[0-9]+(\s?[a-zA-Z%]+)?$|^[0-9]+(\.[0-9]+)?\s?(v?CPU|Go|GB|Mo|MB|cores?)?$", re.I)
 PASSWORD_COMPLEXITY_RE = re.compile(r"^(?=.*[A-Za-z])(?=.*\d).{8,}$")
+
+ALLOWED_DOCUMENT_EXTENSIONS = frozenset(
+    {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".md", ".csv", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".zip"}
+)
+ALLOWED_DOCUMENT_MIME_PREFIXES = ("application/pdf", "application/msword", "application/vnd.", "text/", "image/")
+DEFAULT_MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 Mo
 
 
 def require_non_empty(value: str | None, label: str = "Ce champ") -> str:
@@ -117,6 +124,28 @@ def validate_app_name(value: str) -> str:
     if len(text) > 255:
         raise ValidationError("Le nom ne peut pas dépasser 255 caractères.")
     return text
+
+
+def validate_uploaded_document(uploaded_file, *, max_bytes: int | None = None) -> None:
+    """Valide type et taille d'un fichier document."""
+    if uploaded_file is None:
+        return
+    limit = max_bytes or DEFAULT_MAX_UPLOAD_BYTES
+    size = getattr(uploaded_file, "size", 0) or 0
+    if size > limit:
+        raise ValidationError(
+            f"Fichier trop volumineux (max {limit // (1024 * 1024)} Mo)."
+        )
+    name = getattr(uploaded_file, "name", "") or ""
+    ext = Path(name).suffix.lower()
+    if ext and ext not in ALLOWED_DOCUMENT_EXTENSIONS:
+        raise ValidationError(
+            f"Type de fichier non autorisé ({ext}). Extensions acceptées : "
+            f"{', '.join(sorted(ALLOWED_DOCUMENT_EXTENSIONS))}."
+        )
+    content_type = getattr(uploaded_file, "content_type", "") or ""
+    if content_type and not any(content_type.startswith(p) for p in ALLOWED_DOCUMENT_MIME_PREFIXES):
+        raise ValidationError("Type MIME du fichier non autorisé.")
 
 
 def validate_tech_name(value: str) -> str:

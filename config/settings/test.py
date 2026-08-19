@@ -45,3 +45,8 @@ CACHES = {
 # Disable shared caches in tests so assertions see fresh aggregates.
 DASHBOARD_STATS_CACHE_TTL = 0
 NOTIFICATION_BADGE_CACHE_TTL = 0
+
+# Security middleware — permissif en tests
+LOGIN_RATE_LIMIT_ENABLED = False
+CONTENT_SECURITY_POLICY = ""
+METRICS_ALLOWED_IPS = ["127.0.0.1", "::1", "testserver"]

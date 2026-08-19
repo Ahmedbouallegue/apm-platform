@@ -1,14 +1,15 @@
 """URL configuration for APM Platform."""
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
-from drf_spectacular.views import (
-    SpectacularAPIView,
-    SpectacularRedocView,
-    SpectacularSwaggerView,
+
+from apps.core.protected_docs import (
+    ProtectedSpectacularAPIView,
+    ProtectedSpectacularRedocView,
+    ProtectedSpectacularSwaggerView,
 )
+from apps.core.secure_media import SecureMediaView
 
 admin.site.site_header = "Topnet APM — Administration"
 admin.site.site_title = "Topnet APM"
@@ -22,6 +23,7 @@ def healthcheck(_request):
 
 urlpatterns = [
     path("", include("django_prometheus.urls")),
+    path("media/<path:path>", SecureMediaView.as_view(), name="secure-media"),
     path("", include("apps.accounts.urls_web")),
     path("", include("apps.applications.urls_web")),
     path("", include("apps.technologies.urls_web")),
@@ -39,16 +41,16 @@ urlpatterns = [
     path("", include("apps.dashboard.urls_web")),
     path("admin/", admin.site.urls),
     path("api/health/", healthcheck, name="healthcheck"),
-    # OpenAPI / Swagger
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    # OpenAPI / Swagger (Admin DSI + session requise)
+    path("api/schema/", ProtectedSpectacularAPIView.as_view(), name="schema"),
     path(
         "api/docs/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
+        ProtectedSpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
     path(
         "api/redoc/",
-        SpectacularRedocView.as_view(url_name="schema"),
+        ProtectedSpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
     # Auth + Users API (JWT)
@@ -70,7 +72,8 @@ urlpatterns = [
     path("api/dashboard/", include("apps.dashboard.urls")),
 ]
 
+# Dev only: servir static source (media toujours via SecureMediaView)
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    # Also expose source static/ during local DEBUG (WhiteNoise serves STATIC_ROOT).
+    from django.conf.urls.static import static
+
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

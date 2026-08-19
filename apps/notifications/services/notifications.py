@@ -104,7 +104,7 @@ def notify_user_login(*, user, method: str = "password") -> Notification | None:
     if already:
         return None
 
-    method_label = "reconnaissance faciale" if method == "face" else "mot de passe"
+    method_label = "mot de passe"
     display = user.get_full_name() or user.get_username()
     return notification_create(
         data={

@@ -22,7 +22,7 @@ Monolithe modulaire Django (Clean Architecture adaptée) :
 - `config/` — settings, URLs, WSGI/ASGI, Celery
 - `apps/` — bounded contexts métier (applications, serveurs, certificats, …)
 - Chaque app : `models` / `serializers` / `views` / `services` / `selectors` / `tasks`
-- Documentation : [`docs/architecture.md`](docs/architecture.md), [`docs/guide-utilisateur.md`](docs/guide-utilisateur.md)
+- Documentation : [`docs/architecture.md`](docs/architecture.md), [`docs/security.md`](docs/security.md), [`docs/guide-utilisateur.md`](docs/guide-utilisateur.md)
 
 ```
 Client → Nginx → Gunicorn (Django/DRF) → Services → PostgreSQL

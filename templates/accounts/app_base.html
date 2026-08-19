@@ -152,6 +152,63 @@
           </span>
           <span data-theme-label>Sombre</span>
         </button>
+        <div class="notif-menu">
+          <button
+            type="button"
+            class="btn btn-ghost notif-menu-toggle"
+            id="notif-menu-toggle"
+            aria-expanded="false"
+            aria-haspopup="menu"
+            aria-controls="notif-menu-dropdown"
+            title="Notifications"
+          >
+            <span class="notif-menu-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M6 9a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                <path d="M10 20a2 2 0 004 0"/>
+              </svg>
+            </span>
+            {% if notifications_unread %}
+              <span class="notif-menu-badge" aria-label="{{ notifications_unread }} non lues">
+                {{ notifications_unread }}
+              </span>
+            {% endif %}
+          </button>
+          <div
+            class="notif-menu-dropdown"
+            id="notif-menu-dropdown"
+            role="menu"
+            hidden
+          >
+            <div class="notif-menu-header">
+              <strong>Notifications</strong>
+              {% if notifications_unread %}
+                <span>{{ notifications_unread }} non lue{{ notifications_unread|pluralize }}</span>
+              {% else %}
+                <span>À jour</span>
+              {% endif %}
+            </div>
+            {% if notifications_preview %}
+              <div class="notif-menu-list">
+                {% for n in notifications_preview %}
+                  <a
+                    href="{% if n.link %}{{ n.link }}{% else %}{% url 'notifications:detail' n.pk %}{% endif %}"
+                    class="notif-menu-item {% if n.status == 'non_lue' %}is-unread{% endif %}"
+                    role="menuitem"
+                  >
+                    <span class="notif-menu-dot" aria-hidden="true"></span>
+                    <span class="notif-menu-title">{{ n.title }}</span>
+                  </a>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="notif-menu-empty">Aucune notification récente.</p>
+            {% endif %}
+            <a href="{% url 'notifications:list' %}" class="notif-menu-footer" role="menuitem">
+              Voir toutes les notifications
+            </a>
+          </div>
+        </div>
         <div class="user-menu">
           <button
             type="button"

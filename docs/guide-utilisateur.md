@@ -6,8 +6,7 @@ Plateforme de gestion du patrimoine applicatif (Application Portfolio Management
 
 1. Ouvrir l’URL de la plateforme (ex. `http://localhost:8000/`).
 2. Se connecter avec identifiant + mot de passe.
-3. Optionnel : onglet **Visage** si un identifiant facial a été enregistré dans le profil.
-4. Mot de passe oublié : lien **Mot de passe oublié** sur la page de connexion.
+3. Mot de passe oublié : lien **Mot de passe oublié** sur la page de connexion.
 
 Après connexion, une notification système est créée (une par jour maximum) et un toast de bienvenue s’affiche.
 
@@ -122,7 +121,7 @@ Bouton **Clair / Sombre** dans la barre supérieure (préférence stockée local
 
 ## 13. Profil
 
-Menu utilisateur (avatar) → **Mon profil** : identité, mot de passe, enrollment facial.  
+Menu utilisateur (avatar) → **Mon profil** : identité et mot de passe.  
 **Déconnexion** depuis le même menu.
 
 ---

@@ -1,5 +1,4 @@
 {% extends "accounts/app_base.html" %}
-{% load static %}
 
 {% block page_title %}Mon profil{% endblock %}
 {% block header_title %}Mon profil{% endblock %}
@@ -112,45 +111,4 @@
     </div>
   </form>
 </section>
-
-<section class="panel face-enroll-panel">
-  <div class="panel-head">
-    <div>
-      <strong>Sécurité biométrique</strong>
-      <span>Connexion alternative par reconnaissance faciale — usage intranet / poste de confiance uniquement (pas d’anti-spoofing avancé).</span>
-    </div>
-    <span
-      class="face-badge{% if face_enrolled %} is-on{% endif %}"
-      data-face-badge
-    >{% if face_enrolled %}Enrôlé{% else %}Non enrôlé{% endif %}</span>
-  </div>
-  <div
-    class="face-panel"
-    data-face-mode="enroll"
-    data-enroll-url="{% url 'web:face-enroll' %}"
-    data-clear-url="{% url 'web:face-clear' %}"
-  >
-    <div class="face-video-wrap">
-      <video data-face-video playsinline muted autoplay></video>
-    </div>
-    <p class="face-status" data-face-status>
-      Activez la caméra, cadrez votre visage, puis enregistrez l’identifiant facial.
-    </p>
-    <div class="face-actions">
-      <button type="button" class="btn btn-ghost" data-face-start>Activer la caméra</button>
-      <button type="button" class="btn btn-primary" data-face-enroll disabled>Enroler mon visage</button>
-      <button
-        type="button"
-        class="btn btn-ghost"
-        data-face-clear
-        {% if not face_enrolled %}hidden{% endif %}
-      >Retirer le visage</button>
-    </div>
-  </div>
-</section>
-{% endblock %}
-
-{% block extra_js %}
-{{ block.super }}
-<script src="{% static 'js/face-auth.js' %}"></script>
 {% endblock %}

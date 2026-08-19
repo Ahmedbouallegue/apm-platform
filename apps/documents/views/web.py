@@ -5,6 +5,9 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import DetailView, ListView
 
+from apps.accounts.decorators import user_passes_test_or_403
+from apps.accounts.roles import can_read, can_write_patrimoine
+
 from apps.applications.models import Application
 from apps.documents.forms import DocumentForm
 from apps.documents.models import Document
@@ -17,14 +20,11 @@ from apps.documents.services.documents import (
 
 
 def _can_view(user) -> bool:
-    return bool(user.is_authenticated)
+    return can_read(user)
 
 
 def _can_write(user) -> bool:
-    return bool(
-        user.is_authenticated
-        and (user.is_superuser or user.role in {"admin", "dsi", "manager"})
-    )
+    return can_write_patrimoine(user)
 
 
 @method_decorator(login_required, name="dispatch")
@@ -80,7 +80,7 @@ class DocumentDetailView(DetailView):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write), name="dispatch")
 class DocumentCreateView(View):
     template_name = "documents/form.html"
 
@@ -105,7 +105,7 @@ class DocumentCreateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write), name="dispatch")
 class DocumentUpdateView(View):
     template_name = "documents/form.html"
 
@@ -142,7 +142,7 @@ class DocumentUpdateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write), name="dispatch")
 class DocumentDeleteView(View):
     def post(self, request, pk):
         document = get_object_or_404(document_list(), pk=pk)

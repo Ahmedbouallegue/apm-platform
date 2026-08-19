@@ -5,6 +5,9 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import DetailView, ListView
 
+from apps.accounts.decorators import user_passes_test_or_403
+from apps.accounts.roles import can_read, can_write_patrimoine
+
 from apps.contracts.forms import ContractForm
 from apps.contracts.models import Contract
 from apps.contracts.selectors.contracts import contract_list
@@ -13,14 +16,11 @@ from apps.vendors.models import Vendor
 
 
 def _can_view(user) -> bool:
-    return bool(user.is_authenticated)
+    return can_read(user)
 
 
 def _can_write(user) -> bool:
-    return bool(
-        user.is_authenticated
-        and (user.is_superuser or user.role in {"admin", "dsi", "manager"})
-    )
+    return can_write_patrimoine(user)
 
 
 @method_decorator(login_required, name="dispatch")
@@ -76,7 +76,7 @@ class ContractDetailView(DetailView):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write), name="dispatch")
 class ContractCreateView(View):
     template_name = "contracts/form.html"
 
@@ -101,7 +101,7 @@ class ContractCreateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write), name="dispatch")
 class ContractUpdateView(View):
     template_name = "contracts/form.html"
 
@@ -138,7 +138,7 @@ class ContractUpdateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write), name="dispatch")
 class ContractDeleteView(View):
     def post(self, request, pk):
         contract = get_object_or_404(contract_list(), pk=pk)

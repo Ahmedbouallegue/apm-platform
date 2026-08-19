@@ -13,13 +13,13 @@
       <div class="auth-features">
         <div class="auth-feature"><span>✓</span> Inventaire applicatif centralisé</div>
         <div class="auth-feature"><span>✓</span> Suivi SSL, domaines et contrats</div>
-        <div class="auth-feature"><span>✓</span> Connexion par reconnaissance faciale</div>
+        <div class="auth-feature"><span>✓</span> Alertes d’expiration et audit</div>
       </div>
     </div>
   </section>
 
   <section class="auth-panel">
-    <div class="auth-card" data-auth-tabs>
+    <div class="auth-card">
       <div class="auth-card-top">
         <div>
           <h2>Connexion</h2>
@@ -41,55 +41,27 @@
         </button>
       </div>
 
-      <div class="auth-tabs" role="tablist">
-        <button type="button" class="auth-tab is-active" data-auth-tab="password" role="tab">Mot de passe</button>
-        <button type="button" class="auth-tab" data-auth-tab="face" role="tab">Visage</button>
-      </div>
+      {% if form.errors %}
+        <ul class="errorlist">
+          <li>Identifiant ou mot de passe incorrect.</li>
+        </ul>
+      {% endif %}
 
-      <div data-auth-pane="password" class="auth-pane is-active">
-        {% if form.errors %}
-          <ul class="errorlist">
-            <li>Identifiant ou mot de passe incorrect.</li>
-          </ul>
-        {% endif %}
-
-        <form method="post" class="js-validate" novalidate>
-          {% csrf_token %}
-          <div class="field">
-            <label for="id_username">Identifiant</label>
-            {{ form.username }}
-          </div>
-          <div class="field">
-            <label for="id_password">Mot de passe</label>
-            {{ form.password }}
-          </div>
-          <p class="auth-forgot">
-            <a href="{% url 'web:password-reset' %}">Mot de passe oublié ?</a>
-          </p>
-          <button class="btn btn-primary btn-block" type="submit">Se connecter</button>
-        </form>
-      </div>
-
-      <div data-auth-pane="face" class="auth-pane" hidden>
-        <div
-          class="face-panel"
-          data-face-mode="login"
-          data-login-url="{% url 'web:login-face' %}"
-        >
-          <p class="face-hint">
-            Enrollez votre visage dans <strong>Mon profil</strong>, puis utilisez la caméra ici.
-            Usage intranet / poste de confiance uniquement — ne remplace pas une authentification forte en production.
-          </p>
-          <div class="face-video-wrap">
-            <video data-face-video playsinline muted autoplay></video>
-          </div>
-          <p class="face-status" data-face-status>Activez la caméra pour démarrer.</p>
-          <div class="face-actions">
-            <button type="button" class="btn btn-ghost" data-face-start>Activer la caméra</button>
-            <button type="button" class="btn btn-primary" data-face-login disabled>Se connecter avec le visage</button>
-          </div>
+      <form method="post" class="js-validate" novalidate>
+        {% csrf_token %}
+        <div class="field">
+          <label for="id_username">Identifiant</label>
+          {{ form.username }}
         </div>
-      </div>
+        <div class="field">
+          <label for="id_password">Mot de passe</label>
+          {{ form.password }}
+        </div>
+        <p class="auth-forgot">
+          <a href="{% url 'web:password-reset' %}">Mot de passe oublié ?</a>
+        </p>
+        <button class="btn btn-primary btn-block" type="submit">Se connecter</button>
+      </form>
 
       <p class="auth-footer">
         <a href="/api/docs/">Documentation API</a>
@@ -97,8 +69,4 @@
     </div>
   </section>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/face-auth.js' %}"></script>
 {% endblock %}

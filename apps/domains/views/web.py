@@ -5,6 +5,9 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import DetailView, ListView
 
+from apps.accounts.decorators import user_passes_test_or_403
+from apps.accounts.roles import can_read, can_write_patrimoine
+
 from apps.applications.models import Application
 from apps.domains.forms import DomainForm
 from apps.domains.models import Domain
@@ -13,14 +16,11 @@ from apps.domains.services.domains import domain_create, domain_soft_delete, dom
 
 
 def _can_view(user) -> bool:
-    return bool(user.is_authenticated)
+    return can_read(user)
 
 
 def _can_write(user) -> bool:
-    return bool(
-        user.is_authenticated
-        and (user.is_superuser or user.role in {"admin", "dsi", "manager"})
-    )
+    return can_write_patrimoine(user)
 
 
 @method_decorator(login_required, name="dispatch")
@@ -74,7 +74,7 @@ class DomainDetailView(DetailView):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write), name="dispatch")
 class DomainCreateView(View):
     template_name = "domains/form.html"
 
@@ -99,7 +99,7 @@ class DomainCreateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write), name="dispatch")
 class DomainUpdateView(View):
     template_name = "domains/form.html"
 
@@ -136,7 +136,7 @@ class DomainUpdateView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_write), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write), name="dispatch")
 class DomainDeleteView(View):
     def post(self, request, pk):
         domain = get_object_or_404(domain_list(), pk=pk)

@@ -8,6 +8,7 @@
 4. **12-factor** : configuration via variables d’environnement.
 5. **Observabilité** : healthcheck, métriques Prometheus, logs structurés (baseline).
 6. **CI/CD** : GitHub Actions — lint/tests/Docker (CI) + publication GHCR (CD). Voir [`ci-cd.md`](ci-cd.md).
+7. **Sécurité** : médias auth, docs API protégées, JWT blacklist, rate limit — voir [`security.md`](security.md).
 
 ## Couches
 

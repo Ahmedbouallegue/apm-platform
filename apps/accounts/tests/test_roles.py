@@ -51,6 +51,18 @@ class RoleHelpersUnitTests(TestCase):
         self.assertTrue(can_write_patrimoine(self.admin))
         self.assertFalse(can_write_patrimoine(self.viewer))
 
+    def test_viewer_superuser_still_read_only(self):
+        """Misconfigured Lecteur+is_superuser must not unlock CRUD."""
+        self.viewer.is_superuser = True
+        self.viewer.is_staff = True
+        self.viewer.save(update_fields=["is_superuser", "is_staff"])
+        self.assertFalse(can_write_patrimoine(self.viewer))
+        self.assertFalse(can_write_users(self.viewer))
+        self.assertFalse(can_configure_platform(self.viewer))
+        self.assertFalse(is_admin_dsi(self.viewer))
+        self.assertFalse(can_manage_users(self.viewer))
+        self.assertTrue(can_read(self.viewer))
+
     def test_can_configure_platform(self):
         self.assertTrue(can_configure_platform(self.admin))
         self.assertFalse(can_configure_platform(self.manager))

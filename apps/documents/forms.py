@@ -49,3 +49,13 @@ class DocumentForm(forms.ModelForm):
 
     def clean_title(self):
         return require_non_empty(self.cleaned_data.get("title"), "Le titre")
+
+    def clean_file(self):
+        from django.conf import settings
+
+        uploaded = self.cleaned_data.get("file")
+        from apps.core.validators import validate_uploaded_document
+
+        max_bytes = int(getattr(settings, "MAX_UPLOAD_SIZE_BYTES", 10 * 1024 * 1024))
+        validate_uploaded_document(uploaded, max_bytes=max_bytes)
+        return uploaded

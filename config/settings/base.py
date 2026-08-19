@@ -34,6 +34,7 @@ THIRD_PARTY_APPS = [
     "django_prometheus",
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "corsheaders",
     "django_filters",
@@ -69,6 +70,10 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.core.middleware.LoginRateLimitMiddleware",
+    "apps.core.middleware.AdminAccessMiddleware",
+    "apps.core.middleware.MetricsAccessMiddleware",
+    "apps.core.middleware.SecurityHeadersMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
@@ -139,12 +144,40 @@ LOGIN_URL = "web:login"
 LOGIN_REDIRECT_URL = "web:home"
 LOGOUT_REDIRECT_URL = "web:login"
 
-# Facial login (face-api.js 128-D descriptors, euclidean distance)
-FACE_MATCH_THRESHOLD = env.float("FACE_MATCH_THRESHOLD", default=0.55)
-FACE_AMBIGUITY_MARGIN = env.float("FACE_AMBIGUITY_MARGIN", default=0.05)
-FACE_LOGIN_MAX_ATTEMPTS = env.int("FACE_LOGIN_MAX_ATTEMPTS", default=10)
-FACE_LOGIN_LOCKOUT_SECONDS = env.int("FACE_LOGIN_LOCKOUT_SECONDS", default=300)
-FACE_DESCRIPTOR_SIZE = 128
+# Sessions / CSRF (durcissement ; cookies secure activés en production HTTPS)
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = "Lax"
+
+# Rate limiting auth (login web, JWT, reset password)
+LOGIN_RATE_LIMIT_ENABLED = env.bool("LOGIN_RATE_LIMIT_ENABLED", default=True)
+LOGIN_RATE_LIMIT_MAX_ATTEMPTS = env.int("LOGIN_RATE_LIMIT_MAX_ATTEMPTS", default=10)
+LOGIN_RATE_LIMIT_WINDOW_SECONDS = env.int("LOGIN_RATE_LIMIT_WINDOW_SECONDS", default=300)
+
+# Uploads
+MAX_UPLOAD_SIZE_BYTES = env.int("MAX_UPLOAD_SIZE_BYTES", default=10 * 1024 * 1024)
+
+# Prometheus /metrics
+METRICS_TOKEN = env("METRICS_TOKEN", default="")
+METRICS_ALLOWED_IPS = env.list("METRICS_ALLOWED_IPS", default=["127.0.0.1", "::1"])
+
+# Content-Security-Policy (CDN Chart.js, Google Fonts)
+CONTENT_SECURITY_POLICY = env(
+    "CONTENT_SECURITY_POLICY",
+    default=(
+        "default-src 'self'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "frame-ancestors 'none'; "
+        "object-src 'none'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: blob:; "
+        "connect-src 'self';"
+    ),
+)
 
 # ---------------------------------------------------------------------------
 # Email
@@ -183,6 +216,14 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
     ),
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": env("DRF_THROTTLE_ANON", default="60/minute"),
+        "user": env("DRF_THROTTLE_USER", default="300/minute"),
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -196,7 +237,7 @@ SIMPLE_JWT = {
         days=env.int("JWT_REFRESH_TOKEN_LIFETIME_DAYS", default=7)
     ),
     "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": False,
+    "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }

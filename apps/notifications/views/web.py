@@ -5,7 +5,8 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import DetailView, ListView
 
-from apps.accounts.roles import can_configure_platform, is_admin_dsi
+from apps.accounts.decorators import user_passes_test_or_403
+from apps.accounts.roles import can_configure_platform, can_read, is_admin_dsi
 from apps.notifications.forms import PlatformSettingsForm
 from apps.notifications.models import Notification, PlatformSettings
 from apps.notifications.selectors.notifications import notification_list
@@ -13,7 +14,7 @@ from apps.notifications.services.notifications import notification_mark_read
 
 
 def _can_view(user) -> bool:
-    return bool(user.is_authenticated)
+    return can_read(user)
 
 
 @method_decorator(login_required, name="dispatch")
@@ -72,7 +73,9 @@ class NotificationMarkReadView(View):
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(can_configure_platform), name="dispatch")
+@method_decorator(
+    user_passes_test_or_403(can_configure_platform), name="dispatch"
+)
 class PlatformSettingsView(View):
     template_name = "notifications/settings.html"
 

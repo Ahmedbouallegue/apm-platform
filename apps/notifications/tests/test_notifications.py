@@ -112,7 +112,7 @@ class RoleAccessWebTests(TestCase):
     def test_manager_cannot_open_settings(self):
         self.client.login(username="rolemanager", password="Secret123!")
         response = self.client.get("/settings/")
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_can_list_users_but_not_create(self):
         self.client.login(username="rolemanager", password="Secret123!")
@@ -120,12 +120,12 @@ class RoleAccessWebTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Nouvel utilisateur")
         create = self.client.get("/users/new/")
-        self.assertEqual(create.status_code, 302)
+        self.assertEqual(create.status_code, 403)
 
     def test_viewer_cannot_list_users(self):
         self.client.login(username="roleviewer", password="Secret123!")
         response = self.client.get("/users/")
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
 
 
 class LoginNotificationTests(TestCase):
@@ -195,3 +195,6 @@ class NotificationWebTests(TestCase):
         self.client.login(username="webnot", password="Secret123!")
         response = self.client.get("/")
         self.assertContains(response, "nav-badge")
+        self.assertContains(response, "notif-menu-dropdown")
+        self.assertContains(response, "Non lue")
+        self.assertContains(response, "notif-menu-toggle")

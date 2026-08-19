@@ -146,7 +146,7 @@ class UserManagementWebTests(TestCase):
         )
         self.client.login(username="webviewer", password="Secret123!")
         response = self.client.get("/users/export.csv")
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
 
 
 class PasswordResetWebTests(TestCase):

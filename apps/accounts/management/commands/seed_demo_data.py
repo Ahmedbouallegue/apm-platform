@@ -102,6 +102,21 @@ class Command(BaseCommand):
             if created:
                 user.set_password(password)
                 user.save()
+            else:
+                # Keep role/staff flags coherent on re-seed (esp. Lecteur).
+                changed = []
+                if user.role != role:
+                    user.role = role
+                    changed.append("role")
+                want_staff = bool(staff or role == User.Role.ADMIN)
+                if user.is_staff != want_staff:
+                    user.is_staff = want_staff
+                    changed.append("is_staff")
+                if role == User.Role.VIEWER and user.is_superuser:
+                    user.is_superuser = False
+                    changed.append("is_superuser")
+                if changed:
+                    user.save(update_fields=changed)
             users[username] = user
         return users
 
