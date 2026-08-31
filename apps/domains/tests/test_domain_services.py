@@ -15,7 +15,7 @@ User = get_user_model()
 class DomainServiceUnitTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            username="domsvc", password="Secret123!", role=User.Role.MANAGER
+            username="domsvc", password="Secret123!", role=User.Role.DSI
         )
 
     def test_create_with_auto_renew_and_soft_delete(self):
@@ -49,7 +49,7 @@ class DomainAutoRenewAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.manager = User.objects.create_user(
-            username="domapi", password="Secret123!", role=User.Role.MANAGER
+            username="domapi", password="Secret123!", role=User.Role.DSI
         )
 
     def test_create_domain_with_auto_renew(self):

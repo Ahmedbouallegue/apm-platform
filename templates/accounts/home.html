@@ -13,13 +13,6 @@
 {% endblock %}
 
 {% block content %}
-{% if is_viewer %}
-  <div class="role-banner" role="status">
-    <strong>Mode lecture</strong>
-    <span>Votre rôle Lecteur permet de consulter le catalogue. La création et la modification sont réservées aux managers / DSI.</span>
-  </div>
-{% endif %}
-
 <section class="home-hero home-hero--{{ stats.health.level }}">
   <div class="home-hero-main">
     <p class="hero-kicker">Topnet DSI · Synthèse temps réel</p>

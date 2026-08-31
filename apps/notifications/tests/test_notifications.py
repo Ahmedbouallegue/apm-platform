@@ -17,7 +17,7 @@ class NotificationAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.manager = User.objects.create_user(
-            username="notmgr", password="Secret123!", role=User.Role.MANAGER
+            username="notmgr", password="Secret123!", role=User.Role.DSI
         )
 
     def test_list_own_notifications(self):
@@ -92,48 +92,63 @@ class RoleAccessWebTests(TestCase):
             role=User.Role.ADMIN,
             is_staff=True,
         )
-        self.manager = User.objects.create_user(
-            username="rolemanager",
+        self.dsi = User.objects.create_user(
+            username="rolesdsi",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
+            is_staff=True,
         )
-        self.viewer = User.objects.create_user(
-            username="roleviewer",
+        self.system = User.objects.create_user(
+            username="rolesystem",
             password="Secret123!",
-            role=User.Role.VIEWER,
+            role=User.Role.SYSTEM,
         )
 
-    def test_admin_can_open_settings(self):
-        self.client.login(username="roleadmin", password="Secret123!")
+    def test_dsi_can_open_settings(self):
+        self.client.login(username="rolesdsi", password="Secret123!")
         response = self.client.get("/settings/")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Paramètres globaux")
 
-    def test_manager_cannot_open_settings(self):
-        self.client.login(username="rolemanager", password="Secret123!")
+    def test_admin_cannot_open_settings(self):
+        self.client.login(username="roleadmin", password="Secret123!")
         response = self.client.get("/settings/")
         self.assertEqual(response.status_code, 403)
 
-    def test_manager_can_list_users_but_not_create(self):
-        self.client.login(username="rolemanager", password="Secret123!")
+    def test_system_cannot_open_settings(self):
+        self.client.login(username="rolesystem", password="Secret123!")
+        response = self.client.get("/settings/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_can_list_users(self):
+        self.client.login(username="roleadmin", password="Secret123!")
         response = self.client.get("/users/")
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Nouvel utilisateur")
-        create = self.client.get("/users/new/")
-        self.assertEqual(create.status_code, 403)
+        self.assertContains(response, "Nouvel utilisateur")
 
-    def test_viewer_cannot_list_users(self):
-        self.client.login(username="roleviewer", password="Secret123!")
+    def test_dsi_cannot_list_users(self):
+        self.client.login(username="rolesdsi", password="Secret123!")
         response = self.client.get("/users/")
         self.assertEqual(response.status_code, 403)
 
+    def test_system_cannot_list_users(self):
+        self.client.login(username="rolesystem", password="Secret123!")
+        response = self.client.get("/users/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_system_can_manage_servers_not_applications(self):
+        self.client.login(username="rolesystem", password="Secret123!")
+        servers = self.client.get("/servers/")
+        self.assertEqual(servers.status_code, 200)
+        apps = self.client.get("/applications/")
+        self.assertEqual(apps.status_code, 403)
 
 class LoginNotificationTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username="loguser",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
             first_name="Sara",
             last_name="Ben",
         )
@@ -172,7 +187,7 @@ class LoginNotificationTests(TestCase):
 class NotificationWebTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            username="webnot", password="Secret123!", role=User.Role.MANAGER
+            username="webnot", password="Secret123!", role=User.Role.DSI
         )
         Notification.objects.create(
             user=self.user, title="Notif web", message="Hello", notification_type="info"

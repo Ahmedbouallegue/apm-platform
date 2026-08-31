@@ -13,7 +13,7 @@ class DependencyAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.manager = User.objects.create_user(
-            username="depmgr", password="Secret123!", role=User.Role.MANAGER
+            username="depmgr", password="Secret123!", role=User.Role.DSI
         )
         self.src = Application.objects.create(name="Portail RH")
         self.tgt = Application.objects.create(name="API Paie")
@@ -38,7 +38,7 @@ class DependencyAPITests(TestCase):
 class DependencyWebTests(TestCase):
     def setUp(self):
         self.manager = User.objects.create_user(
-            username="webdep", password="Secret123!", role=User.Role.MANAGER
+            username="webdep", password="Secret123!", role=User.Role.DSI
         )
         src = Application.objects.create(name="Intranet")
         Dependency.objects.create(

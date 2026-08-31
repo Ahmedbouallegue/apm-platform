@@ -19,7 +19,7 @@ User = get_user_model()
 class ContractServiceUnitTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            username="ctrsvc", password="Secret123!", role=User.Role.MANAGER
+            username="ctrsvc", password="Secret123!", role=User.Role.DSI
         )
         self.vendor = Vendor.objects.create(
             name="Oracle",

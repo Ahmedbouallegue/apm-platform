@@ -21,15 +21,15 @@ class PlatformSettingsUnitTests(TestCase):
 
 class PlatformSettingsWebTests(TestCase):
     def setUp(self):
-        self.admin = User.objects.create_user(
-            username="setadmin",
+        self.dsi = User.objects.create_user(
+            username="setdsi",
             password="Secret123!",
-            role=User.Role.ADMIN,
+            role=User.Role.DSI,
             is_staff=True,
         )
 
-    def test_admin_can_update_settings(self):
-        self.client.login(username="setadmin", password="Secret123!")
+    def test_dsi_can_update_settings(self):
+        self.client.login(username="setdsi", password="Secret123!")
         response = self.client.post(
             "/settings/",
             {

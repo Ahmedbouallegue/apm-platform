@@ -14,7 +14,7 @@ class VendorAPITests(TestCase):
         self.manager = User.objects.create_user(
             username="vendmgr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
 
     def test_create_vendor(self):
@@ -39,7 +39,7 @@ class VendorWebTests(TestCase):
         self.manager = User.objects.create_user(
             username="webvend",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         Vendor.objects.create(name="DigiCert", vendor_type=Vendor.VendorType.SECURITY)
 

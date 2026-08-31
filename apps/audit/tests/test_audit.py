@@ -13,7 +13,7 @@ class AuditAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.manager = User.objects.create_user(
-            username="audmgr", password="Secret123!", role=User.Role.MANAGER
+            username="audmgr", password="Secret123!", role=User.Role.DSI
         )
         audit_log_create(
             action="create",
@@ -34,7 +34,7 @@ class AuditAPITests(TestCase):
 class AuditWebTests(TestCase):
     def setUp(self):
         self.manager = User.objects.create_user(
-            username="webaud", password="Secret123!", role=User.Role.MANAGER
+            username="webaud", password="Secret123!", role=User.Role.DSI
         )
         audit_log_create(action="login", entity="User", entity_id="1", user=self.manager)
 

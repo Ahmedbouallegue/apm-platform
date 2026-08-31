@@ -14,7 +14,7 @@ class ValidationAPITests(TestCase):
         self.manager = User.objects.create_user(
             username="valmgr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
             email="valmgr@topnet.tn",
         )
         self.client.force_authenticate(self.manager)
@@ -33,7 +33,7 @@ class ValidationAPITests(TestCase):
                 "username": "weakuser",
                 "email": "weak@topnet.tn",
                 "password": "password",
-                "role": "viewer",
+                "role": "dsi",
             },
             format="json",
         )
@@ -79,7 +79,7 @@ class ValidationAPITests(TestCase):
                 "email": "badphone@topnet.tn",
                 "password1": "Secret123!",
                 "password2": "Secret123!",
-                "role": "viewer",
+                "role": "dsi",
                 "phone": "abc",
                 "department": "DSI",
                 "is_active": "on",

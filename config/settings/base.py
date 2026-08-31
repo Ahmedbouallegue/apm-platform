@@ -57,6 +57,7 @@ LOCAL_APPS = [
     "apps.notifications",
     "apps.audit",
     "apps.dashboard",
+    "apps.chatbot",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -291,6 +292,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.notifications.tasks.check_expiring_resources",
         "schedule": 60 * 60 * 24,  # every 24h — seuils J-60 / J-30 / J-0 (PlatformSettings)
     },
+    "ping-servers-every-2-minutes": {
+        "task": "apps.servers.tasks.ping_all_servers",
+        "schedule": 120,  # every 2 minutes
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -316,3 +321,8 @@ LOGGING = {
         "level": env("LOG_LEVEL", default="INFO"),
     },
 }
+
+# ---------------------------------------------------------------------------
+# Chatbot IA DSI — Google Gemini
+# ---------------------------------------------------------------------------
+GEMINI_API_KEY = env("GEMINI_API_KEY", default="")

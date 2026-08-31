@@ -39,6 +39,7 @@ urlpatterns = [
     path("", include("apps.notifications.urls_web")),
     path("", include("apps.audit.urls_web")),
     path("", include("apps.dashboard.urls_web")),
+    path("", include("apps.chatbot.urls_web")),
     path("admin/", admin.site.urls),
     path("api/health/", healthcheck, name="healthcheck"),
     # OpenAPI / Swagger (Admin DSI + session requise)

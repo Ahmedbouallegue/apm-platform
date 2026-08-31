@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 
-from apps.accounts.roles import WRITE_ROLES
+from apps.accounts.models import User
 from apps.notifications.models import Notification
 from apps.notifications.services.badge import invalidate_unread_badge
 
@@ -78,7 +78,7 @@ def notify_managers(
 ) -> int:
     users = User.objects.filter(
         is_active=True,
-        role__in=WRITE_ROLES,
+        role__in=[User.Role.DSI],
     )
     return notify_users(
         users=users,

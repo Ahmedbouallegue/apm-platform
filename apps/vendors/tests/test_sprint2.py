@@ -20,7 +20,7 @@ class Sprint2APITests(TestCase):
         self.manager = User.objects.create_user(
             username="s2mgr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         self.client.force_authenticate(self.manager)
         self.app = Application.objects.create(name="CRM Sprint2")
@@ -100,7 +100,7 @@ class Sprint2WebTests(TestCase):
         self.user = User.objects.create_user(
             username="s2web",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
 
     def test_list_pages_require_login_then_render(self):

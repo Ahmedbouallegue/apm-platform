@@ -10,6 +10,7 @@ from apps.accounts.views.web import (
     HomeView,
     ProfileView,
     UserCreateView,
+    UserDeleteView,
     UserExportCsvView,
     UserImportCsvView,
     UserListView,
@@ -55,4 +56,5 @@ urlpatterns = [
     path("users/new/", UserCreateView.as_view(), name="user-create"),
     path("users/<int:pk>/edit/", UserUpdateView.as_view(), name="user-edit"),
     path("users/<int:pk>/toggle/", UserToggleActiveView.as_view(), name="user-toggle"),
+    path("users/<int:pk>/delete/", UserDeleteView.as_view(), name="user-delete"),
 ]

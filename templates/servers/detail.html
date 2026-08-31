@@ -42,6 +42,21 @@
       <div>{{ server.ip_address }}</div>
     </div>
     <div>
+      <div style="color:var(--muted);font-size:.84rem">Ping Réseau</div>
+      <div>
+        {% if server.ping_status == "up" %}
+          <span class="badge badge-on">🟢 En ligne</span>
+        {% elif server.ping_status == "down" %}
+          <span class="badge badge-off">🔴 Hors ligne</span>
+        {% else %}
+          <span class="badge" style="background:#eee;color:#666">⚪ Inconnu</span>
+        {% endif %}
+        {% if server.last_ping_at %}
+        <div style="font-size:0.8rem; color:var(--muted); margin-top:4px;">{{ server.last_ping_at|date:"d/m/Y H:i:s" }}</div>
+        {% endif %}
+      </div>
+    </div>
+    <div>
       <div style="color:var(--muted);font-size:.84rem">OS</div>
       <div>{{ server.os|default:"—" }}</div>
     </div>

@@ -6,7 +6,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView
 
 from apps.accounts.decorators import user_passes_test_or_403
-from apps.accounts.roles import can_configure_platform, can_read, is_admin_dsi
+from apps.accounts.roles import can_configure_platform, can_read_patrimoine, is_admin_dsi
 from apps.notifications.forms import PlatformSettingsForm
 from apps.notifications.models import Notification, PlatformSettings
 from apps.notifications.selectors.notifications import notification_list
@@ -14,7 +14,7 @@ from apps.notifications.services.notifications import notification_mark_read
 
 
 def _can_view(user) -> bool:
-    return can_read(user)
+    return can_read_patrimoine(user)
 
 
 @method_decorator(login_required, name="dispatch")

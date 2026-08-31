@@ -17,7 +17,7 @@ User = get_user_model()
 class CertificateServiceUnitTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            username="certsvc", password="Secret123!", role=User.Role.MANAGER
+            username="certsvc", password="Secret123!", role=User.Role.DSI
         )
 
     def test_create_update_soft_delete(self):

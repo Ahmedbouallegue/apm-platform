@@ -17,7 +17,7 @@ User = get_user_model()
 class ApplicationServiceUnitTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            username="appsvc", password="Secret123!", role=User.Role.MANAGER
+            username="appsvc", password="Secret123!", role=User.Role.DSI
         )
         self.tech = Technology.objects.create(
             name="PostgreSQL",

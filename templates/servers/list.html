@@ -62,6 +62,14 @@
             {% else %}
               <span class="badge badge-off">Inactif</span>
             {% endif %}
+            <br>
+            {% if srv.ping_status == "up" %}
+              <span class="badge badge-on" style="margin-top:4px" title="Dernier ping: {{ srv.last_ping_at|default:'-' }}">🟢 UP</span>
+            {% elif srv.ping_status == "down" %}
+              <span class="badge badge-off" style="margin-top:4px" title="Dernier ping: {{ srv.last_ping_at|default:'-' }}">🔴 DOWN</span>
+            {% else %}
+              <span class="badge" style="margin-top:4px;background:#eee;color:#666">⚪ Inconnu</span>
+            {% endif %}
           </td>
           <td>
             <div class="row-actions">

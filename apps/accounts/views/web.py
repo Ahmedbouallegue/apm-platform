@@ -34,7 +34,7 @@ from apps.accounts.roles import (
 )
 from apps.accounts.selectors.users import user_list
 from apps.accounts.services.csv_users import users_from_csv, users_to_csv
-from apps.accounts.services.users import user_activate, user_create, user_deactivate, user_update
+from apps.accounts.services.users import user_activate, user_create, user_deactivate, user_delete, user_update
 from apps.notifications.services.notifications import notify_user_login
 
 
@@ -144,11 +144,6 @@ class HomeView(View):
                 "stats": stats,
                 "charts_json": stats.get("charts") or {},
                 "can_write": _can_write_apps(request.user),
-                "is_viewer": (
-                    request.user.is_authenticated
-                    and request.user.role == User.Role.VIEWER
-                    and not request.user.is_superuser
-                ),
             },
         )
 
@@ -348,4 +343,18 @@ class UserToggleActiveView(View):
         else:
             user_activate(user=user, actor=request.user)
             messages.success(request, f"Compte « {user.username} » réactivé.")
+        return redirect("web:user-list")
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_write_users), name="dispatch")
+class UserDeleteView(View):
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        if user.pk == request.user.pk:
+            messages.error(request, "Vous ne pouvez pas supprimer votre propre compte.")
+            return redirect("web:user-list")
+        username = user.username
+        user_delete(user=user, actor=request.user)
+        messages.success(request, f"Utilisateur « {username} » supprimé définitivement.")
         return redirect("web:user-list")

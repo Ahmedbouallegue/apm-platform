@@ -21,12 +21,15 @@
           <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9zm0 7h6v-5H4v5zm10 0h6V11h-6v9zm0-17v5h6V3h-6z"/></svg></span>
           Accueil
         </a>
+        {% if can_read_patrimoine or can_read_infrastructure %}
         <a href="{% url 'dashboard:home' %}" class="{% if request.resolver_match.namespace == 'dashboard' %}is-active{% endif %}">
           <span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19h16M7 16V9m5 7V5m5 11v-3"/></svg></span>
           Analyses
         </a>
+        {% endif %}
       </div>
 
+      {% if can_read_patrimoine %}
       <div class="nav-group">
         <div class="nav-label">Catalogue SI</div>
         <a href="{% url 'applications:list' %}" class="{% if request.resolver_match.namespace == 'applications' %}is-active{% endif %}">
@@ -42,7 +45,9 @@
           Dépendances
         </a>
       </div>
+      {% endif %}
 
+      {% if can_read_infrastructure %}
       <div class="nav-group">
         <div class="nav-label">Infrastructure</div>
         <a href="{% url 'environments:list' %}" class="{% if request.resolver_match.namespace == 'environments' %}is-active{% endif %}">
@@ -54,7 +59,9 @@
           Serveurs
         </a>
       </div>
+      {% endif %}
 
+      {% if can_read_patrimoine %}
       <div class="nav-group">
         <div class="nav-label">Ressources</div>
         <a href="{% url 'certificates:list' %}" class="{% if request.resolver_match.namespace == 'certificates' %}is-active{% endif %}">
@@ -97,6 +104,7 @@
           Audit
         </a>
       </div>
+      {% endif %}
 
       {% if can_manage_users or can_configure_platform %}
       <div class="nav-group">

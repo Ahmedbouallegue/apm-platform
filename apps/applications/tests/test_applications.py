@@ -15,13 +15,13 @@ class ApplicationAPITests(TestCase):
         self.manager = User.objects.create_user(
             username="mgr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
             email="mgr@topnet.tn",
         )
         self.viewer = User.objects.create_user(
             username="view",
             password="Secret123!",
-            role=User.Role.VIEWER,
+            role=User.Role.SYSTEM,
             email="view@topnet.tn",
         )
         self.tech = Technology.objects.create(
@@ -65,7 +65,7 @@ class ApplicationWebTests(TestCase):
         self.manager = User.objects.create_user(
             username="webmgr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         Application.objects.create(
             name="Billing",
@@ -87,41 +87,20 @@ class ApplicationWebTests(TestCase):
         self.assertContains(response, "Gestion des applications")
 
 
-class ApplicationViewerWebTests(TestCase):
+class ApplicationSystemWebTests(TestCase):
     def setUp(self):
-        self.viewer = User.objects.create_user(
-            username="webview",
+        self.system = User.objects.create_user(
+            username="webapp_system",
             password="Secret123!",
-            role=User.Role.VIEWER,
-        )
-        self.app = Application.objects.create(
-            name="CRM",
-            status=Application.Status.PRODUCTION,
-            criticality=Application.Criticality.HIGH,
-            business_unit="Commercial",
-            owner=self.viewer,
+            role=User.Role.SYSTEM,
         )
 
-    def test_viewer_can_list_without_create_cta(self):
-        self.client.login(username="webview", password="Secret123!")
+    def test_system_cannot_access_applications(self):
+        self.client.login(username="webapp_system", password="Secret123!")
         response = self.client.get("/applications/")
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "CRM")
-        self.assertNotContains(response, 'href="/applications/new/"')
-
-    def test_viewer_cannot_open_create_form(self):
-        self.client.login(username="webview", password="Secret123!")
-        response = self.client.get("/applications/new/")
         self.assertEqual(response.status_code, 403)
 
-    def test_viewer_cannot_open_edit_form(self):
-        self.client.login(username="webview", password="Secret123!")
-        response = self.client.get(f"/applications/{self.app.pk}/edit/")
-        self.assertEqual(response.status_code, 403)
-
-    def test_viewer_superuser_still_blocked_from_create(self):
-        self.viewer.is_superuser = True
-        self.viewer.save(update_fields=["is_superuser"])
-        self.client.login(username="webview", password="Secret123!")
+    def test_system_cannot_open_create_form(self):
+        self.client.login(username="webapp_system", password="Secret123!")
         response = self.client.get("/applications/new/")
         self.assertEqual(response.status_code, 403)

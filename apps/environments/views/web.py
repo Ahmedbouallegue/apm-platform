@@ -6,7 +6,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView
 
 from apps.accounts.decorators import user_passes_test_or_403
-from apps.accounts.roles import can_read, can_write_patrimoine
+from apps.accounts.roles import can_read_infrastructure, can_write_infrastructure
 
 from apps.applications.models import Application
 from apps.environments.forms import EnvironmentForm
@@ -20,11 +20,11 @@ from apps.environments.services.environments import (
 
 
 def _can_view(user) -> bool:
-    return can_read(user)
+    return can_read_infrastructure(user)
 
 
 def _can_write(user) -> bool:
-    return can_write_patrimoine(user)
+    return can_write_infrastructure(user)
 
 
 @method_decorator(login_required, name="dispatch")

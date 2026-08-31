@@ -31,14 +31,18 @@ CSV_HEADERS = (
 ROLE_ALIASES = {
     "admin": User.Role.ADMIN,
     "administrateur": User.Role.ADMIN,
-    "administrateur dsi": User.Role.ADMIN,
     "dsi": User.Role.DSI,
-    "manager": User.Role.MANAGER,
-    "technicien": User.Role.MANAGER,
-    "equipe dsi": User.Role.MANAGER,
-    "équipe dsi": User.Role.MANAGER,
-    "viewer": User.Role.VIEWER,
-    "lecteur": User.Role.VIEWER,
+    "administrateur dsi": User.Role.DSI,
+    "system": User.Role.SYSTEM,
+    "administrateur systeme": User.Role.SYSTEM,
+    "administrateur système": User.Role.SYSTEM,
+    "admin system": User.Role.SYSTEM,
+    "manager": User.Role.DSI,
+    "technicien": User.Role.DSI,
+    "equipe dsi": User.Role.DSI,
+    "équipe dsi": User.Role.DSI,
+    "viewer": User.Role.DSI,
+    "lecteur": User.Role.DSI,
 }
 
 
@@ -57,7 +61,7 @@ def _truthy(value: str) -> bool:
 def _normalize_role(raw: str) -> str:
     key = (raw or "").strip().lower()
     if not key:
-        return User.Role.VIEWER
+        return User.Role.DSI
     if key in ROLE_ALIASES:
         return ROLE_ALIASES[key]
     valid = {c.value for c in User.Role}

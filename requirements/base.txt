@@ -14,3 +14,4 @@ whitenoise>=6.7,<7
 prometheus-client>=0.20,<0.23
 django-prometheus>=2.3,<3
 httpx>=0.27,<0.29
+google-generativeai>=0.8,<1

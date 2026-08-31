@@ -16,7 +16,7 @@ class DomainAPITests(TestCase):
         self.manager = User.objects.create_user(
             username="dommgr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
 
     def test_create_domain(self):
@@ -43,7 +43,7 @@ class DomainWebTests(TestCase):
         self.manager = User.objects.create_user(
             username="webdom",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         Domain.objects.create(fqdn="portal.topnet.tn", status=Domain.Status.ACTIVE)
 

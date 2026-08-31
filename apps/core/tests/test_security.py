@@ -12,10 +12,10 @@ User = get_user_model()
 
 class SecureMediaTests(TestCase):
     def setUp(self):
-        self.viewer = User.objects.create_user(
-            username="sec_viewer",
+        self.dsi = User.objects.create_user(
+            username="sec_dsi",
             password="Secret123!",
-            role=User.Role.VIEWER,
+            role=User.Role.DSI,
         )
         self.admin = User.objects.create_user(
             username="sec_admin",
@@ -31,30 +31,30 @@ class SecureMediaTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
 
-    def test_viewer_can_download_media(self):
-        self.client.login(username="sec_viewer", password="Secret123!")
+    def test_dsi_can_download_media(self):
+        self.client.login(username="sec_dsi", password="Secret123!")
         response = self.client.get(self.document.file.url)
         self.assertEqual(response.status_code, 200)
         body = b"".join(response.streaming_content)
         self.assertIn(b"confidentiel", body)
 
     def test_path_traversal_blocked(self):
-        self.client.login(username="sec_viewer", password="Secret123!")
+        self.client.login(username="sec_dsi", password="Secret123!")
         response = self.client.get("/media/../manage.py")
         self.assertIn(response.status_code, {403, 404})
 
 
 class ApiDocsProtectionTests(TestCase):
     def setUp(self):
-        self.viewer = User.objects.create_user(
-            username="sec_doc_viewer",
+        self.system = User.objects.create_user(
+            username="sec_doc_system",
             password="Secret123!",
-            role=User.Role.VIEWER,
+            role=User.Role.SYSTEM,
         )
-        self.admin = User.objects.create_user(
-            username="sec_doc_admin",
+        self.dsi = User.objects.create_user(
+            username="sec_doc_dsi",
             password="Secret123!",
-            role=User.Role.ADMIN,
+            role=User.Role.DSI,
             is_staff=True,
         )
 
@@ -62,23 +62,29 @@ class ApiDocsProtectionTests(TestCase):
         response = self.client.get("/api/docs/")
         self.assertEqual(response.status_code, 302)
 
-    def test_viewer_cannot_open_swagger(self):
-        self.client.login(username="sec_doc_viewer", password="Secret123!")
+    def test_system_cannot_open_swagger(self):
+        self.client.login(username="sec_doc_system", password="Secret123!")
         response = self.client.get("/api/docs/")
         self.assertEqual(response.status_code, 403)
 
-    def test_admin_can_open_swagger(self):
-        self.client.login(username="sec_doc_admin", password="Secret123!")
+    def test_dsi_can_open_swagger(self):
+        self.client.login(username="sec_doc_dsi", password="Secret123!")
         response = self.client.get("/api/docs/")
         self.assertEqual(response.status_code, 200)
 
 
 class AdminAccessTests(TestCase):
     def setUp(self):
-        self.manager = User.objects.create_user(
-            username="sec_mgr",
+        self.system = User.objects.create_user(
+            username="sec_system",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.SYSTEM,
+            is_staff=True,
+        )
+        self.dsi = User.objects.create_user(
+            username="sec_dsi_admin",
+            password="Secret123!",
+            role=User.Role.DSI,
             is_staff=True,
         )
         self.admin = User.objects.create_user(
@@ -88,12 +94,17 @@ class AdminAccessTests(TestCase):
             is_staff=True,
         )
 
-    def test_manager_staff_blocked_from_admin(self):
-        self.client.login(username="sec_mgr", password="Secret123!")
+    def test_system_staff_blocked_from_admin(self):
+        self.client.login(username="sec_system", password="Secret123!")
         response = self.client.get("/admin/")
         self.assertEqual(response.status_code, 403)
 
-    def test_admin_dsi_can_access_admin(self):
+    def test_dsi_can_access_admin(self):
+        self.client.login(username="sec_dsi_admin", password="Secret123!")
+        response = self.client.get("/admin/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_platform_admin_can_access_admin(self):
         self.client.login(username="sec_adm", password="Secret123!")
         response = self.client.get("/admin/")
         self.assertEqual(response.status_code, 200)
@@ -105,7 +116,7 @@ class LoginRateLimitTests(TestCase):
         User.objects.create_user(
             username="rate_user",
             password="Secret123!",
-            role=User.Role.VIEWER,
+            role=User.Role.SYSTEM,
         )
 
     def test_web_login_rate_limited_after_failures(self):
@@ -126,7 +137,7 @@ class DocumentUploadValidationTests(TestCase):
         self.manager = User.objects.create_user(
             username="sec_uploader",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
 
     def test_rejects_executable_upload(self):

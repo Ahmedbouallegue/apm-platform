@@ -20,7 +20,7 @@ class UserManagementAPITests(TestCase):
             username="lecteur",
             email="lecteur@topnet.tn",
             password="Secret123!",
-            role=User.Role.VIEWER,
+            role=User.Role.SYSTEM,
         )
 
     def test_list_users_requires_auth(self):
@@ -35,7 +35,7 @@ class UserManagementAPITests(TestCase):
                 "username": "manager1",
                 "email": "manager1@topnet.tn",
                 "password": "Secret123!",
-                "role": "manager",
+                "role": "dsi",
                 "department": "DSI",
             },
             format="json",
@@ -108,7 +108,7 @@ class UserManagementWebTests(TestCase):
         self.assertEqual(response.status_code, 302)
         user = User.objects.get(username="csvuser")
         self.assertEqual(user.email, "csvuser@topnet.tn")
-        self.assertEqual(user.role, User.Role.VIEWER)
+        self.assertEqual(user.role, User.Role.DSI)
         self.assertTrue(user.check_password("Secret123!"))
 
     def test_import_csv_updates_existing(self):
@@ -118,7 +118,7 @@ class UserManagementWebTests(TestCase):
             username="csvupd",
             email="old@topnet.tn",
             password="Secret123!",
-            role=User.Role.VIEWER,
+            role=User.Role.SYSTEM,
         )
         self.client.login(username="webadmin", password="Secret123!")
         csv_data = (
@@ -134,7 +134,7 @@ class UserManagementWebTests(TestCase):
         self.assertEqual(response.status_code, 302)
         user = User.objects.get(username="csvupd")
         self.assertEqual(user.email, "new@topnet.tn")
-        self.assertEqual(user.role, User.Role.MANAGER)
+        self.assertEqual(user.role, User.Role.DSI)
         self.assertEqual(user.first_name, "New")
 
     def test_viewer_cannot_export_csv(self):
@@ -142,11 +142,34 @@ class UserManagementWebTests(TestCase):
             username="webviewer",
             email="webviewer@topnet.tn",
             password="Secret123!",
-            role=User.Role.VIEWER,
+            role=User.Role.SYSTEM,
         )
         self.client.login(username="webviewer", password="Secret123!")
         response = self.client.get("/users/export.csv")
         self.assertEqual(response.status_code, 403)
+
+    def test_admin_can_delete_user(self):
+        target = User.objects.create_user(
+            username="todelete",
+            email="todelete@topnet.tn",
+            password="Secret123!",
+            role=User.Role.DSI,
+        )
+        self.client.login(username="webadmin", password="Secret123!")
+        response = self.client.post(f"/users/{target.pk}/delete/")
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(User.objects.filter(pk=target.pk).exists())
+
+    def test_admin_cannot_delete_self(self):
+        self.client.login(username="webadmin", password="Secret123!")
+        response = self.client.post(f"/users/{self.admin.pk}/delete/")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(User.objects.filter(pk=self.admin.pk).exists())
+
+    def test_user_list_shows_delete_button(self):
+        self.client.login(username="webadmin", password="Secret123!")
+        response = self.client.get("/users/")
+        self.assertContains(response, "Supprimer")
 
 
 class PasswordResetWebTests(TestCase):
@@ -155,7 +178,7 @@ class PasswordResetWebTests(TestCase):
             username="resetme",
             email="resetme@topnet.tn",
             password="Secret123!",
-            role=User.Role.VIEWER,
+            role=User.Role.SYSTEM,
         )
 
     def test_password_reset_page_renders(self):

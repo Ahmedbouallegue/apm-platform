@@ -15,6 +15,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
+from apps.accounts.seed_users import DEFAULT_USER_SPECS, format_user_credentials
 from apps.applications.models import Application
 from apps.audit.services.audit import audit_log_create
 from apps.certificates.models import Certificate
@@ -72,52 +73,51 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Base de données peuplée avec succès."))
         self.stdout.write("Comptes de démo :")
-        self.stdout.write("  admin / Admin123!")
-        self.stdout.write("  dsi / Dsi12345!")
-        self.stdout.write("  manager / Manager123!")
-        self.stdout.write("  viewer / Viewer123!")
+        for line in format_user_credentials():
+            self.stdout.write(line)
 
     def _seed_users(self):
-        specs = [
-            ("admin", "admin@topnet.tn", "Admin", "Topnet", User.Role.ADMIN, "Admin123!", True),
-            ("dsi", "dsi@topnet.tn", "Sami", "Ben Salah", User.Role.DSI, "Dsi12345!", True),
-            ("manager", "manager@topnet.tn", "Achref", "Khelifi", User.Role.MANAGER, "Manager123!", False),
-            ("viewer", "viewer@topnet.tn", "Ines", "Trabelsi", User.Role.VIEWER, "Viewer123!", False),
-        ]
         users = {}
-        for username, email, first, last, role, password, staff in specs:
+        for spec in DEFAULT_USER_SPECS:
             user, created = User.objects.get_or_create(
-                username=username,
+                username=spec.username,
                 defaults={
-                    "email": email,
-                    "first_name": first,
-                    "last_name": last,
-                    "role": role,
-                    "department": "DSI",
-                    "phone": "+216 71 000 000",
-                    "is_staff": staff or role == User.Role.ADMIN,
+                    "email": spec.email,
+                    "first_name": spec.first_name,
+                    "last_name": spec.last_name,
+                    "role": spec.role,
+                    "department": spec.department,
+                    "phone": spec.phone,
+                    "is_staff": spec.is_staff or spec.role in {
+                        User.Role.ADMIN,
+                        User.Role.DSI,
+                    },
                     "is_active": True,
                 },
             )
             if created:
-                user.set_password(password)
+                user.set_password(spec.password)
                 user.save()
             else:
-                # Keep role/staff flags coherent on re-seed (esp. Lecteur).
                 changed = []
-                if user.role != role:
-                    user.role = role
+                if user.role != spec.role:
+                    user.role = spec.role
                     changed.append("role")
-                want_staff = bool(staff or role == User.Role.ADMIN)
+                want_staff = bool(
+                    spec.is_staff
+                    or spec.role in {User.Role.ADMIN, User.Role.DSI}
+                )
                 if user.is_staff != want_staff:
                     user.is_staff = want_staff
                     changed.append("is_staff")
-                if role == User.Role.VIEWER and user.is_superuser:
+                if user.is_superuser and spec.role != User.Role.ADMIN:
                     user.is_superuser = False
                     changed.append("is_superuser")
                 if changed:
                     user.save(update_fields=changed)
-            users[username] = user
+            users[spec.username] = user
+        if "achref" in users:
+            users["dsi"] = users["achref"]
         return users
 
     def _seed_technologies(self):
@@ -189,7 +189,7 @@ class Command(BaseCommand):
                 "status": Application.Status.PRODUCTION,
                 "business_unit": "Finance",
                 "user_count": 80,
-                "owner": users["manager"],
+                "owner": users["dsi"],
                 "techs": ["Java", "Spring Boot", "Oracle"],
             },
             {
@@ -199,7 +199,7 @@ class Command(BaseCommand):
                 "status": Application.Status.PRODUCTION,
                 "business_unit": "Commercial",
                 "user_count": 350,
-                "owner": users["manager"],
+                "owner": users["dsi"],
                 "techs": ["React", "Django", "PostgreSQL"],
             },
             {
@@ -219,7 +219,7 @@ class Command(BaseCommand):
                 "status": Application.Status.PROJECT,
                 "business_unit": "Marketing Digital",
                 "user_count": 0,
-                "owner": users["manager"],
+                "owner": users["dsi"],
                 "techs": ["React", "Python", "PostgreSQL", "Docker"],
             },
         ]
@@ -402,7 +402,7 @@ class Command(BaseCommand):
                     "category": category,
                     "description": f"Document de démonstration — {title}",
                     "application": apps[app_name],
-                    "uploaded_by": users["manager"],
+                    "uploaded_by": users["dsi"],
                     "is_active": True,
                 },
             )
@@ -420,7 +420,7 @@ class Command(BaseCommand):
                 "solution": "Augmentation du pool + redémarrage contrôlé.",
                 "status": Incident.Status.RESOLVED,
                 "application": apps["CRM Commercial"],
-                "reported_by": users["manager"],
+                "reported_by": users["dsi"],
             },
         )
         Incident.objects.get_or_create(
@@ -446,7 +446,7 @@ class Command(BaseCommand):
                 "solution": "Optimisation ORM + cache Redis.",
                 "status": Incident.Status.CLOSED,
                 "application": apps["Portail RH"],
-                "reported_by": users["viewer"],
+                "reported_by": users["dsi"],
             },
         )
 
@@ -511,7 +511,7 @@ class Command(BaseCommand):
             },
         )
         Notification.objects.get_or_create(
-            user=users["manager"],
+            user=users["dsi"],
             title="Incident ouvert — Billing",
             defaults={
                 "message": "Échec batch nocturne en cours d'analyse.",

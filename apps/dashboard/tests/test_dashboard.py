@@ -36,7 +36,7 @@ class DashboardAPITests(TestCase):
         invalidate_dashboard_stats()
         self.client = APIClient()
         self.manager = User.objects.create_user(
-            username="dashmgr", password="Secret123!", role=User.Role.MANAGER
+            username="dashmgr", password="Secret123!", role=User.Role.DSI
         )
 
     def test_stats_endpoint(self):
@@ -126,7 +126,7 @@ class DashboardWebTests(TestCase):
     def setUp(self):
         invalidate_dashboard_stats()
         self.manager = User.objects.create_user(
-            username="webdash", password="Secret123!", role=User.Role.MANAGER
+            username="webdash", password="Secret123!", role=User.Role.DSI
         )
 
     def test_dashboard_page(self):

@@ -16,7 +16,7 @@ class ServerAPITests(TestCase):
         self.manager = User.objects.create_user(
             username="srvmgr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
 
     def test_create_server(self):
@@ -66,7 +66,7 @@ class ServerWebTests(TestCase):
         self.manager = User.objects.create_user(
             username="websrv",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         Server.objects.create(
             name="srv-web-01",

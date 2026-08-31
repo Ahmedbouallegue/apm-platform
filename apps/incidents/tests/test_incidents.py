@@ -14,7 +14,7 @@ class IncidentAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.manager = User.objects.create_user(
-            username="incmgr", password="Secret123!", role=User.Role.MANAGER
+            username="incmgr", password="Secret123!", role=User.Role.DSI
         )
         self.app = Application.objects.create(name="CRM")
 
@@ -39,7 +39,7 @@ class IncidentAPITests(TestCase):
 class IncidentWebTests(TestCase):
     def setUp(self):
         self.manager = User.objects.create_user(
-            username="webinc", password="Secret123!", role=User.Role.MANAGER
+            username="webinc", password="Secret123!", role=User.Role.DSI
         )
         app = Application.objects.create(name="Billing")
         Incident.objects.create(

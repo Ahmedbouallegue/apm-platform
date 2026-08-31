@@ -1,4 +1,4 @@
-﻿from apps.core.views import AppHealthView
+from apps.core.views import AppHealthView
 
 
 class HealthView(AppHealthView):

@@ -15,7 +15,7 @@ class EnvironmentAPITests(TestCase):
         self.manager = User.objects.create_user(
             username="envmgr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         self.app = Application.objects.create(
             name="Portail RH",
@@ -72,7 +72,7 @@ class EnvironmentWebTests(TestCase):
         self.manager = User.objects.create_user(
             username="webenv",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         self.app = Application.objects.create(name="Billing")
         Environment.objects.create(

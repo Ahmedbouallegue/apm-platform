@@ -1,11 +1,14 @@
 {% extends "accounts/app_base.html" %}
+
 {% block page_title %}{{ incident.title }}{% endblock %}
 {% block header_title %}{{ incident.title }}{% endblock %}
 {% block header_sub %}{{ incident.application.name }} · {{ incident.get_status_display }}{% endblock %}
+
 {% block header_actions %}
   <a class="btn btn-ghost" href="{% url 'incidents:list' %}">Retour</a>
   {% if can_write %}<a class="btn btn-primary" href="{% url 'incidents:edit' incident.pk %}">Modifier</a>{% endif %}
 {% endblock %}
+
 {% block content %}
 <section class="stats" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
   <article class="stat"><div class="label">Impact</div><div class="value" style="font-size:1.1rem">{{ incident.get_impact_display }}</div></article>

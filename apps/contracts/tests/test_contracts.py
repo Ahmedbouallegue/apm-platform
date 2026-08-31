@@ -18,7 +18,7 @@ class ContractAPITests(TestCase):
         self.manager = User.objects.create_user(
             username="ctrmgr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         self.vendor = Vendor.objects.create(
             name="IBM Support",
@@ -57,7 +57,7 @@ class ContractWebTests(TestCase):
         self.manager = User.objects.create_user(
             username="webctr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         vendor = Vendor.objects.create(name="Microsoft", vendor_type=Vendor.VendorType.SOFTWARE)
         Contract.objects.create(

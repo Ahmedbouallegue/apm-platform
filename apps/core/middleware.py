@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseForbidden
 
-from apps.accounts.roles import is_admin_dsi
+from apps.accounts.roles import is_admin_dsi, is_platform_admin
 from apps.core.rate_limit import is_rate_limited, register_rate_limit_attempt
 
 
@@ -91,7 +91,9 @@ class AdminAccessMiddleware:
         path = request.path
         if path.startswith("/admin/") and not path.startswith("/admin/login/"):
             user = getattr(request, "user", None)
-            if user and user.is_authenticated and not is_admin_dsi(user):
+            if user and user.is_authenticated and not (
+                is_admin_dsi(user) or is_platform_admin(user)
+            ):
                 raise PermissionDenied
         return self.get_response(request)
 

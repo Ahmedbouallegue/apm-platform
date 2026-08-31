@@ -6,7 +6,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView
 
 from apps.accounts.decorators import user_passes_test_or_403
-from apps.accounts.roles import can_read, can_write_patrimoine
+from apps.accounts.roles import can_read_patrimoine, can_write_patrimoine
 
 from apps.contracts.forms import ContractForm
 from apps.contracts.models import Contract
@@ -16,7 +16,7 @@ from apps.vendors.models import Vendor
 
 
 def _can_view(user) -> bool:
-    return can_read(user)
+    return can_read_patrimoine(user)
 
 
 def _can_write(user) -> bool:

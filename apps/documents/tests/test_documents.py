@@ -14,7 +14,7 @@ class DocumentAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.manager = User.objects.create_user(
-            username="docmgr", password="Secret123!", role=User.Role.MANAGER
+            username="docmgr", password="Secret123!", role=User.Role.DSI
         )
         self.app = Application.objects.create(name="Portail RH")
 
@@ -44,7 +44,7 @@ class DocumentAPITests(TestCase):
 class DocumentWebTests(TestCase):
     def setUp(self):
         self.manager = User.objects.create_user(
-            username="webdoc", password="Secret123!", role=User.Role.MANAGER
+            username="webdoc", password="Secret123!", role=User.Role.DSI
         )
         Document.objects.create(title="Manuel exploitation.docx", category=Document.Category.OPS_MANUAL)
 

@@ -1,14 +1,15 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from apps.accounts.roles import ADMIN_DSI_ROLES
 from apps.audit.services.audit import audit_log_create
 
 User = get_user_model()
 
+STAFF_ROLES = frozenset({User.Role.ADMIN, User.Role.DSI})
+
 
 def _apply_staff_flag(user: User) -> None:
-    if user.role in ADMIN_DSI_ROLES:
+    if user.role in STAFF_ROLES:
         user.is_staff = True
 
 
@@ -20,7 +21,7 @@ def user_create(
     password: str,
     first_name: str = "",
     last_name: str = "",
-    role: str = User.Role.VIEWER,
+    role: str = User.Role.DSI,
     phone: str = "",
     department: str = "",
     is_staff: bool = False,
@@ -35,7 +36,7 @@ def user_create(
         role=role,
         phone=phone,
         department=department,
-        is_staff=is_staff or role in ADMIN_DSI_ROLES,
+        is_staff=is_staff or role in STAFF_ROLES,
         is_active=is_active,
     )
     user.set_password(password)
@@ -98,3 +99,23 @@ def user_activate(*, user: User, actor=None) -> User:
         user=actor,
     )
     return user
+
+
+@transaction.atomic
+def user_delete(*, user: User, actor=None) -> None:
+    username = user.username
+    user_pk = user.pk
+    try:
+        from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+
+        OutstandingToken.objects.filter(user=user).delete()
+    except Exception:
+        pass
+    user.delete()
+    audit_log_create(
+        action="delete",
+        entity="User",
+        entity_id=user_pk,
+        details=f"Utilisateur « {username} » supprimé définitivement",
+        user=actor,
+    )

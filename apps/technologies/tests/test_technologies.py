@@ -14,12 +14,12 @@ class TechnologyAPITests(TestCase):
         self.manager = User.objects.create_user(
             username="techmgr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         self.viewer = User.objects.create_user(
             username="techview",
             password="Secret123!",
-            role=User.Role.VIEWER,
+            role=User.Role.SYSTEM,
         )
 
     def test_manager_can_create(self):
@@ -52,7 +52,7 @@ class TechnologyWebTests(TestCase):
         self.manager = User.objects.create_user(
             username="webtech",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         Technology.objects.create(
             name="Django",

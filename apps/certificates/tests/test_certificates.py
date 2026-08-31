@@ -16,7 +16,7 @@ class CertificateAPITests(TestCase):
         self.manager = User.objects.create_user(
             username="certmgr",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
 
     def test_create_certificate(self):
@@ -55,7 +55,7 @@ class CertificateWebTests(TestCase):
         self.manager = User.objects.create_user(
             username="webcert",
             password="Secret123!",
-            role=User.Role.MANAGER,
+            role=User.Role.DSI,
         )
         Certificate.objects.create(
             common_name="www.topnet.tn",

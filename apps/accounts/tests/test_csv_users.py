@@ -18,7 +18,7 @@ class CsvUsersUnitTests(TestCase):
             username="exist",
             email="exist@topnet.tn",
             password="Secret123!",
-            role=User.Role.VIEWER,
+            role=User.Role.SYSTEM,
             department="Ops",
         )
 
@@ -27,7 +27,7 @@ class CsvUsersUnitTests(TestCase):
         lines = content.strip().split("\n")
         self.assertTrue(lines[0].startswith("username,email,first_name"))
         self.assertIn("exist,exist@topnet.tn", content)
-        self.assertIn(",viewer,", content)
+        self.assertIn(",system,", content)
 
     def test_users_from_csv_creates_with_role_alias(self):
         csv_data = (
@@ -38,7 +38,7 @@ class CsvUsersUnitTests(TestCase):
         self.assertEqual(result.created, 1)
         self.assertEqual(result.errors, [])
         user = User.objects.get(username="tech1")
-        self.assertEqual(user.role, User.Role.MANAGER)
+        self.assertEqual(user.role, User.Role.DSI)
 
     def test_users_from_csv_updates_existing(self):
         csv_data = (
@@ -49,7 +49,7 @@ class CsvUsersUnitTests(TestCase):
         self.assertEqual(result.updated, 1)
         self.existing.refresh_from_db()
         self.assertEqual(self.existing.email, "new@topnet.tn")
-        self.assertEqual(self.existing.role, User.Role.VIEWER)
+        self.assertEqual(self.existing.role, User.Role.DSI)
         self.assertEqual(self.existing.department, "Finance")
 
     def test_users_from_csv_invalid_role(self):

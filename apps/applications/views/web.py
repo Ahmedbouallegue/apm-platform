@@ -6,7 +6,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView
 
 from apps.accounts.decorators import user_passes_test_or_403
-from apps.accounts.roles import can_read, can_write_patrimoine
+from apps.accounts.roles import can_read_patrimoine, can_write_patrimoine
 
 from apps.applications.forms import ApplicationForm
 from apps.applications.models import Application
@@ -19,7 +19,7 @@ from apps.applications.services.applications import (
 
 
 def _can_view_apps(user) -> bool:
-    return can_read(user)
+    return can_read_patrimoine(user)
 
 
 def _can_write_apps(user) -> bool:
@@ -27,7 +27,7 @@ def _can_write_apps(user) -> bool:
 
 
 @method_decorator(login_required, name="dispatch")
-@method_decorator(user_passes_test(_can_view_apps), name="dispatch")
+@method_decorator(user_passes_test_or_403(_can_view_apps), name="dispatch")
 class ApplicationListView(ListView):
     template_name = "applications/list.html"
     context_object_name = "applications"

@@ -11,6 +11,11 @@ class Server(TimeStampedModel, SoftDeleteModel):
         VM = "vm", "VM"
         CLOUD = "cloud", "Cloud"
 
+    class PingStatus(models.TextChoices):
+        UNKNOWN = "unknown", "Inconnu"
+        UP = "up", "En ligne"
+        DOWN = "down", "Hors ligne"
+
     name = models.CharField("Nom", max_length=255, unique=True, db_index=True)
     ip_address = models.GenericIPAddressField("Adresse IP", unique=True)
     os = models.CharField("Système d'exploitation", max_length=128, blank=True)
@@ -25,6 +30,14 @@ class Server(TimeStampedModel, SoftDeleteModel):
         db_index=True,
     )
     is_active = models.BooleanField("Actif", default=True, db_index=True)
+    ping_status = models.CharField(
+        "Statut Ping",
+        max_length=16,
+        choices=PingStatus.choices,
+        default=PingStatus.UNKNOWN,
+        db_index=True,
+    )
+    last_ping_at = models.DateTimeField("Dernier ping", null=True, blank=True)
     notes = models.TextField("Notes", blank=True)
 
     class Meta:

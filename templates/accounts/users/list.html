@@ -18,19 +18,19 @@
       </thead>
       <tbody>
         <tr>
-          <td><span class="badge badge-admin">Administrateur DSI</span></td>
+          <td><span class="badge badge-admin">Administrateur</span></td>
+          <td>Administrateur</td>
+          <td>Utilisateurs, rôles, import/export CSV</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-manager">Administrateur DSI</span></td>
           <td>Administrateur DSI</td>
-          <td>Utilisateurs, rôles, paramètres globaux, import/export CSV, patrimoine</td>
+          <td>Patrimoine complet, paramètres globaux — pas de gestion des comptes</td>
         </tr>
         <tr>
-          <td><span class="badge badge-manager">Équipe DSI / Technicien</span></td>
-          <td>Équipe DSI / Technicien</td>
-          <td>CRUD patrimoine, tableaux de bord — pas de gestion des comptes</td>
-        </tr>
-        <tr>
-          <td><span class="badge badge-viewer">Lecteur</span></td>
-          <td>Consultation</td>
-          <td>Lecture seule</td>
+          <td><span class="badge badge-viewer">Administrateur Système</span></td>
+          <td>Administrateur Système</td>
+          <td>Environnements et serveurs (infrastructure)</td>
         </tr>
       </tbody>
     </table>
@@ -102,6 +102,10 @@
                 {% else %}
                   <button class="btn btn-primary" type="submit">Réactiver</button>
                 {% endif %}
+              </form>
+              <form method="post" action="{% url 'web:user-delete' u.pk %}" onsubmit="return confirm('Supprimer définitivement « {{ u.username }} » ? Cette action est irréversible.');">
+                {% csrf_token %}
+                <button class="btn btn-danger" type="submit" {% if u.pk == request.user.pk %}disabled{% endif %}>Supprimer</button>
               </form>
             </div>
             {% else %}

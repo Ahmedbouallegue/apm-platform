@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.permissions import CanManageUsers, IsAdminOrDSI
+from apps.accounts.permissions import CanManageUsers, CanWriteUsers
 from apps.accounts.selectors.users import user_list
 from apps.accounts.serializers import (
     MeSerializer,
@@ -50,7 +50,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in {"create", "update", "partial_update", "destroy", "deactivate", "activate"}:
-            return [IsAdminOrDSI()]
+            return [CanWriteUsers()]
         return super().get_permissions()
 
     def destroy(self, request, *args, **kwargs):
@@ -64,7 +64,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user_deactivate(user=user, actor=request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=["post"], permission_classes=[IsAdminOrDSI])
+    @action(detail=True, methods=["post"], permission_classes=[CanWriteUsers])
     def deactivate(self, request, pk=None):
         user = self.get_object()
         if user.pk == request.user.pk:
@@ -75,7 +75,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user_deactivate(user=user, actor=request.user)
         return Response(UserSerializer(user).data)
 
-    @action(detail=True, methods=["post"], permission_classes=[IsAdminOrDSI])
+    @action(detail=True, methods=["post"], permission_classes=[CanWriteUsers])
     def activate(self, request, pk=None):
         user = self.get_object()
         user_activate(user=user, actor=request.user)
