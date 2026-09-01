@@ -89,6 +89,12 @@ def get_access_token(cfg: configparser.ConfigParser) -> str:
     return access_token
 
 
+def clear_access_token() -> None:
+    global access_token, token_expires_at
+    access_token = None
+    token_expires_at = 0
+
+
 def collect_metrics() -> dict:
     return {
         "hostname": socket.gethostname(),
@@ -125,8 +131,7 @@ def main() -> None:
             )
             print(f"[OK] {resp.status_code}")
             if resp.status_code == 401:
-                access_token = None
-                token_expires_at = 0
+                clear_access_token()
         except Exception as exc:
             print(f"[ERR] {exc}")
         time.sleep(interval)

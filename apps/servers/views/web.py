@@ -1,9 +1,9 @@
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from datetime import timedelta
-
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -11,7 +11,6 @@ from django.views.generic import DetailView, ListView
 
 from apps.accounts.decorators import user_passes_test_or_403
 from apps.accounts.roles import can_read_infrastructure, can_write_infrastructure
-
 from apps.servers.forms import ServerForm
 from apps.servers.models import Server, ServerMetric
 from apps.servers.selectors.servers import server_list

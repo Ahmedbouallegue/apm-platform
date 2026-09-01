@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 
-from apps.accounts.models import User
 from apps.notifications.models import Notification
 from apps.notifications.services.badge import invalidate_unread_badge
 

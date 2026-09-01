@@ -7,7 +7,6 @@ from django.views.generic import DetailView, ListView
 
 from apps.accounts.decorators import user_passes_test_or_403
 from apps.accounts.roles import can_read_infrastructure, can_write_infrastructure
-
 from apps.applications.models import Application
 from apps.environments.forms import EnvironmentForm
 from apps.environments.models import Environment

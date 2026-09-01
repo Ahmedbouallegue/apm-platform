@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 from datetime import date, timedelta
 
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Sum
 
 
 def build_context(user) -> str:

@@ -9,9 +9,9 @@ def ping() -> str:
 
 def ping_host(ip: str) -> bool:
     """Pings a host and returns True if it's reachable."""
+    import logging
     import platform
     import subprocess
-    import logging
     logger = logging.getLogger(__name__)
 
     param = '-n' if platform.system().lower() == 'windows' else '-c'
@@ -37,7 +37,9 @@ def ping_all_servers():
     """Pings all active servers and updates their ping_status."""
     import logging
     from concurrent.futures import ThreadPoolExecutor
+
     from django.utils import timezone
+
     from apps.servers.models import Server
     
     logger = logging.getLogger(__name__)

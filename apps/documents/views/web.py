@@ -7,7 +7,6 @@ from django.views.generic import DetailView, ListView
 
 from apps.accounts.decorators import user_passes_test_or_403
 from apps.accounts.roles import can_read_patrimoine, can_write_patrimoine
-
 from apps.applications.models import Application
 from apps.documents.forms import DocumentForm
 from apps.documents.models import Document

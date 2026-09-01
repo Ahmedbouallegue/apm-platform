@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import (
     LoginView,
     PasswordResetCompleteView,
@@ -16,6 +16,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import ListView
 
+from apps.accounts.decorators import user_passes_test_or_403
 from apps.accounts.forms import (
     BrandPasswordResetForm,
     BrandSetPasswordForm,
@@ -25,7 +26,6 @@ from apps.accounts.forms import (
     UserUpdateForm,
 )
 from apps.accounts.models import User
-from apps.accounts.decorators import user_passes_test_or_403
 from apps.accounts.roles import (
     ROLE_DESCRIPTIONS,
     can_manage_users,
@@ -34,7 +34,13 @@ from apps.accounts.roles import (
 )
 from apps.accounts.selectors.users import user_list
 from apps.accounts.services.csv_users import users_from_csv, users_to_csv
-from apps.accounts.services.users import user_activate, user_create, user_deactivate, user_delete, user_update
+from apps.accounts.services.users import (
+    user_activate,
+    user_create,
+    user_deactivate,
+    user_delete,
+    user_update,
+)
 from apps.notifications.services.notifications import notify_user_login
 
 

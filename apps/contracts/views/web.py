@@ -7,7 +7,6 @@ from django.views.generic import DetailView, ListView
 
 from apps.accounts.decorators import user_passes_test_or_403
 from apps.accounts.roles import can_read_patrimoine, can_write_patrimoine
-
 from apps.contracts.forms import ContractForm
 from apps.contracts.models import Contract
 from apps.contracts.selectors.contracts import contract_list
