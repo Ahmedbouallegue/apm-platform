@@ -4,32 +4,44 @@
 {% block header_title %}Gestion des environnements{% endblock %}
 {% block header_sub %}DEV · RECETTE · PREPROD · PROD{% endblock %}
 
+{% block header_actions %}
+  {% if can_write %}
+    <a class="btn btn-accent" href="{% url 'environments:create' %}">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+      Nouvel environnement
+    </a>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
-<section class="panel">
-  <div class="panel-head panel-head-tools">
-    <form class="filters filters-with-action" method="get">
-      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Rechercher…">
-      <select class="field-input" name="type">
+<section class="panel page-enter">
+  <div class="panel-head" style="flex-wrap:wrap;gap:12px">
+    <form class="filters" method="get" style="flex:1;margin-bottom:0;border:none;padding:0;background:none">
+      <div style="position:relative;flex:1;min-width:180px">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input class="field-input" style="padding-left:36px;width:100%" type="search" name="q" value="{{ q }}" placeholder="Nom, URL, hôte…">
+      </div>
+      <select class="field-input" name="type" style="min-width:130px">
         <option value="">Tous les types</option>
         {% for value, label in env_types %}
           <option value="{{ value }}" {% if type == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
-      <select class="field-input" name="application">
+      <select class="field-input" name="application" style="min-width:150px">
         <option value="">Toutes les applications</option>
         {% for app in applications %}
           <option value="{{ app.pk }}" {% if application == app.pk|stringformat:"s" %}selected{% endif %}>{{ app.name }}</option>
         {% endfor %}
       </select>
-      <select class="field-input" name="active">
+      <select class="field-input" name="active" style="min-width:130px">
         <option value="">Tous les statuts</option>
         <option value="1" {% if active == "1" %}selected{% endif %}>Actifs</option>
         <option value="0" {% if active == "0" %}selected{% endif %}>Inactifs</option>
       </select>
-      <button class="btn btn-primary" type="submit">Filtrer</button>
-      {% if can_write %}
-        <a class="btn btn-accent filters-action" href="{% url 'environments:create' %}">Nouvel environnement</a>
-      {% endif %}
+      <button class="btn btn-primary" type="submit" style="white-space:nowrap">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+        Filtrer
+      </button>
     </form>
   </div>
 
@@ -42,7 +54,7 @@
           <th>Application</th>
           <th>Type</th>
           <th>URL / IP</th>
-          <th>Infra</th>
+          <th>Conteneurisation</th>
           <th>Statut</th>
           <th>Actions</th>
         </tr>
@@ -51,40 +63,66 @@
         {% for env in environments %}
         <tr>
           <td>
-            <a href="{% url 'environments:detail' env.pk %}"><strong>{{ env.name }}</strong></a>
-            {% if env.hosting_provider %}
-              <div style="color:var(--muted);font-size:.84rem">{{ env.hosting_provider }}</div>
-            {% endif %}
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(16,185,129,0.14),rgba(21,32,90,0.1));display:grid;place-items:center;flex-shrink:0">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#059669" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              </div>
+              <div>
+                <a href="{% url 'environments:detail' env.pk %}" style="font-weight:700;color:var(--navy-deep)">{{ env.name }}</a>
+                {% if env.hosting_provider %}
+                  <div style="color:var(--muted);font-size:.82rem;margin-top:1px">{{ env.hosting_provider }}</div>
+                {% endif %}
+              </div>
+            </div>
           </td>
           <td>
-            <a href="{% url 'applications:detail' env.application_id %}">{{ env.application.name }}</a>
+            <a href="{% url 'applications:detail' env.application_id %}" style="font-weight:600">{{ env.application.name }}</a>
           </td>
           <td><span class="badge badge-env-{{ env.env_type }}">{{ env.get_env_type_display }}</span></td>
           <td>
             {% if env.url %}
-              <a href="{{ env.url }}" target="_blank" rel="noopener">{{ env.url|truncatechars:40 }}</a>
-            {% else %}—{% endif %}
+              <div>
+                <a href="{{ env.url }}" target="_blank" rel="noopener" style="font-family:monospace;font-size:.84rem;display:inline-flex;align-items:center;gap:4px">
+                  {{ env.url|truncatechars:34 }}
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
+              </div>
+            {% endif %}
             {% if env.ip_address %}
-              <div style="color:var(--muted);font-size:.84rem">{{ env.ip_address }}</div>
+              <div style="color:var(--muted);font-size:.8rem;font-family:monospace">{{ env.ip_address }}</div>
+            {% elif not env.url %}
+              <span style="color:var(--muted)">—</span>
             {% endif %}
           </td>
           <td>
-            {% if env.docker %}<span class="badge badge-dsi">Docker</span>{% endif %}
-            {% if env.kubernetes %}<span class="badge badge-manager">K8s</span>{% endif %}
-            {% if not env.docker and not env.kubernetes %}—{% endif %}
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              {% if env.docker %}<span class="badge badge-dsi">Docker</span>{% endif %}
+              {% if env.kubernetes %}<span class="badge badge-manager">K8s</span>{% endif %}
+              {% if not env.docker and not env.kubernetes %}<span style="color:var(--muted);font-size:.85rem">—</span>{% endif %}
+            </div>
           </td>
           <td>
             {% if env.is_active %}
-              <span class="badge badge-on">Actif</span>
+              <span class="badge badge-success">
+                <span class="status-dot is-online"></span>Actif
+              </span>
             {% else %}
-              <span class="badge badge-off">Inactif</span>
+              <span class="badge badge-muted">
+                <span class="status-dot"></span>Inactif
+              </span>
             {% endif %}
           </td>
           <td>
             <div class="row-actions">
-              <a class="btn btn-ghost" href="{% url 'environments:detail' env.pk %}">Voir</a>
+              <a class="btn btn-ghost btn-sm" href="{% url 'environments:detail' env.pk %}">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/></svg>
+                Détail
+              </a>
               {% if can_write %}
-                <a class="btn btn-ghost" href="{% url 'environments:edit' env.pk %}">Modifier</a>
+                <a class="btn btn-ghost btn-sm" href="{% url 'environments:edit' env.pk %}">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Modifier
+                </a>
               {% endif %}
             </div>
           </td>
@@ -95,23 +133,36 @@
   </div>
 
   {% if page_obj.has_other_pages %}
-  <div class="pagination">
+  <div class="pagination" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 20px;border-top:1px solid rgba(21,32,90,0.06)">
     {% if page_obj.has_previous %}
-      <a class="btn btn-ghost" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&type={{ type }}&application={{ application }}&active={{ active }}">Précédent</a>
+      <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&type={{ type }}&application={{ application }}&active={{ active }}">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        Précédent
+      </a>
     {% endif %}
-    <span style="align-self:center;color:var(--muted)">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    <span style="color:var(--muted);font-size:.88rem;font-weight:600">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
     {% if page_obj.has_next %}
-      <a class="btn btn-ghost" href="?page={{ page_obj.next_page_number }}&q={{ q }}&type={{ type }}&application={{ application }}&active={{ active }}">Suivant</a>
+      <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.next_page_number }}&q={{ q }}&type={{ type }}&application={{ application }}&active={{ active }}">
+        Suivant
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
     {% endif %}
   </div>
   {% endif %}
 
   {% else %}
-    <div class="empty">
-      Aucun environnement enregistré.
+    <div class="empty" style="padding:48px 20px;text-align:center">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(21,32,90,0.06);display:grid;place-items:center;margin:0 auto 16px">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--muted)" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      </div>
+      <p style="font-size:1.05rem;font-weight:600;color:var(--navy-deep);margin-bottom:6px">Aucun environnement répertorié</p>
+      <p style="color:var(--muted);font-size:.9rem;max-width:420px;margin:0 auto">Enregistrez un environnement pour le lier à vos applications et serveurs.</p>
       {% if can_write %}
-        <div style="margin-top:14px">
-          <a class="btn btn-accent" href="{% url 'environments:create' %}">Créer le premier environnement</a>
+        <div style="margin-top:18px">
+          <a class="btn btn-accent" href="{% url 'environments:create' %}">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+            Créer le premier environnement
+          </a>
         </div>
       {% endif %}
     </div>

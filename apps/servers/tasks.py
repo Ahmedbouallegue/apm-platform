@@ -37,10 +37,11 @@ def ping_all_servers():
     """Pings all active servers and updates their ping_status."""
     import logging
     from concurrent.futures import ThreadPoolExecutor
+    from datetime import timedelta
 
     from django.utils import timezone
 
-    from apps.servers.models import Server
+    from apps.servers.models import Server, ServerMetric
     
     logger = logging.getLogger(__name__)
     servers = list(Server.objects.filter(is_active=True, is_deleted=False))
@@ -51,10 +52,19 @@ def ping_all_servers():
     now = timezone.now()
     
     def process_server(server):
-        is_up = ping_host(server.ip_address)
+        # 1. Si le serveur a envoyé des métriques récemment (agent actif), il est EN LIGNE
+        recent_metric = ServerMetric.objects.filter(
+            server=server,
+            collected_at__gte=now - timedelta(minutes=2)
+        ).exists()
+
+        if recent_metric:
+            is_up = True
+        else:
+            is_up = ping_host(server.ip_address)
+
         new_status = Server.PingStatus.UP if is_up else Server.PingStatus.DOWN
         
-        # Simple logging for now
         if server.ping_status == Server.PingStatus.UP and new_status == Server.PingStatus.DOWN:
             logger.warning("Serveur %s (%s) est passé HORS LIGNE !", server.name, server.ip_address)
             

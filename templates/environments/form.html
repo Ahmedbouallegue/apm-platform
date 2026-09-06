@@ -2,14 +2,17 @@
 
 {% block page_title %}{{ title }}{% endblock %}
 {% block header_title %}{{ title }}{% endblock %}
-{% block header_sub %}Configuration d’un environnement applicatif{% endblock %}
+{% block header_sub %}Configuration d’un environnement applicatif Topnet{% endblock %}
 
 {% block header_actions %}
-  <a class="btn btn-ghost" href="{% url 'environments:list' %}">Retour à la liste</a>
+  <a class="btn btn-ghost" href="{% url 'environments:list' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour à la liste
+  </a>
 {% endblock %}
 
 {% block content %}
-<section class="panel resource-form resource-form-environment">
+<section class="panel resource-form resource-form-environment page-enter">
   <form method="post" class="js-validate" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}
@@ -17,10 +20,12 @@
     {% endif %}
 
     <div class="form-intro">
-      <div class="form-intro-icon">ENV</div>
+      <div class="form-intro-icon" style="background:linear-gradient(135deg,#059669,#15205a);color:#fff;display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      </div>
       <div>
-        <strong>Environnement technique</strong>
-        <span>Liez l’application à un serveur et précisez l’infrastructure cible.</span>
+        <strong>Environnement applicatif</strong>
+        <span>Liez l’application à un serveur hôte et précisez la configuration de déploiement.</span>
       </div>
     </div>
 
@@ -28,16 +33,16 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">1</span>
-          <span class="form-section-title">Rattachement</span>
+          <span class="form-section-title">Rattachement applicatif & type</span>
         </div>
         <div class="form-section-grid">
           <div class="field">
-            <label for="id_application">Application</label>
+            <label for="id_application">Application parente</label>
             {{ form.application }}
             {{ form.application.errors }}
           </div>
           <div class="field">
-            <label for="id_server">Serveur</label>
+            <label for="id_server">Serveur hôte</label>
             {{ form.server }}
             {{ form.server.errors }}
           </div>
@@ -47,7 +52,7 @@
             {{ form.env_type.errors }}
           </div>
           <div class="field">
-            <label for="id_name">Nom</label>
+            <label for="id_name">Nom de l'environnement</label>
             {{ form.name }}
             {{ form.name.errors }}
           </div>
@@ -57,26 +62,28 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">2</span>
-          <span class="form-section-title">Accès et hébergement</span>
+          <span class="form-section-title">Accès réseau & hébergement</span>
         </div>
         <div class="form-section-grid">
           <div class="field">
-            <label for="id_url">URL</label>
+            <label for="id_url">URL publique ou privée</label>
             {{ form.url }}
             {{ form.url.errors }}
           </div>
           <div class="field">
-            <label for="id_ip_address">Adresse IP</label>
+            <label for="id_ip_address">Adresse IP dédiée</label>
             {{ form.ip_address }}
             {{ form.ip_address.errors }}
           </div>
           <div class="field">
-            <label for="id_hosting_provider">Hébergeur</label>
+            <label for="id_hosting_provider">Fournisseur d'hébergement</label>
             {{ form.hosting_provider }}
+            {{ form.hosting_provider.errors }}
           </div>
           <div class="field">
             <label for="id_os">Système d’exploitation</label>
             {{ form.os }}
+            {{ form.os.errors }}
           </div>
         </div>
       </div>
@@ -84,21 +91,23 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">3</span>
-          <span class="form-section-title">Capacité et options</span>
+          <span class="form-section-title">Capacité & technologies de conteneur</span>
         </div>
         <div class="form-section-grid">
           <div class="field">
-            <label for="id_cpu">CPU</label>
+            <label for="id_cpu">CPU alloué</label>
             {{ form.cpu }}
+            {{ form.cpu.errors }}
           </div>
           <div class="field">
-            <label for="id_ram">RAM</label>
+            <label for="id_ram">RAM allouée</label>
             {{ form.ram }}
+            {{ form.ram.errors }}
           </div>
           <div class="form-toggle-group full">
-            <div class="form-toggle"><label>{{ form.docker }} Docker</label></div>
-            <div class="form-toggle"><label>{{ form.kubernetes }} Kubernetes</label></div>
-            <div class="form-toggle"><label>{{ form.is_active }} Environnement actif</label></div>
+            <div class="form-toggle"><label>{{ form.docker }} <strong>Docker</strong> (conteneurisation)</label></div>
+            <div class="form-toggle"><label>{{ form.kubernetes }} <strong>Kubernetes</strong> (cluster orchestré)</label></div>
+            <div class="form-toggle"><label>{{ form.is_active }} <strong>Environnement actif</strong></label></div>
           </div>
         </div>
       </div>
@@ -106,7 +115,10 @@
 
     <div class="form-actions">
       <a class="btn btn-ghost" href="{% url 'environments:list' %}">Annuler</a>
-      <button class="btn btn-primary" type="submit">Enregistrer l’environnement</button>
+      <button class="btn btn-primary" type="submit">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer l’environnement
+      </button>
     </div>
   </form>
 </section>

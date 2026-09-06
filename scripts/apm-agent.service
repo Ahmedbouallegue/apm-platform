@@ -1,0 +1,41 @@
+# APM Platform VM Agent — Systemd Service
+# =========================================
+# Fichier à copier sur la VM dans :
+#   /etc/systemd/system/apm-agent.service
+#
+# Puis activer avec :
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now apm-agent
+#   sudo systemctl status apm-agent
+
+[Unit]
+Description=APM Platform VM Agent
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+
+# === CONFIGURER CES VARIABLES ===
+# APM_URL     = IP de Windows + port 8000
+# APM_USERNAME / APM_PASSWORD = compte APM
+# SERVER_HOSTNAME = nom du serveur TEL QUE ENREGISTRÉ dans APM
+Environment="APM_URL=http://192.168.88.1:8000"
+Environment="APM_USERNAME=admin"
+Environment="APM_PASSWORD=Admin123!"
+Environment="SERVER_HOSTNAME=ahmed"
+Environment="COLLECT_INTERVAL=30"
+
+ExecStart=/usr/bin/python3 /opt/apm-agent/vm_agent.py
+
+# Restart automatique si crash
+Restart=always
+RestartSec=10
+
+# Logs accessibles via : journalctl -u apm-agent -f
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

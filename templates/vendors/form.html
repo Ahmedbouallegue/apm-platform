@@ -1,27 +1,112 @@
 {% extends "accounts/app_base.html" %}
+
 {% block page_title %}{{ title }}{% endblock %}
 {% block header_title %}{{ title }}{% endblock %}
-{% block header_sub %}Référentiel fournisseurs{% endblock %}
-{% block header_actions %}<a class="btn btn-ghost" href="{% url 'vendors:list' %}">Retour</a>{% endblock %}
+{% block header_sub %}Référentiel des prestataires & fournisseurs SI{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'vendors:list' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour à la liste
+  </a>
+{% endblock %}
+
 {% block content %}
-<section class="panel">
+<section class="panel resource-form resource-form-vendor page-enter">
   <form method="post" class="js-validate" novalidate>
     {% csrf_token %}
-    {% if form.non_field_errors %}<ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>{% endif %}
-    <div class="form-grid">
-      <div class="field"><label>Nom</label>{{ form.name }}{{ form.name.errors }}</div>
-      <div class="field"><label>Type</label>{{ form.vendor_type }}</div>
-      <div class="field"><label>Contact</label>{{ form.contact_name }}</div>
-      <div class="field"><label>Email</label>{{ form.contact_email }}{{ form.contact_email.errors }}</div>
-      <div class="field"><label>Téléphone</label>{{ form.contact_phone }}{{ form.contact_phone.errors }}</div>
-      <div class="field"><label>Site web</label>{{ form.website }}{{ form.website.errors }}</div>
-      <div class="field check-row"><label>{{ form.is_active }} Fournisseur actif</label></div>
-      <div class="field full"><label>Adresse</label>{{ form.address }}</div>
-      <div class="field full"><label>Notes</label>{{ form.notes }}</div>
+    {% if form.non_field_errors %}
+      <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
+    {% endif %}
+
+    <div class="form-intro">
+      <div class="form-intro-icon" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v14M21 7v14M6 10h2M6 14h2M6 18h2M16 10h2M16 14h2M16 18h2M9 21V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v12"/></svg>
+      </div>
+      <div>
+        <strong>Fournisseur / Prestataire</strong>
+        <span>Centralisez les données de vos éditeurs, hébergeurs et mainteneurs techniques.</span>
+      </div>
     </div>
+
+    <div class="form-sections">
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">1</span>
+          <span class="form-section-title">Identité & Type d'activité</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_name">Raison sociale / Nom</label>
+            {{ form.name }}
+            {{ form.name.errors }}
+          </div>
+          <div class="field">
+            <label for="id_vendor_type">Type de fournisseur</label>
+            {{ form.vendor_type }}
+            {{ form.vendor_type.errors }}
+          </div>
+          <div class="form-toggle-group full">
+            <div class="form-toggle"><label>{{ form.is_active }} <strong>Fournisseur actif</strong> (référencé au catalogue)</label></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">2</span>
+          <span class="form-section-title">Interlocuteur & Coordonnées</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_contact_name">Nom du contact référent</label>
+            {{ form.contact_name }}
+            {{ form.contact_name.errors }}
+          </div>
+          <div class="field">
+            <label for="id_contact_email">Adresse e-mail</label>
+            {{ form.contact_email }}
+            {{ form.contact_email.errors }}
+          </div>
+          <div class="field">
+            <label for="id_contact_phone">Téléphone / Support</label>
+            {{ form.contact_phone }}
+            {{ form.contact_phone.errors }}
+          </div>
+          <div class="field">
+            <label for="id_website">Site web / Portail client</label>
+            {{ form.website }}
+            {{ form.website.errors }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">3</span>
+          <span class="form-section-title">Adresse & Modalités</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field full">
+            <label for="id_address">Adresse postale du siège</label>
+            {{ form.address }}
+            {{ form.address.errors }}
+          </div>
+          <div class="field full">
+            <label for="id_notes">Notes d'exploitation / Procédure de contact</label>
+            {{ form.notes }}
+            {{ form.notes.errors }}
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="form-actions">
       <a class="btn btn-ghost" href="{% url 'vendors:list' %}">Annuler</a>
-      <button class="btn btn-primary" type="submit">Enregistrer</button>
+      <button class="btn btn-primary" type="submit">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer le fournisseur
+      </button>
     </div>
   </form>
 </section>

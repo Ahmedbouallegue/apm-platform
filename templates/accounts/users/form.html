@@ -2,14 +2,17 @@
 
 {% block page_title %}{{ title }}{% endblock %}
 {% block header_title %}{{ title }}{% endblock %}
-{% block header_sub %}Définition du compte et des droits d’accès{% endblock %}
+{% block header_sub %}Paramétrage du profil utilisateur et affectation des droits RBAC{% endblock %}
 
 {% block header_actions %}
-  <a class="btn btn-ghost" href="{% url 'web:user-list' %}">Retour à la liste</a>
+  <a class="btn btn-ghost" href="{% url 'web:user-list' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour à la liste
+  </a>
 {% endblock %}
 
 {% block content %}
-<section class="panel resource-form resource-form-user">
+<section class="panel resource-form resource-form-user page-enter">
   <form method="post" class="js-validate" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}
@@ -17,10 +20,12 @@
     {% endif %}
 
     <div class="form-intro">
-      <div class="form-intro-icon">USR</div>
+      <div class="form-intro-icon" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
       <div>
-        <strong>Compte utilisateur APM</strong>
-        <span>Configurez l’identité, le rôle et les droits d’accès à la plateforme.</span>
+        <strong>Compte collaborateur</strong>
+        <span>Définissez l’identité du membre, son département et son niveau de privilège dans l'APM.</span>
       </div>
     </div>
 
@@ -28,18 +33,18 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">1</span>
-          <span class="form-section-title">Identité</span>
+          <span class="form-section-title">Identité & Coordonnées</span>
         </div>
         <div class="form-section-grid">
           {% if mode == "create" %}
           <div class="field">
-            <label for="id_username">Identifiant</label>
+            <label for="id_username">Nom d'utilisateur (login)</label>
             {{ form.username }}
             {{ form.username.errors }}
           </div>
           {% endif %}
           <div class="field {% if mode != 'create' %}full{% endif %}">
-            <label for="id_email">Email</label>
+            <label for="id_email">Adresse e-mail professionnelle</label>
             {{ form.email }}
             {{ form.email.errors }}
           </div>
@@ -52,11 +57,11 @@
             {{ form.last_name }}
           </div>
           <div class="field">
-            <label for="id_phone">Téléphone</label>
+            <label for="id_phone">Téléphone direct</label>
             {{ form.phone }}
           </div>
           <div class="field">
-            <label for="id_department">Département</label>
+            <label for="id_department">Département / Direction</label>
             {{ form.department }}
           </div>
         </div>
@@ -65,22 +70,20 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">2</span>
-          <span class="form-section-title">Rôle et accès</span>
+          <span class="form-section-title">Privilèges & Habilitations</span>
         </div>
         <div class="form-section-grid">
           <div class="field full">
-            <label for="id_role">Rôle</label>
+            <label for="id_role">Rôle applicatif attribué</label>
             {{ form.role }}
             {{ form.role.errors }}
-            <p class="field-hint">
-              <strong>Administrateur DSI</strong> : users, paramètres, import/export.
-              <strong>Équipe DSI / Technicien</strong> : CRUD patrimoine (pas les comptes).
-              <strong>Lecteur</strong> : consultation seule.
+            <p class="field-hint" style="margin-top:6px;font-size:.82rem;color:var(--muted)">
+              <strong>Administrateur DSI</strong> : gouvernance complète · <strong>Administrateur Système</strong> : gestion infrastructure serveur · <strong>Lecteur</strong> : consultation.
             </p>
           </div>
           <div class="form-toggle-group full">
-            <div class="form-toggle"><label>{{ form.is_active }} Compte actif</label></div>
-            <div class="form-toggle"><label>{{ form.is_staff }} Accès admin Django</label></div>
+            <div class="form-toggle"><label>{{ form.is_active }} <strong>Compte actif</strong> (autoriser la connexion)</label></div>
+            <div class="form-toggle"><label>{{ form.is_staff }} <strong>Accès console Django admin</strong></label></div>
           </div>
         </div>
       </div>
@@ -88,19 +91,19 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">3</span>
-          <span class="form-section-title">Sécurité</span>
+          <span class="form-section-title">Sécurité d'authentification</span>
         </div>
         <div class="form-section-grid">
           <div class="field">
-            <label for="id_password1">{% if mode == "create" %}Mot de passe{% else %}Nouveau mot de passe{% endif %}</label>
+            <label for="id_password1">{% if mode == "create" %}Mot de passe initial{% else %}Nouveau mot de passe{% endif %}</label>
             {{ form.password1 }}
             {{ form.password1.errors }}
             {% if mode != "create" %}
-              <div class="field-hint">Laisser vide pour conserver le mot de passe actuel.</div>
+              <div class="field-hint" style="margin-top:6px;font-size:.82rem;color:var(--muted)">Laisser vide pour conserver le mot de passe actuel sans modification.</div>
             {% endif %}
           </div>
           <div class="field">
-            <label for="id_password2">Confirmation</label>
+            <label for="id_password2">Confirmation du mot de passe</label>
             {{ form.password2 }}
             {{ form.password2.errors }}
           </div>
@@ -110,7 +113,10 @@
 
     <div class="form-actions">
       <a class="btn btn-ghost" href="{% url 'web:user-list' %}">Annuler</a>
-      <button class="btn btn-primary" type="submit">Enregistrer l’utilisateur</button>
+      <button class="btn btn-primary" type="submit">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer l’utilisateur
+      </button>
     </div>
   </form>
 </section>

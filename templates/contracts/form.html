@@ -1,33 +1,138 @@
 {% extends "accounts/app_base.html" %}
+
 {% block page_title %}{{ title }}{% endblock %}
 {% block header_title %}{{ title }}{% endblock %}
-{% block header_sub %}Contrats SI{% endblock %}
-{% block header_actions %}<a class="btn btn-ghost" href="{% url 'contracts:list' %}">Retour</a>{% endblock %}
+{% block header_sub %}Gestion des contrats de support & licences SI{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'contracts:list' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour à la liste
+  </a>
+{% endblock %}
+
 {% block content %}
-<section class="panel">
+<section class="panel resource-form resource-form-contract page-enter">
   <form method="post" class="js-validate" novalidate>
     {% csrf_token %}
-    {% if form.non_field_errors %}<ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>{% endif %}
-    <div class="form-grid">
-      <div class="field"><label>Référence</label>{{ form.reference }}{{ form.reference.errors }}</div>
-      <div class="field"><label>Intitulé</label>{{ form.title }}{{ form.title.errors }}</div>
-      <div class="field"><label>Fournisseur</label>{{ form.vendor }}{{ form.vendor.errors }}</div>
-      <div class="field"><label>Application</label>{{ form.application }}</div>
-      <div class="field"><label>Type</label>{{ form.contract_type }}</div>
-      <div class="field"><label>Statut</label>{{ form.status }}</div>
-      <div class="field"><label>Début</label>{{ form.start_date }}{{ form.start_date.errors }}</div>
-      <div class="field"><label>Fin</label>{{ form.end_date }}{{ form.end_date.errors }}</div>
-      <div class="field"><label>Coût annuel</label>{{ form.annual_cost }}</div>
-      <div class="field"><label>Devise</label>{{ form.currency }}</div>
-      <div class="field"><label>SLA</label>{{ form.sla_level }}</div>
-      <div class="field"><label>Responsable</label>{{ form.owner }}</div>
-      <div class="field check-row"><label>{{ form.auto_renew }} Renouvellement auto</label></div>
-      <div class="field check-row"><label>{{ form.is_active }} Contrat actif</label></div>
-      <div class="field full"><label>Notes</label>{{ form.notes }}</div>
+    {% if form.non_field_errors %}
+      <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
+    {% endif %}
+
+    <div class="form-intro">
+      <div class="form-intro-icon" style="background:linear-gradient(135deg,#ea580c,#15205a);color:#fff;display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      <div>
+        <strong>Contrat de service SI</strong>
+        <span>Enregistrez les termes contractuels, engagements SLA et coûts annuels.</span>
+      </div>
     </div>
+
+    <div class="form-sections">
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">1</span>
+          <span class="form-section-title">Identité & Périmètre contractuel</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_reference">Numéro de référence</label>
+            {{ form.reference }}
+            {{ form.reference.errors }}
+          </div>
+          <div class="field">
+            <label for="id_title">Intitulé du contrat</label>
+            {{ form.title }}
+            {{ form.title.errors }}
+          </div>
+          <div class="field">
+            <label for="id_vendor">Fournisseur prestataire</label>
+            {{ form.vendor }}
+            {{ form.vendor.errors }}
+          </div>
+          <div class="field">
+            <label for="id_application">Application couverte</label>
+            {{ form.application }}
+            {{ form.application.errors }}
+          </div>
+          <div class="field">
+            <label for="id_contract_type">Type de prestation</label>
+            {{ form.contract_type }}
+            {{ form.contract_type.errors }}
+          </div>
+          <div class="field">
+            <label for="id_status">Statut actuel</label>
+            {{ form.status }}
+            {{ form.status.errors }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">2</span>
+          <span class="form-section-title">Calendrier, Coût & SLA</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_start_date">Date de prise d'effet</label>
+            {{ form.start_date }}
+            {{ form.start_date.errors }}
+          </div>
+          <div class="field">
+            <label for="id_end_date">Date de fin / Échéance</label>
+            {{ form.end_date }}
+            {{ form.end_date.errors }}
+          </div>
+          <div class="field">
+            <label for="id_annual_cost">Coût annuel récurrent</label>
+            {{ form.annual_cost }}
+            {{ form.annual_cost.errors }}
+          </div>
+          <div class="field">
+            <label for="id_currency">Devise</label>
+            {{ form.currency }}
+            {{ form.currency.errors }}
+          </div>
+          <div class="field">
+            <label for="id_sla_level">Niveau de service (SLA)</label>
+            {{ form.sla_level }}
+            {{ form.sla_level.errors }}
+          </div>
+          <div class="field">
+            <label for="id_owner">Responsable du contrat</label>
+            {{ form.owner }}
+            {{ form.owner.errors }}
+          </div>
+          <div class="form-toggle-group full">
+            <div class="form-toggle"><label>{{ form.auto_renew }} <strong>Tacite reconduction automatique</strong></label></div>
+            <div class="form-toggle"><label>{{ form.is_active }} <strong>Contrat actif</strong></label></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">3</span>
+          <span class="form-section-title">Clauses & Notes particulières</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field full">
+            <label for="id_notes">Notes d'exploitation / Conditions de résiliation</label>
+            {{ form.notes }}
+            {{ form.notes.errors }}
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="form-actions">
       <a class="btn btn-ghost" href="{% url 'contracts:list' %}">Annuler</a>
-      <button class="btn btn-primary" type="submit">Enregistrer</button>
+      <button class="btn btn-primary" type="submit">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer le contrat
+      </button>
     </div>
   </form>
 </section>

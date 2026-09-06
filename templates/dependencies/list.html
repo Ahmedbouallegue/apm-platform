@@ -1,65 +1,106 @@
 {% extends "accounts/app_base.html" %}
+
 {% block page_title %}Dépendances{% endblock %}
-{% block header_title %}Dépendances applicatives{% endblock %}
-{% block header_sub %}Cartographie · Flux · Intégrations{% endblock %}
+{% block header_title %}Cartographie des dépendances applicatives{% endblock %}
+{% block header_sub %}Interconnexions · Flux d'échanges · Intégrations API & Données{% endblock %}
+
+{% block header_actions %}
+  {% if can_write %}
+    <a class="btn btn-accent" href="{% url 'dependencies:create' %}">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+      Nouvelle dépendance
+    </a>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
-<section class="panel">
-  <div class="panel-head panel-head-tools">
-    <form class="filters filters-with-action" method="get">
-      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Description, applications…">
-      <select class="field-input" name="type">
+<section class="panel page-enter">
+  <div class="panel-head" style="flex-wrap:wrap;gap:12px">
+    <form class="filters" method="get" style="flex:1;margin-bottom:0;border:none;padding:0;background:none">
+      <div style="position:relative;flex:1;min-width:180px">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input class="field-input" style="padding-left:36px;width:100%" type="search" name="q" value="{{ q }}" placeholder="Description, applications…">
+      </div>
+      <select class="field-input" name="type" style="min-width:140px">
         <option value="">Tous les types</option>
         {% for value, label in dependency_types %}
           <option value="{{ value }}" {% if type == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
-      <select class="field-input" name="source">
+      <select class="field-input" name="source" style="min-width:140px">
         <option value="">Source (toutes)</option>
         {% for a in applications %}
           <option value="{{ a.pk }}" {% if source == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.name }}</option>
         {% endfor %}
       </select>
-      <select class="field-input" name="target">
+      <select class="field-input" name="target" style="min-width:140px">
         <option value="">Cible (toutes)</option>
         {% for a in applications %}
           <option value="{{ a.pk }}" {% if target == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.name }}</option>
         {% endfor %}
       </select>
-      <button class="btn btn-primary" type="submit">Filtrer</button>
-      {% if can_write %}
-        <a class="btn btn-accent filters-action" href="{% url 'dependencies:create' %}">Nouvelle dépendance</a>
-      {% endif %}
+      <button class="btn btn-primary" type="submit" style="white-space:nowrap">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+        Filtrer
+      </button>
     </form>
   </div>
+
   {% if dependencies %}
   <div class="table-wrap">
     <table class="data">
       <thead>
         <tr>
-          <th>Source</th>
-          <th>Type</th>
-          <th>Cible</th>
-          <th>Actif</th>
+          <th>Application source</th>
+          <th>Type de flux</th>
+          <th>Application / Système cible</th>
+          <th>Statut</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for d in dependencies %}
         <tr>
-          <td><a href="{% url 'applications:detail' d.source_application_id %}">{{ d.source_application.name }}</a></td>
-          <td><span class="badge">{{ d.get_dependency_type_display }}</span></td>
           <td>
-            {% if d.target_application %}
-              <a href="{% url 'applications:detail' d.target_application_id %}">{{ d.target_application.name }}</a>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:34px;height:34px;border-radius:10px;background:rgba(21,32,90,0.08);display:grid;place-items:center;flex-shrink:0">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--navy)" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </div>
+              <a href="{% url 'applications:detail' d.source_application_id %}" style="font-weight:700;color:var(--navy-deep)">{{ d.source_application.name }}</a>
+            </div>
+          </td>
+          <td>
+            <span class="badge badge-manager">{{ d.get_dependency_type_display }}</span>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--muted)" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              {% if d.target_application %}
+                <a href="{% url 'applications:detail' d.target_application_id %}" style="font-weight:600">{{ d.target_application.name }}</a>
+              {% else %}
+                <span style="font-weight:500;color:var(--muted)">{{ d.target_external }} (Externe)</span>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            {% if d.is_active %}
+              <span class="badge badge-success"><span class="status-dot is-online"></span>Actif</span>
             {% else %}
-              {{ d.target_external }}
+              <span class="badge badge-muted"><span class="status-dot"></span>Inactif</span>
             {% endif %}
           </td>
-          <td>{% if d.is_active %}Oui{% else %}Non{% endif %}</td>
           <td>
             <div class="row-actions">
-              <a class="btn btn-ghost" href="{% url 'dependencies:detail' d.pk %}">Voir</a>
-              {% if can_write %}<a class="btn btn-ghost" href="{% url 'dependencies:edit' d.pk %}">Modifier</a>{% endif %}
+              <a class="btn btn-ghost btn-sm" href="{% url 'dependencies:detail' d.pk %}">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/></svg>
+                Voir
+              </a>
+              {% if can_write %}
+                <a class="btn btn-ghost btn-sm" href="{% url 'dependencies:edit' d.pk %}">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Modifier
+                </a>
+              {% endif %}
             </div>
           </td>
         </tr>
@@ -68,7 +109,21 @@
     </table>
   </div>
   {% else %}
-    <div class="empty">Aucune dépendance.{% if can_write %}<div style="margin-top:14px"><a class="btn btn-accent" href="{% url 'dependencies:create' %}">Créer la première</a></div>{% endif %}</div>
+    <div class="empty" style="padding:48px 20px;text-align:center">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(21,32,90,0.06);display:grid;place-items:center;margin:0 auto 16px">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--muted)" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </div>
+      <p style="font-size:1.05rem;font-weight:600;color:var(--navy-deep);margin-bottom:6px">Aucune dépendance enregistrée</p>
+      <p style="color:var(--muted);font-size:.9rem;max-width:420px;margin:0 auto">Cartographiez les flux API, bases de données et services tiers entre applications.</p>
+      {% if can_write %}
+        <div style="margin-top:18px">
+          <a class="btn btn-accent" href="{% url 'dependencies:create' %}">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+            Créer la première dépendance
+          </a>
+        </div>
+      {% endif %}
+    </div>
   {% endif %}
 </section>
 {% endblock %}

@@ -1,31 +1,128 @@
 {% extends "accounts/app_base.html" %}
+
 {% block page_title %}{{ title }}{% endblock %}
 {% block header_title %}{{ title }}{% endblock %}
-{% block header_sub %}Inventaire SSL/TLS{% endblock %}
-{% block header_actions %}<a class="btn btn-ghost" href="{% url 'certificates:list' %}">Retour</a>{% endblock %}
+{% block header_sub %}Gestion des certificats SSL/TLS{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'certificates:list' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour à la liste
+  </a>
+{% endblock %}
+
 {% block content %}
-<section class="panel">
+<section class="panel resource-form resource-form-certificate page-enter">
   <form method="post" class="js-validate" novalidate>
     {% csrf_token %}
-    {% if form.non_field_errors %}<ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>{% endif %}
-    <div class="form-grid">
-      <div class="field"><label>Nom commun (CN)</label>{{ form.common_name }}{{ form.common_name.errors }}</div>
-      <div class="field"><label>Type</label>{{ form.certificate_type }}</div>
-      <div class="field"><label>Émetteur (CA)</label>{{ form.issuer }}</div>
-      <div class="field"><label>Statut</label>{{ form.status }}</div>
-      <div class="field"><label>Émission</label>{{ form.issued_at }}</div>
-      <div class="field"><label>Expiration</label>{{ form.expires_at }}{{ form.expires_at.errors }}</div>
-      <div class="field"><label>Application</label>{{ form.application }}</div>
-      <div class="field"><label>Environnement</label>{{ form.environment }}</div>
-      <div class="field"><label>Domaine</label>{{ form.domain }}</div>
-      <div class="field check-row"><label>{{ form.auto_renew }} Renouvellement auto</label></div>
-      <div class="field check-row"><label>{{ form.is_active }} Certificat actif</label></div>
-      <div class="field full"><label>SAN</label>{{ form.san_domains }}</div>
-      <div class="field full"><label>Notes</label>{{ form.notes }}</div>
+    {% if form.non_field_errors %}
+      <ul class="errorlist" style="margin:16px 22px 0">{{ form.non_field_errors }}</ul>
+    {% endif %}
+
+    <div class="form-intro">
+      <div class="form-intro-icon" style="background:linear-gradient(135deg,var(--cyan),#059669);color:#fff;display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div>
+        <strong>Certificat SSL / TLS</strong>
+        <span>Enregistrez les informations de chiffrement pour automatiser la surveillance des dates d'expiration.</span>
+      </div>
     </div>
+
+    <div class="form-sections">
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">1</span>
+          <span class="form-section-title">Identité du certificat</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_common_name">Nom commun (CN)</label>
+            {{ form.common_name }}
+            {{ form.common_name.errors }}
+          </div>
+          <div class="field">
+            <label for="id_certificate_type">Type de certificat</label>
+            {{ form.certificate_type }}
+            {{ form.certificate_type.errors }}
+          </div>
+          <div class="field">
+            <label for="id_issuer">Autorité de certification (CA)</label>
+            {{ form.issuer }}
+            {{ form.issuer.errors }}
+          </div>
+          <div class="field">
+            <label for="id_status">Statut de conformité</label>
+            {{ form.status }}
+            {{ form.status.errors }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">2</span>
+          <span class="form-section-title">Validité & Renouvellement</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_issued_at">Date d’émission</label>
+            {{ form.issued_at }}
+            {{ form.issued_at.errors }}
+          </div>
+          <div class="field">
+            <label for="id_expires_at">Date d’expiration</label>
+            {{ form.expires_at }}
+            {{ form.expires_at.errors }}
+          </div>
+          <div class="form-toggle-group full">
+            <div class="form-toggle"><label>{{ form.auto_renew }} <strong>Renouvellement automatique activé</strong></label></div>
+            <div class="form-toggle"><label>{{ form.is_active }} <strong>Certificat en service actif</strong></label></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">
+          <span class="form-section-number">3</span>
+          <span class="form-section-title">Rattachement & SAN</span>
+        </div>
+        <div class="form-section-grid">
+          <div class="field">
+            <label for="id_application">Application liée</label>
+            {{ form.application }}
+            {{ form.application.errors }}
+          </div>
+          <div class="field">
+            <label for="id_environment">Environnement</label>
+            {{ form.environment }}
+            {{ form.environment.errors }}
+          </div>
+          <div class="field">
+            <label for="id_domain">Nom de domaine principal</label>
+            {{ form.domain }}
+            {{ form.domain.errors }}
+          </div>
+          <div class="field full">
+            <label for="id_san_domains">Noms de domaines alternatifs (SAN)</label>
+            {{ form.san_domains }}
+            {{ form.san_domains.errors }}
+          </div>
+          <div class="field full">
+            <label for="id_notes">Notes techniques / Emplacement clé</label>
+            {{ form.notes }}
+            {{ form.notes.errors }}
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="form-actions">
       <a class="btn btn-ghost" href="{% url 'certificates:list' %}">Annuler</a>
-      <button class="btn btn-primary" type="submit">Enregistrer</button>
+      <button class="btn btn-primary" type="submit">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer le certificat
+      </button>
     </div>
   </form>
 </section>

@@ -1,61 +1,110 @@
 {% extends "accounts/app_base.html" %}
+
 {% block page_title %}Incidents{% endblock %}
-{% block header_title %}Incidents majeurs{% endblock %}
-{% block header_sub %}Historique · Impact · Résolution{% endblock %}
+{% block header_title %}Incidents majeurs & Anomalies{% endblock %}
+{% block header_sub %}Historique · Impact opérationnel · Post-mortem & Résolution{% endblock %}
+
+{% block header_actions %}
+  {% if can_write %}
+    <a class="btn btn-accent" href="{% url 'incidents:create' %}">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+      Déclarer un incident
+    </a>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
-<section class="panel">
-  <div class="panel-head panel-head-tools">
-    <form class="filters filters-with-action" method="get">
-      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Titre, description, application…">
-      <select class="field-input" name="status">
+<section class="panel page-enter">
+  <div class="panel-head" style="flex-wrap:wrap;gap:12px">
+    <form class="filters" method="get" style="flex:1;margin-bottom:0;border:none;padding:0;background:none">
+      <div style="position:relative;flex:1;min-width:180px">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input class="field-input" style="padding-left:36px;width:100%" type="search" name="q" value="{{ q }}" placeholder="Titre, description, application…">
+      </div>
+      <select class="field-input" name="status" style="min-width:130px">
         <option value="">Tous les statuts</option>
         {% for value, label in statuses %}
           <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
-      <select class="field-input" name="impact">
+      <select class="field-input" name="impact" style="min-width:130px">
         <option value="">Tous les impacts</option>
         {% for value, label in impacts %}
           <option value="{{ value }}" {% if impact == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
-      <select class="field-input" name="application">
+      <select class="field-input" name="application" style="min-width:150px">
         <option value="">Toutes les applications</option>
         {% for a in applications %}
           <option value="{{ a.pk }}" {% if application == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.name }}</option>
         {% endfor %}
       </select>
-      <button class="btn btn-primary" type="submit">Filtrer</button>
-      {% if can_write %}
-        <a class="btn btn-accent filters-action" href="{% url 'incidents:create' %}">Nouvel incident</a>
-      {% endif %}
+      <button class="btn btn-primary" type="submit" style="white-space:nowrap">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+        Filtrer
+      </button>
     </form>
   </div>
+
   {% if incidents %}
   <div class="table-wrap">
     <table class="data">
       <thead>
         <tr>
-          <th>Titre</th>
-          <th>Application</th>
+          <th>Incident & Date</th>
+          <th>Application impactée</th>
           <th>Impact</th>
           <th>Statut</th>
-          <th>Date</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for i in incidents %}
         <tr>
-          <td><a href="{% url 'incidents:detail' i.pk %}"><strong>{{ i.title }}</strong></a></td>
-          <td><a href="{% url 'applications:detail' i.application_id %}">{{ i.application.name }}</a></td>
-          <td><span class="badge">{{ i.get_impact_display }}</span></td>
-          <td><span class="badge">{{ i.get_status_display }}</span></td>
-          <td>{{ i.occurred_at|date:"d/m/Y H:i" }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(239,68,68,0.12);display:grid;place-items:center;flex-shrink:0">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#dc2626" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div>
+                <a href="{% url 'incidents:detail' i.pk %}" style="font-weight:700;color:var(--navy-deep);font-size:.95rem">{{ i.title }}</a>
+                <div style="color:var(--muted);font-size:.8rem;margin-top:1px">{{ i.occurred_at|date:"d/m/Y à H:i" }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <a href="{% url 'applications:detail' i.application_id %}" style="font-weight:600">{{ i.application.name }}</a>
+          </td>
+          <td>
+            {% if i.impact == "critique" or i.impact == "bloquant" %}
+              <span class="badge badge-danger">{{ i.get_impact_display }}</span>
+            {% elif i.impact == "majeur" %}
+              <span class="badge badge-warning">{{ i.get_impact_display }}</span>
+            {% else %}
+              <span class="badge badge-muted">{{ i.get_impact_display }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if i.status == "resolu" or i.status == "clos" %}
+              <span class="badge badge-success"><span class="status-dot is-online"></span>{{ i.get_status_display }}</span>
+            {% elif i.status == "en_cours" %}
+              <span class="badge badge-warning"><span class="status-dot" style="background:#f59e0b"></span>{{ i.get_status_display }}</span>
+            {% else %}
+              <span class="badge badge-danger"><span class="status-dot is-offline"></span>{{ i.get_status_display }}</span>
+            {% endif %}
+          </td>
           <td>
             <div class="row-actions">
-              <a class="btn btn-ghost" href="{% url 'incidents:detail' i.pk %}">Voir</a>
-              {% if can_write %}<a class="btn btn-ghost" href="{% url 'incidents:edit' i.pk %}">Modifier</a>{% endif %}
+              <a class="btn btn-ghost btn-sm" href="{% url 'incidents:detail' i.pk %}">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/></svg>
+                Voir
+              </a>
+              {% if can_write %}
+                <a class="btn btn-ghost btn-sm" href="{% url 'incidents:edit' i.pk %}">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Modifier
+                </a>
+              {% endif %}
             </div>
           </td>
         </tr>
@@ -64,7 +113,21 @@
     </table>
   </div>
   {% else %}
-    <div class="empty">Aucun incident.{% if can_write %}<div style="margin-top:14px"><a class="btn btn-accent" href="{% url 'incidents:create' %}">Créer le premier</a></div>{% endif %}</div>
+    <div class="empty" style="padding:48px 20px;text-align:center">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(21,32,90,0.06);display:grid;place-items:center;margin:0 auto 16px">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--muted)" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <p style="font-size:1.05rem;font-weight:600;color:var(--navy-deep);margin-bottom:6px">Aucun incident enregistré</p>
+      <p style="color:var(--muted);font-size:.9rem;max-width:420px;margin:0 auto">Les anomalies et pannes sont documentées ici avec leur cause racine et leur plan de résolution.</p>
+      {% if can_write %}
+        <div style="margin-top:18px">
+          <a class="btn btn-accent" href="{% url 'incidents:create' %}">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+            Déclarer un incident
+          </a>
+        </div>
+      {% endif %}
+    </div>
   {% endif %}
 </section>
 {% endblock %}

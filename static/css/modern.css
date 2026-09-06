@@ -869,3 +869,529 @@ body.theme-modern.theme-dark .badge {
 body.theme-modern.theme-dark .section-title {
   color: #c9d4f0;
 }
+
+/* ==========================================================================
+   Global UX/UI Overhaul — Enterprise SaaS Modern Polish
+   ========================================================================== */
+
+/* 1. Global Micro-Interactions & Fluidity */
+* {
+  box-sizing: border-box;
+}
+
+.theme-modern a,
+.theme-modern button,
+.theme-modern input,
+.theme-modern select,
+.theme-modern textarea {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 2. Elevated Panels & Cards */
+.theme-modern .panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(1.25);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 
+    0 4px 6px -1px rgba(11, 16, 40, 0.04),
+    0 16px 36px -4px rgba(11, 16, 40, 0.08);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.theme-modern .panel:hover {
+  box-shadow: 
+    0 6px 12px -2px rgba(11, 16, 40, 0.05),
+    0 22px 48px -6px rgba(11, 16, 40, 0.11);
+}
+
+.theme-modern .panel-head {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(21, 32, 90, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 3. Modernized Data Tables */
+.theme-modern .table-wrap {
+  overflow-x: auto;
+  border-radius: 0 0 20px 20px;
+}
+
+.theme-modern table.data {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.theme-modern table.data th {
+  padding: 13px 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  background: rgba(245, 248, 253, 0.85);
+  border-bottom: 1px solid rgba(21, 32, 90, 0.08);
+  white-space: nowrap;
+}
+
+.theme-modern table.data td {
+  padding: 15px 20px;
+  font-size: 0.92rem;
+  border-bottom: 1px solid rgba(21, 32, 90, 0.05);
+  vertical-align: middle;
+  transition: background 0.18s ease;
+}
+
+.theme-modern table.data tbody tr {
+  position: relative;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.theme-modern table.data tbody tr:hover td {
+  background: rgba(18, 183, 235, 0.06);
+}
+
+.theme-modern table.data tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* 4. Enhanced Status Badges & Dynamic Pulse */
+.theme-modern .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.theme-modern .badge-success {
+  background: rgba(5, 150, 105, 0.12);
+  color: #047857;
+  border-color: rgba(5, 150, 105, 0.25);
+}
+
+.theme-modern .badge-danger {
+  background: rgba(225, 29, 72, 0.12);
+  color: #be123c;
+  border-color: rgba(225, 29, 72, 0.25);
+}
+
+.theme-modern .badge-warning {
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+.theme-modern .badge-muted {
+  background: rgba(100, 116, 139, 0.12);
+  color: #475569;
+  border-color: rgba(100, 116, 139, 0.22);
+}
+
+.theme-modern .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.theme-modern .status-dot.is-online {
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: modern-pulse-green 2s infinite;
+}
+
+.theme-modern .status-dot.is-offline {
+  background: #ef4444;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: modern-pulse-red 2s infinite;
+}
+
+@keyframes modern-pulse-green {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+@keyframes modern-pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* 5. Buttons with Tactical Feedback */
+.theme-modern .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 650;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.theme-modern .btn:hover {
+  transform: translateY(-1.5px);
+}
+
+.theme-modern .btn:active {
+  transform: translateY(0.5px) scale(0.98);
+}
+
+.theme-modern .btn-primary {
+  background: linear-gradient(135deg, #1d2979 0%, #15205a 50%, #0d1540 100%);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 4px 14px rgba(21, 32, 90, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.theme-modern .btn-primary:hover {
+  box-shadow: 
+    0 8px 22px rgba(21, 32, 90, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.theme-modern .btn-accent {
+  background: linear-gradient(135deg, #fb923c 0%, #f58a12 50%, #ea580c 100%);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 4px 14px rgba(245, 138, 18, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.theme-modern .btn-accent:hover {
+  box-shadow: 
+    0 8px 22px rgba(245, 138, 18, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+}
+
+.theme-modern .btn-ghost {
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--navy-deep);
+  border: 1px solid rgba(21, 32, 90, 0.1);
+  box-shadow: 0 2px 5px rgba(11, 16, 40, 0.04);
+}
+
+.theme-modern .btn-ghost:hover {
+  background: #ffffff;
+  border-color: rgba(18, 183, 235, 0.45);
+  box-shadow: 0 4px 12px rgba(18, 183, 235, 0.12);
+  color: var(--navy);
+}
+
+.theme-modern .btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: 9px;
+}
+
+/* 6. Form Fields & Filter Bar */
+.theme-modern .filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 20px;
+  background: rgba(246, 249, 254, 0.7);
+  border-radius: 16px;
+  border: 1px solid rgba(21, 32, 90, 0.06);
+  margin-bottom: 8px;
+}
+
+.theme-modern .field-input {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(21, 32, 90, 0.14);
+  border-radius: 12px;
+  padding: 9px 14px;
+  font-size: 0.88rem;
+  color: var(--ink);
+  box-shadow: inset 0 1px 2px rgba(11, 16, 40, 0.03);
+  outline: none;
+}
+
+.theme-modern .field-input:hover {
+  border-color: rgba(18, 183, 235, 0.45);
+}
+
+.theme-modern .field-input:focus {
+  border-color: var(--cyan);
+  background: #ffffff;
+  box-shadow: 
+    0 0 0 3.5px rgba(18, 183, 235, 0.18),
+    inset 0 1px 2px rgba(11, 16, 40, 0.02);
+}
+
+/* 7. Enhanced KPI Stats Cards */
+.theme-modern .stats {
+  display: grid;
+  gap: 16px;
+}
+
+.theme-modern .stat {
+  position: relative;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 
+    0 4px 12px rgba(11, 16, 40, 0.04),
+    0 1px 2px rgba(11, 16, 40, 0.02);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  overflow: hidden;
+}
+
+.theme-modern .stat:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 10px 24px rgba(11, 16, 40, 0.08),
+    0 2px 6px rgba(11, 16, 40, 0.04);
+  border-color: rgba(18, 183, 235, 0.35);
+}
+
+.theme-modern .stat .label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.theme-modern .stat .value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--navy-deep);
+  font-family: var(--display);
+  line-height: 1.15;
+}
+
+/* 8. Sidebar Link Accent Glow */
+.theme-modern .nav a {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-modern .nav a:hover {
+  transform: translateX(4px);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.theme-modern .nav a.is-active {
+  background: linear-gradient(90deg, rgba(18, 183, 235, 0.2) 0%, rgba(18, 183, 235, 0.05) 100%);
+  color: #ffffff;
+  box-shadow: inset 3.5px 0 0 var(--cyan);
+}
+
+.theme-modern .nav a.is-active .nav-ico svg {
+  stroke: var(--cyan);
+  filter: drop-shadow(0 0 6px rgba(18, 183, 235, 0.6));
+}
+
+/* 9. Dark Mode Polish */
+body.theme-modern.theme-dark .panel {
+  background: rgba(13, 18, 42, 0.82);
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+body.theme-modern.theme-dark .panel:hover {
+  border-color: rgba(18, 183, 235, 0.25);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+body.theme-modern.theme-dark .panel-head {
+  background: rgba(18, 25, 58, 0.7);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-modern.theme-dark .stat {
+  background: rgba(13, 18, 42, 0.85);
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+body.theme-modern.theme-dark .stat:hover {
+  border-color: rgba(18, 183, 235, 0.35);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+body.theme-modern.theme-dark .stat .value {
+  color: #f1f5f9;
+}
+
+body.theme-modern.theme-dark .filters {
+  background: rgba(18, 25, 58, 0.55);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-modern.theme-dark table.data th {
+  background: rgba(18, 25, 58, 0.8);
+  border-bottom-color: rgba(255, 255, 255, 0.09);
+  color: #94a3b8;
+}
+
+body.theme-modern.theme-dark table.data td {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+}
+
+body.theme-modern.theme-dark table.data tbody tr:hover td {
+  background: rgba(18, 183, 235, 0.12);
+}
+
+body.theme-modern.theme-dark .field-input {
+  background: rgba(11, 15, 34, 0.95);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f8fafc;
+}
+
+body.theme-modern.theme-dark .field-input:focus {
+  background: rgba(14, 20, 46, 1);
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3.5px rgba(18, 183, 235, 0.25);
+}
+
+body.theme-modern.theme-dark .btn-ghost {
+  background: rgba(255, 255, 255, 0.07);
+  color: #e2e8f0;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+body.theme-modern.theme-dark .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #38bdf8;
+  border-color: rgba(18, 183, 235, 0.35);
+}
+
+
+/* ==========================================================================
+   Utility extensions — status dots, semantic badges, btn-sm, page animation
+   ========================================================================== */
+
+/* Status dot ---------------------------------------------------------------- */
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #94a3b8;
+  flex-shrink: 0;
+}
+.status-dot.is-online {
+  background: #10b981;
+  box-shadow: 0 0 0 2.5px rgba(16,185,129,.25);
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+.status-dot.is-offline {
+  background: #ef4444;
+  box-shadow: 0 0 0 2.5px rgba(239,68,68,.2);
+}
+@keyframes dot-pulse {
+  0%,100% { box-shadow: 0 0 0 2.5px rgba(16,185,129,.25); }
+  50%      { box-shadow: 0 0 0 5px rgba(16,185,129,.1); }
+}
+
+/* Semantic badge variants --------------------------------------------------- */
+.badge-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(16,185,129,.1);
+  color: #059669;
+  border: 1px solid rgba(16,185,129,.22);
+  border-radius: 9999px;
+  padding: 2px 10px;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+.badge-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(239,68,68,.1);
+  color: #dc2626;
+  border: 1px solid rgba(239,68,68,.22);
+  border-radius: 9999px;
+  padding: 2px 10px;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+.badge-muted {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(100,116,139,.09);
+  color: #64748b;
+  border: 1px solid rgba(100,116,139,.18);
+  border-radius: 9999px;
+  padding: 2px 10px;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+/* Small button -------------------------------------------------------------- */
+.btn-sm {
+  padding: 5px 12px !important;
+  font-size: .82rem !important;
+  border-radius: 9px !important;
+  gap: 5px !important;
+}
+
+/* Page enter animation ------------------------------------------------------ */
+.page-enter {
+  animation: page-enter .35s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes page-enter {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* Dark mode – semantic badges ---------------------------------------------- */
+body.theme-modern.theme-dark .badge-success {
+  background: rgba(16,185,129,.14);
+  color: #34d399;
+  border-color: rgba(16,185,129,.25);
+}
+body.theme-modern.theme-dark .badge-danger {
+  background: rgba(239,68,68,.14);
+  color: #f87171;
+  border-color: rgba(239,68,68,.25);
+}
+body.theme-modern.theme-dark .badge-muted {
+  background: rgba(148,163,184,.1);
+  color: #94a3b8;
+  border-color: rgba(148,163,184,.2);
+}
+
+/* Row actions button hover -------------------------------------------------- */
+.row-actions .btn-ghost:hover {
+  background: rgba(18,183,235,.1);
+  color: #0ea5e9;
+  border-color: rgba(18,183,235,.25);
+}

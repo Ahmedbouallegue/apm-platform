@@ -1,10 +1,18 @@
 {% extends "accounts/app_base.html" %}
+
 {% block page_title %}{{ title }}{% endblock %}
 {% block header_title %}{{ title }}{% endblock %}
-{% block header_sub %}Documentation SI{% endblock %}
-{% block header_actions %}<a class="btn btn-ghost" href="{% url 'documents:list' %}">Retour</a>{% endblock %}
+{% block header_sub %}Documentation technique & Dossiers d'architecture{% endblock %}
+
+{% block header_actions %}
+  <a class="btn btn-ghost" href="{% url 'documents:list' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour à la liste
+  </a>
+{% endblock %}
+
 {% block content %}
-<section class="panel resource-form resource-form-document">
+<section class="panel resource-form resource-form-document page-enter">
   <form method="post" enctype="multipart/form-data" class="js-validate" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}
@@ -12,10 +20,12 @@
     {% endif %}
 
     <div class="form-intro">
-      <div class="form-intro-icon">DOC</div>
+      <div class="form-intro-icon" style="background:linear-gradient(135deg,var(--cyan),var(--navy));color:#fff;display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
       <div>
-        <strong>Fiche document</strong>
-        <span>Déposez un fichier et rattachez-le à une application et des tags.</span>
+        <strong>Dépôt documentaire</strong>
+        <span>Téléversez un document technique et rattachez-le à une application et des mots-clés.</span>
       </div>
     </div>
 
@@ -23,24 +33,28 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">1</span>
-          <span class="form-section-title">Identité</span>
+          <span class="form-section-title">Identité du document</span>
         </div>
         <div class="form-section-grid">
           <div class="field full">
-            <label for="id_title">Titre</label>
-            {{ form.title }}{{ form.title.errors }}
+            <label for="id_title">Titre du document</label>
+            {{ form.title }}
+            {{ form.title.errors }}
           </div>
           <div class="field">
             <label for="id_category">Catégorie</label>
             {{ form.category }}
+            {{ form.category.errors }}
           </div>
           <div class="field">
-            <label for="id_file_type">Type de fichier</label>
+            <label for="id_file_type">Format / Type de fichier</label>
             {{ form.file_type }}
+            {{ form.file_type.errors }}
           </div>
           <div class="field full">
-            <label for="id_description">Description</label>
+            <label for="id_description">Description du contenu & Périmètre</label>
             {{ form.description }}
+            {{ form.description.errors }}
           </div>
         </div>
       </div>
@@ -48,21 +62,24 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">2</span>
-          <span class="form-section-title">Fichier et rattachement</span>
+          <span class="form-section-title">Fichier & Rattachement</span>
         </div>
         <div class="form-section-grid">
           <div class="field">
-            <label for="id_file">Fichier</label>
-            {{ form.file }}{{ form.file.errors }}
+            <label for="id_file">Fichier joint</label>
+            {{ form.file }}
+            {{ form.file.errors }}
           </div>
           <div class="field">
-            <label for="id_application">Application</label>
+            <label for="id_application">Application liée</label>
             {{ form.application }}
+            {{ form.application.errors }}
           </div>
           <div class="field full">
-            <label for="id_tags">Tags</label>
+            <label for="id_tags">Tags & Mots-clés</label>
             {{ form.tags }}
-            <div class="field-hint">Maintenir Ctrl pour sélection multiple.</div>
+            {{ form.tags.errors }}
+            <div class="field-hint" style="margin-top:6px;font-size:.82rem;color:var(--muted)">Maintenir <code>Ctrl</code> pour sélectionner plusieurs tags.</div>
           </div>
         </div>
       </div>
@@ -70,11 +87,11 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">3</span>
-          <span class="form-section-title">État</span>
+          <span class="form-section-title">Disponibilité</span>
         </div>
         <div class="form-section-grid">
           <div class="form-toggle-group full">
-            <div class="form-toggle"><label>{{ form.is_active }} Document actif</label></div>
+            <div class="form-toggle"><label>{{ form.is_active }} <strong>Document actif</strong> (visible dans la base de connaissances)</label></div>
           </div>
         </div>
       </div>
@@ -82,7 +99,10 @@
 
     <div class="form-actions">
       <a class="btn btn-ghost" href="{% url 'documents:list' %}">Annuler</a>
-      <button class="btn btn-primary" type="submit">Enregistrer</button>
+      <button class="btn btn-primary" type="submit">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer le document
+      </button>
     </div>
   </form>
 </section>

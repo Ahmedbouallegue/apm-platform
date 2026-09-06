@@ -1,41 +1,72 @@
 {% extends "accounts/app_base.html" %}
+
 {% block page_title %}Journal d'audit{% endblock %}
-{% block header_title %}Journal d'audit{% endblock %}
-{% block header_sub %}Actions · Entités · Traçabilité{% endblock %}
+{% block header_title %}Journal d'audit & Traçabilité{% endblock %}
+{% block header_sub %}Historique immuable · Actions utilisateurs · Modifications d'infrastructure{% endblock %}
+
 {% block content %}
-<section class="panel">
-  <div class="panel-head panel-head-tools">
-    <form class="filters" method="get">
-      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Action, entité, détails…">
-      <input class="field-input" type="text" name="action" value="{{ action }}" placeholder="Action">
-      <input class="field-input" type="text" name="entity" value="{{ entity }}" placeholder="Entité">
-      <button class="btn btn-primary" type="submit">Filtrer</button>
+<section class="panel page-enter">
+  <div class="panel-head" style="flex-wrap:wrap;gap:12px">
+    <form class="filters" method="get" style="flex:1;margin-bottom:0;border:none;padding:0;background:none">
+      <div style="position:relative;flex:1;min-width:180px">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input class="field-input" style="padding-left:36px;width:100%" type="search" name="q" value="{{ q }}" placeholder="Action, entité, détails…">
+      </div>
+      <input class="field-input" type="text" name="action" value="{{ action }}" placeholder="Filtrer par action" style="min-width:140px">
+      <input class="field-input" type="text" name="entity" value="{{ entity }}" placeholder="Filtrer par entité" style="min-width:140px">
+      <button class="btn btn-primary" type="submit" style="white-space:nowrap">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+        Filtrer
+      </button>
     </form>
   </div>
+
   {% if logs %}
   <div class="table-wrap">
     <table class="data">
       <thead>
         <tr>
-          <th>Date</th>
-          <th>Action</th>
-          <th>Entité</th>
+          <th>Horodatage</th>
+          <th>Type d'action</th>
+          <th>Entité ciblée</th>
           <th>ID</th>
-          <th>Utilisateur</th>
+          <th>Opérateur</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for log in logs %}
         <tr>
-          <td>{{ log.occurred_at|date:"d/m/Y H:i" }}</td>
-          <td><span class="badge">{{ log.action }}</span></td>
-          <td>{{ log.entity }}</td>
-          <td>{{ log.entity_id|default:"—" }}</td>
-          <td>{% if log.user %}{{ log.user.get_full_name|default:log.user.username }}{% else %}—{% endif %}</td>
+          <td>
+            <div style="font-weight:600;color:var(--navy-deep);font-size:.88rem">{{ log.occurred_at|date:"d/m/Y H:i:s" }}</div>
+          </td>
+          <td>
+            {% if "delete" in log.action|lower or "suppr" in log.action|lower %}
+              <span class="badge badge-danger">{{ log.action }}</span>
+            {% elif "create" in log.action|lower or "ajout" in log.action|lower %}
+              <span class="badge badge-success">{{ log.action }}</span>
+            {% else %}
+              <span class="badge badge-manager">{{ log.action }}</span>
+            {% endif %}
+          </td>
+          <td><span style="font-weight:600">{{ log.entity }}</span></td>
+          <td><span style="font-family:monospace;font-size:.84rem;color:var(--muted)">#{{ log.entity_id|default:"—" }}</span></td>
+          <td>
+            {% if log.user %}
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="width:20px;height:20px;border-radius:50%;background:rgba(21,32,90,0.08);display:grid;place-items:center;font-size:.7rem;font-weight:700;color:var(--navy)">{{ log.user.username|slice:":1"|upper }}</span>
+                <span>{{ log.user.get_full_name|default:log.user.username }}</span>
+              </div>
+            {% else %}
+              <span style="color:var(--muted)">Système</span>
+            {% endif %}
+          </td>
           <td>
             <div class="row-actions">
-              <a class="btn btn-ghost" href="{% url 'audit:detail' log.pk %}">Voir</a>
+              <a class="btn btn-ghost btn-sm" href="{% url 'audit:detail' log.pk %}">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/></svg>
+                Voir
+              </a>
             </div>
           </td>
         </tr>
@@ -44,7 +75,13 @@
     </table>
   </div>
   {% else %}
-    <div class="empty">Aucune entrée d'audit.</div>
+    <div class="empty" style="padding:48px 20px;text-align:center">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(21,32,90,0.06);display:grid;place-items:center;margin:0 auto 16px">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--muted)" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <p style="font-size:1.05rem;font-weight:600;color:var(--navy-deep);margin-bottom:6px">Aucune entrée d'audit trouvée</p>
+      <p style="color:var(--muted);font-size:.9rem;max-width:420px;margin:0 auto">Toutes les opérations d'ajout, modification et suppression sont consignées ici automatiquement.</p>
+    </div>
   {% endif %}
 </section>
 {% endblock %}

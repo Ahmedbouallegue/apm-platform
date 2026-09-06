@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Connexion · APM Topnet{% endblock %}
+{% block title %}Connexion · Topnet APM Platform{% endblock %}
 
 {% block body %}
 <div class="auth-shell">
@@ -9,28 +9,37 @@
     <div class="auth-brand-inner">
       <img class="auth-logo" src="{% static 'branding/logo-topnet.png' %}" alt="Topnet Tunisie">
       <h1>Topnet APM</h1>
-      <p>Plateforme de gestion du patrimoine applicatif pour la DSI — gouvernance, traçabilité et pilotage.</p>
+      <p>Plateforme unifiée de gestion du patrimoine applicatif et de supervision des infrastructures pour la DSI.</p>
       <div class="auth-features">
-        <div class="auth-feature"><span>✓</span> Inventaire applicatif centralisé</div>
-        <div class="auth-feature"><span>✓</span> Suivi SSL, domaines et contrats</div>
-        <div class="auth-feature"><span>✓</span> Alertes d’expiration et audit</div>
+        <div class="auth-feature">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Inventaire physique, virtuel &amp; cloud
+        </div>
+        <div class="auth-feature">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Surveillance SSL, domaines DNS &amp; contrats
+        </div>
+        <div class="auth-feature">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Métriques temps réel, alertes &amp; audit immuable
+        </div>
       </div>
     </div>
   </section>
 
   <section class="auth-panel">
-    <div class="auth-card">
+    <div class="auth-card page-enter">
       <div class="auth-card-top">
         <div>
-          <h2>Connexion</h2>
-          <p class="lead">Accédez à l’espace de gestion sécurisé.</p>
+          <h2>Espace de connexion</h2>
+          <p class="lead">Authentifiez-vous pour accéder au tableau de bord.</p>
         </div>
         <button
           type="button"
           class="btn btn-ghost theme-toggle theme-toggle-compact"
           data-theme-toggle
           aria-pressed="false"
-          title="Passer en mode sombre"
+          title="Basculer le thème clair / sombre"
         >
           <span class="theme-toggle-ico theme-toggle-ico-moon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 14.5A8.5 8.5 0 1110.5 3 7 7 0 0021 14.5z"/></svg>
@@ -50,7 +59,7 @@
       <form method="post" class="js-validate" novalidate>
         {% csrf_token %}
         <div class="field">
-          <label for="id_username">Identifiant</label>
+          <label for="id_username">Nom d'utilisateur</label>
           {{ form.username }}
         </div>
         <div class="field">
@@ -60,11 +69,17 @@
         <p class="auth-forgot">
           <a href="{% url 'web:password-reset' %}">Mot de passe oublié ?</a>
         </p>
-        <button class="btn btn-primary btn-block" type="submit">Se connecter</button>
+        <button class="btn btn-primary btn-block" type="submit" style="padding:12px 20px;font-size:.95rem">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Se connecter à la plateforme
+        </button>
       </form>
 
-      <p class="auth-footer">
-        <a href="/api/docs/">Documentation API</a>
+      <p class="auth-footer" style="margin-top:24px;display:flex;align-items:center;justify-content:center;gap:16px">
+        <a href="/api/docs/" style="display:inline-flex;align-items:center;gap:4px">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Documentation API
+        </a>
       </p>
     </div>
   </section>

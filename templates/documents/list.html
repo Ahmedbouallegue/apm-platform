@@ -1,45 +1,60 @@
 {% extends "accounts/app_base.html" %}
+
 {% block page_title %}Documents{% endblock %}
 {% block header_title %}Documentation applicative{% endblock %}
-{% block header_sub %}Architecture · Manuels · Procédures{% endblock %}
+{% block header_sub %}Architecture · Manuels d'exploitation · Procédures de reprise{% endblock %}
+
+{% block header_actions %}
+  {% if can_write %}
+    <a class="btn btn-accent" href="{% url 'documents:create' %}">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+      Nouveau document
+    </a>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
-<section class="panel">
-  <div class="panel-head panel-head-tools">
-    <form class="filters filters-with-action" method="get">
-      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Titre, description, tag…">
-      <select class="field-input" name="category">
+<section class="panel page-enter">
+  <div class="panel-head" style="flex-wrap:wrap;gap:12px">
+    <form class="filters" method="get" style="flex:1;margin-bottom:0;border:none;padding:0;background:none">
+      <div style="position:relative;flex:1;min-width:180px">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input class="field-input" style="padding-left:36px;width:100%" type="search" name="q" value="{{ q }}" placeholder="Titre, description, tag…">
+      </div>
+      <select class="field-input" name="category" style="min-width:140px">
         <option value="">Toutes les catégories</option>
         {% for value, label in categories %}
           <option value="{{ value }}" {% if category == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
-      <select class="field-input" name="application">
+      <select class="field-input" name="application" style="min-width:150px">
         <option value="">Toutes les applications</option>
         {% for a in applications %}
           <option value="{{ a.pk }}" {% if application == a.pk|stringformat:"s" %}selected{% endif %}>{{ a.name }}</option>
         {% endfor %}
       </select>
-      <select class="field-input" name="tag">
+      <select class="field-input" name="tag" style="min-width:120px">
         <option value="">Tous les tags</option>
         {% for t in tags %}
           <option value="{{ t.name }}" {% if tag == t.name %}selected{% endif %}>{{ t.name }}</option>
         {% endfor %}
       </select>
-      <button class="btn btn-primary" type="submit">Filtrer</button>
-      {% if can_write %}
-        <a class="btn btn-accent filters-action" href="{% url 'documents:create' %}">Nouveau document</a>
-      {% endif %}
+      <button class="btn btn-primary" type="submit" style="white-space:nowrap">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+        Filtrer
+      </button>
     </form>
   </div>
+
   {% if documents %}
   <div class="table-wrap">
     <table class="data">
       <thead>
         <tr>
-          <th>Titre</th>
+          <th>Titre du document</th>
           <th>Catégorie</th>
           <th>Application</th>
-          <th>Type</th>
+          <th>Format</th>
           <th>Déposé le</th>
           <th>Actions</th>
         </tr>
@@ -47,15 +62,47 @@
       <tbody>
         {% for d in documents %}
         <tr>
-          <td><a href="{% url 'documents:detail' d.pk %}"><strong>{{ d.title }}</strong></a></td>
-          <td><span class="badge">{{ d.get_category_display }}</span></td>
-          <td>{% if d.application %}<a href="{% url 'applications:detail' d.application_id %}">{{ d.application.name }}</a>{% else %}—{% endif %}</td>
-          <td>{{ d.file_type|default:"—" }}</td>
-          <td>{{ d.uploaded_at|date:"d/m/Y H:i" }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(18,183,235,0.12),rgba(21,32,90,0.1));display:grid;place-items:center;flex-shrink:0">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              </div>
+              <div>
+                <a href="{% url 'documents:detail' d.pk %}" style="font-weight:700;color:var(--navy-deep);font-size:.95rem">{{ d.title }}</a>
+                {% if d.tags.all %}
+                  <div style="display:flex;gap:4px;margin-top:2px">
+                    {% for t in d.tags.all %}
+                      <span style="font-size:.72rem;background:rgba(21,32,90,0.06);padding:1px 6px;border-radius:6px;color:var(--muted)">#{{ t.name }}</span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-manager">{{ d.get_category_display }}</span></td>
+          <td>
+            {% if d.application %}
+              <a href="{% url 'applications:detail' d.application_id %}" style="font-weight:600">{{ d.application.name }}</a>
+            {% else %}
+              <span style="color:var(--muted)">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <span style="font-family:monospace;font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase">{{ d.file_type|default:"Fichier" }}</span>
+          </td>
+          <td>{{ d.uploaded_at|date:"d/m/Y" }}</td>
           <td>
             <div class="row-actions">
-              <a class="btn btn-ghost" href="{% url 'documents:detail' d.pk %}">Voir</a>
-              {% if can_write %}<a class="btn btn-ghost" href="{% url 'documents:edit' d.pk %}">Modifier</a>{% endif %}
+              <a class="btn btn-ghost btn-sm" href="{% url 'documents:detail' d.pk %}">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/></svg>
+                Voir
+              </a>
+              {% if can_write %}
+                <a class="btn btn-ghost btn-sm" href="{% url 'documents:edit' d.pk %}">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Modifier
+                </a>
+              {% endif %}
             </div>
           </td>
         </tr>
@@ -64,7 +111,21 @@
     </table>
   </div>
   {% else %}
-    <div class="empty">Aucun document.{% if can_write %}<div style="margin-top:14px"><a class="btn btn-accent" href="{% url 'documents:create' %}">Créer le premier</a></div>{% endif %}</div>
+    <div class="empty" style="padding:48px 20px;text-align:center">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(21,32,90,0.06);display:grid;place-items:center;margin:0 auto 16px">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--muted)" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      <p style="font-size:1.05rem;font-weight:600;color:var(--navy-deep);margin-bottom:6px">Aucun document déposé</p>
+      <p style="color:var(--muted);font-size:.9rem;max-width:420px;margin:0 auto">Centralisez les schémas d'architecture, DAT, DEX et modes opératoires.</p>
+      {% if can_write %}
+        <div style="margin-top:18px">
+          <a class="btn btn-accent" href="{% url 'documents:create' %}">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+            Déposer un document
+          </a>
+        </div>
+      {% endif %}
+    </div>
   {% endif %}
 </section>
 {% endblock %}

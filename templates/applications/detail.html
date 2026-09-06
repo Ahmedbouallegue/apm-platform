@@ -2,110 +2,162 @@
 
 {% block page_title %}{{ application.name }}{% endblock %}
 {% block header_title %}{{ application.name }}{% endblock %}
-{% block header_sub %}Fiche application · patrimoine applicatif{% endblock %}
+{% block header_sub %}Fiche application · Patrimoine applicatif Topnet{% endblock %}
 
 {% block header_actions %}
-  <a class="btn btn-ghost" href="{% url 'applications:list' %}">Retour</a>
+  <a class="btn btn-ghost" href="{% url 'applications:list' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour
+  </a>
   {% if can_write %}
-    <a class="btn btn-primary" href="{% url 'applications:edit' application.pk %}">Modifier</a>
+    <a class="btn btn-primary" href="{% url 'applications:edit' application.pk %}">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Modifier
+    </a>
   {% endif %}
 {% endblock %}
 
 {% block content %}
-<section class="stats" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+{# ── KPI Cards ── #}
+<section class="stats page-enter" style="grid-template-columns: repeat(4, minmax(0, 1fr));margin-bottom:20px">
   <article class="stat">
-    <div class="label">Statut</div>
-    <div class="value" style="font-size:1.2rem">
+    <div class="label">Statut du cycle</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">
       <span class="badge badge-status-{{ application.status }}">{{ application.get_status_display }}</span>
     </div>
   </article>
   <article class="stat">
-    <div class="label">Criticité</div>
-    <div class="value" style="font-size:1.2rem">
+    <div class="label">Niveau de criticité</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">
       <span class="badge badge-crit-{{ application.criticality }}">{{ application.get_criticality_display }}</span>
     </div>
   </article>
   <article class="stat">
-    <div class="label">Utilisateurs</div>
+    <div class="label">Utilisateurs actifs</div>
     <div class="value">{{ application.user_count }}</div>
   </article>
   <article class="stat">
-    <div class="label">Technologies</div>
+    <div class="label">Technologies stack</div>
     <div class="value">{{ application.technologies.all|length }}</div>
   </article>
 </section>
 
-<section class="panel">
+{# ── Fiche détail ── #}
+<section class="panel page-enter" style="animation-delay:.06s;margin-bottom:20px">
   <div class="panel-head">
-    <strong>Informations générales</strong>
-  </div>
-  <div class="form-grid">
-    <div>
-      <div class="label" style="color:var(--muted);font-size:.84rem">Direction métier</div>
-      <div>{{ application.business_unit|default:"—" }}</div>
-    </div>
-    <div>
-      <div class="label" style="color:var(--muted);font-size:.84rem">Responsable</div>
-      <div>
-        {% if application.owner %}
-          {{ application.owner.get_full_name|default:application.owner.username }}
-          <span style="color:var(--muted)">({{ application.owner.email }})</span>
-        {% else %}—{% endif %}
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,rgba(18,183,235,0.15),rgba(21,32,90,0.1));display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--navy)" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
       </div>
-    </div>
-    <div>
-      <div class="label" style="color:var(--muted);font-size:.84rem">Mise en production</div>
-      <div>{{ application.go_live_date|date:"d/m/Y"|default:"—" }}</div>
-    </div>
-    <div>
-      <div class="label" style="color:var(--muted);font-size:.84rem">Fin de vie</div>
-      <div>{{ application.end_of_life_date|date:"d/m/Y"|default:"—" }}</div>
-    </div>
-    <div class="full">
-      <div class="label" style="color:var(--muted);font-size:.84rem">Description</div>
-      <div style="white-space:pre-wrap">{{ application.description|default:"Aucune description." }}</div>
-    </div>
-    <div class="full">
-      <div class="label" style="color:var(--muted);font-size:.84rem;margin-bottom:8px">Technologies</div>
-      {% if application.technologies.all %}
-        <div style="display:flex;flex-wrap:wrap;gap:8px">
-          {% for tech in application.technologies.all %}
-            <span class="badge badge-dsi">{{ tech }}</span>
-          {% endfor %}
-        </div>
-      {% else %}
-        <span style="color:var(--muted)">Aucune technologie associée.</span>
-      {% endif %}
+      <strong>Informations générales</strong>
     </div>
   </div>
 
-  <div class="panel-head" style="border-top:1px solid var(--line)">
-    <strong>Environnements</strong>
-    {% if can_write %}
-      <a class="btn btn-accent" href="{% url 'environments:create' %}?application={{ application.pk }}">Ajouter</a>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:0;border-top:1px solid rgba(21,32,90,0.06)">
+    <div style="padding:18px 24px;border-right:1px solid rgba(21,32,90,0.05);border-bottom:1px solid rgba(21,32,90,0.05)">
+      <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Direction métier</div>
+      <div style="font-weight:600;color:var(--navy-deep)">{{ application.business_unit|default:"—" }}</div>
+    </div>
+    <div style="padding:18px 24px;border-right:1px solid rgba(21,32,90,0.05);border-bottom:1px solid rgba(21,32,90,0.05)">
+      <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Responsable applicatif</div>
+      <div>
+        {% if application.owner %}
+          <div style="font-weight:600;color:var(--navy-deep)">{{ application.owner.get_full_name|default:application.owner.username }}</div>
+          <div style="font-size:.82rem;color:var(--muted);margin-top:2px">{{ application.owner.email }}</div>
+        {% else %}
+          <span style="color:var(--muted)">—</span>
+        {% endif %}
+      </div>
+    </div>
+    <div style="padding:18px 24px;border-right:1px solid rgba(21,32,90,0.05);border-bottom:1px solid rgba(21,32,90,0.05)">
+      <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Mise en production</div>
+      <div style="font-weight:600;color:var(--navy-deep)">{{ application.go_live_date|date:"d/m/Y"|default:"—" }}</div>
+    </div>
+    <div style="padding:18px 24px;border-bottom:1px solid rgba(21,32,90,0.05)">
+      <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Fin de vie prévue</div>
+      <div style="font-weight:600;color:var(--navy-deep)">{{ application.end_of_life_date|date:"d/m/Y"|default:"—" }}</div>
+    </div>
+  </div>
+
+  <div style="padding:22px 24px;border-top:1px solid rgba(21,32,90,0.05)">
+    <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Description du service</div>
+    <div style="white-space:pre-wrap;color:var(--ink);line-height:1.6">{{ application.description|default:"Aucune description détaillée enregistrée." }}</div>
+  </div>
+
+  <div style="padding:20px 24px;border-top:1px solid rgba(21,32,90,0.05);background:rgba(246,249,254,0.5)">
+    <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Stack technologique</div>
+    {% if application.technologies.all %}
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        {% for tech in application.technologies.all %}
+          <span class="badge badge-dsi" style="font-weight:600">{{ tech }}</span>
+        {% endfor %}
+      </div>
+    {% else %}
+      <span style="color:var(--muted);font-size:.88rem">Aucune technologie associée.</span>
     {% endif %}
   </div>
+</section>
+
+{# ── Environnements ── #}
+<section class="panel page-enter" style="animation-delay:.12s">
+  <div class="panel-head" style="justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(21,32,90,0.1));display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#059669" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      </div>
+      <strong>Environnements applicatifs</strong>
+    </div>
+    {% if can_write %}
+      <a class="btn btn-accent btn-sm" href="{% url 'environments:create' %}?application={{ application.pk }}">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        Ajouter un environnement
+      </a>
+    {% endif %}
+  </div>
+
   {% if environments %}
   <div class="table-wrap">
     <table class="data">
       <thead>
         <tr>
           <th>Type</th>
-          <th>Nom</th>
-          <th>URL</th>
-          <th>Infra</th>
+          <th>Nom de l'environnement</th>
+          <th>URL / Point d'accès</th>
+          <th>Conteneurisation</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for env in environments %}
         <tr>
           <td><span class="badge badge-env-{{ env.env_type }}">{{ env.get_env_type_display }}</span></td>
-          <td><a href="{% url 'environments:detail' env.pk %}">{{ env.name }}</a></td>
-          <td>{% if env.url %}<a href="{{ env.url }}" target="_blank" rel="noopener">{{ env.url|truncatechars:36 }}</a>{% else %}—{% endif %}</td>
           <td>
-            {% if env.docker %}<span class="badge badge-dsi">Docker</span>{% endif %}
-            {% if env.kubernetes %}<span class="badge badge-manager">K8s</span>{% endif %}
-            {% if not env.docker and not env.kubernetes %}—{% endif %}
+            <a href="{% url 'environments:detail' env.pk %}" style="font-weight:700;color:var(--navy-deep)">{{ env.name }}</a>
+          </td>
+          <td>
+            {% if env.url %}
+              <a href="{{ env.url }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;font-family:monospace;font-size:.85rem">
+                {{ env.url|truncatechars:42 }}
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            {% else %}
+              <span style="color:var(--muted)">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex;gap:6px">
+              {% if env.docker %}<span class="badge badge-dsi">Docker</span>{% endif %}
+              {% if env.kubernetes %}<span class="badge badge-manager">K8s</span>{% endif %}
+              {% if not env.docker and not env.kubernetes %}<span style="color:var(--muted)">Bare Metal / VM</span>{% endif %}
+            </div>
+          </td>
+          <td>
+            <div class="row-actions">
+              <a class="btn btn-ghost btn-sm" href="{% url 'environments:detail' env.pk %}">Voir</a>
+              {% if can_write %}
+                <a class="btn btn-ghost btn-sm" href="{% url 'environments:edit' env.pk %}">Modifier</a>
+              {% endif %}
+            </div>
           </td>
         </tr>
         {% endfor %}
@@ -113,14 +165,25 @@
     </table>
   </div>
   {% else %}
-    <div class="empty" style="padding:24px">Aucun environnement pour cette application.</div>
+    <div class="empty" style="padding:32px 20px;text-align:center">
+      <p style="color:var(--muted);margin-bottom:12px">Aucun environnement configuré pour cette application.</p>
+      {% if can_write %}
+        <a class="btn btn-accent btn-sm" href="{% url 'environments:create' %}?application={{ application.pk }}">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+          Créer le premier environnement
+        </a>
+      {% endif %}
+    </div>
   {% endif %}
 
   {% if can_write %}
-  <div class="form-actions">
-    <form method="post" action="{% url 'applications:delete' application.pk %}" onsubmit="return confirm('Archiver cette application ?');">
+  <div style="display:flex;justify-content:flex-end;padding:16px 24px;border-top:1px solid rgba(21,32,90,0.06);background:rgba(246,249,254,0.3)">
+    <form method="post" action="{% url 'applications:delete' application.pk %}" onsubmit="return confirm('Archiver définitivement cette application ?');">
       {% csrf_token %}
-      <button class="btn btn-danger" type="submit">Archiver</button>
+      <button class="btn btn-danger btn-sm" type="submit">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Archiver l'application
+      </button>
     </form>
   </div>
   {% endif %}

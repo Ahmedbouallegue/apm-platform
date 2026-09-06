@@ -34,6 +34,12 @@ class ServerMetricWriteSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
+        from django.utils import timezone
+        # L'agent VM communique : le serveur est actif et en ligne
+        if self._server.ping_status != Server.PingStatus.UP:
+            self._server.ping_status = Server.PingStatus.UP
+        self._server.last_ping_at = timezone.now()
+        self._server.save(update_fields=["ping_status", "last_ping_at"])
         return ServerMetric.objects.create(server=self._server, **validated_data)
 
 

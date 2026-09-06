@@ -1,28 +1,28 @@
 {% extends "accounts/app_base.html" %}
 
 {% block page_title %}Mon profil{% endblock %}
-{% block header_title %}Mon profil{% endblock %}
-{% block header_sub %}Informations personnelles et sécurité{% endblock %}
+{% block header_title %}Mon profil personnel{% endblock %}
+{% block header_sub %}Paramètres du compte, coordonnées et sécurité d'accès{% endblock %}
 
 {% block content %}
-<section class="stats" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+<section class="stats page-enter" style="grid-template-columns: repeat(3, minmax(0, 1fr));margin-bottom:20px">
   <article class="stat">
-    <div class="label">Identifiant</div>
-    <div class="value" style="font-size:1.2rem">{{ request.user.username }}</div>
+    <div class="label">Identifiant de session</div>
+    <div class="value" style="font-size:1.25rem;font-family:monospace;color:var(--navy-deep)">{{ request.user.username }}</div>
   </article>
   <article class="stat">
-    <div class="label">Rôle</div>
-    <div class="value" style="font-size:1.15rem">
-      <span class="badge badge-{{ request.user.role }}">{{ request.user.get_role_display }}</span>
+    <div class="label">Rôle attribué</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">
+      <span class="badge badge-manager">{{ request.user.get_role_display }}</span>
     </div>
   </article>
   <article class="stat">
     <div class="label">Département</div>
-    <div class="value" style="font-size:1.15rem">{{ request.user.department|default:"DSI" }}</div>
+    <div class="value" style="font-size:1.2rem">{{ request.user.department|default:"Direction SI" }}</div>
   </article>
 </section>
 
-<section class="panel resource-form resource-form-profile">
+<section class="panel resource-form resource-form-profile page-enter" style="animation-delay:.08s">
   <form method="post" class="js-validate" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}
@@ -30,11 +30,11 @@
     {% endif %}
 
     <div class="form-intro">
-      <div class="form-intro-icon">
+      <div class="form-intro-icon" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;font-weight:700;font-size:1.1rem;display:grid;place-items:center">
         {% if request.user.first_name %}
           {{ request.user.first_name|slice:":1"|upper }}{% if request.user.last_name %}{{ request.user.last_name|slice:":1"|upper }}{% endif %}
         {% else %}
-          {{ request.user.username|slice:":1"|upper }}
+          {{ request.user.username|slice:":2"|upper }}
         {% endif %}
       </div>
       <div>
@@ -45,7 +45,7 @@
             {{ request.user.username }}
           {% endif %}
         </strong>
-        <span>Mettez à jour vos coordonnées. Le rôle est géré par l’administrateur.</span>
+        <span>Mettez à jour vos coordonnées personnelles et votre mot de passe de connexion.</span>
       </div>
     </div>
 
@@ -53,7 +53,7 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">1</span>
-          <span class="form-section-title">Identité</span>
+          <span class="form-section-title">Coordonnées personnelles</span>
         </div>
         <div class="form-section-grid">
           <div class="field">
@@ -67,17 +67,17 @@
             {{ form.last_name.errors }}
           </div>
           <div class="field">
-            <label for="id_email">Email</label>
+            <label for="id_email">Adresse e-mail professionnelle</label>
             {{ form.email }}
             {{ form.email.errors }}
           </div>
           <div class="field">
-            <label for="id_phone">Téléphone</label>
+            <label for="id_phone">Numéro de téléphone</label>
             {{ form.phone }}
             {{ form.phone.errors }}
           </div>
           <div class="field full">
-            <label for="id_department">Département</label>
+            <label for="id_department">Département ou Service</label>
             {{ form.department }}
             {{ form.department.errors }}
           </div>
@@ -87,17 +87,17 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">2</span>
-          <span class="form-section-title">Sécurité</span>
+          <span class="form-section-title">Modification du mot de passe</span>
         </div>
         <div class="form-section-grid">
           <div class="field">
             <label for="id_password1">Nouveau mot de passe</label>
             {{ form.password1 }}
             {{ form.password1.errors }}
-            <div class="field-hint">Laisser vide pour conserver le mot de passe actuel.</div>
+            <div class="field-hint" style="margin-top:6px;font-size:.82rem;color:var(--muted)">Laissez ce champ vide pour conserver votre mot de passe actuel.</div>
           </div>
           <div class="field">
-            <label for="id_password2">Confirmation</label>
+            <label for="id_password2">Confirmation du nouveau mot de passe</label>
             {{ form.password2 }}
             {{ form.password2.errors }}
           </div>
@@ -107,7 +107,10 @@
 
     <div class="form-actions">
       <a class="btn btn-ghost" href="{% url 'web:home' %}">Annuler</a>
-      <button class="btn btn-primary" type="submit">Enregistrer mon profil</button>
+      <button class="btn btn-primary" type="submit">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer mon profil
+      </button>
     </div>
   </form>
 </section>

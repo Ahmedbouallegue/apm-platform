@@ -2,14 +2,17 @@
 
 {% block page_title %}{{ title }}{% endblock %}
 {% block header_title %}{{ title }}{% endblock %}
-{% block header_sub %}Inventaire infrastructure{% endblock %}
+{% block header_sub %}Inventaire infrastructure physique & virtuelle{% endblock %}
 
 {% block header_actions %}
-  <a class="btn btn-ghost" href="{% url 'servers:list' %}">Retour à la liste</a>
+  <a class="btn btn-ghost" href="{% url 'servers:list' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour à la liste
+  </a>
 {% endblock %}
 
 {% block content %}
-<section class="panel resource-form resource-form-server">
+<section class="panel resource-form resource-form-server page-enter">
   <form method="post" class="js-validate" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}
@@ -17,10 +20,12 @@
     {% endif %}
 
     <div class="form-intro">
-      <div class="form-intro-icon">SRV</div>
+      <div class="form-intro-icon" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="6" rx="1.5"/><rect x="4" y="14" width="16" height="6" rx="1.5"/><path d="M8 7h.01M8 17h.01"/></svg>
+      </div>
       <div>
         <strong>Inventaire serveur</strong>
-        <span>Renseignez l’identité, le type et la capacité de l’hôte.</span>
+        <span>Renseignez l’identité, le type et la capacité technique de l’hôte.</span>
       </div>
     </div>
 
@@ -32,7 +37,7 @@
         </div>
         <div class="form-section-grid">
           <div class="field">
-            <label for="id_name">Nom</label>
+            <label for="id_name">Nom d'hôte (hostname)</label>
             {{ form.name }}
             {{ form.name.errors }}
           </div>
@@ -44,10 +49,12 @@
           <div class="field">
             <label for="id_server_type">Type de serveur</label>
             {{ form.server_type }}
+            {{ form.server_type.errors }}
           </div>
           <div class="field">
-            <label for="id_datacenter">Datacenter</label>
+            <label for="id_datacenter">Datacenter / Localisation</label>
             {{ form.datacenter }}
+            {{ form.datacenter.errors }}
           </div>
         </div>
       </div>
@@ -61,14 +68,17 @@
           <div class="field">
             <label for="id_os">Système d’exploitation</label>
             {{ form.os }}
+            {{ form.os.errors }}
           </div>
           <div class="field">
-            <label for="id_cpu">CPU</label>
+            <label for="id_cpu">CPU (cœurs / modèle)</label>
             {{ form.cpu }}
+            {{ form.cpu.errors }}
           </div>
           <div class="field">
-            <label for="id_ram">RAM</label>
+            <label for="id_ram">RAM (Go)</label>
             {{ form.ram }}
+            {{ form.ram.errors }}
           </div>
         </div>
       </div>
@@ -76,15 +86,16 @@
       <div class="form-section">
         <div class="form-section-head">
           <span class="form-section-number">3</span>
-          <span class="form-section-title">État et notes</span>
+          <span class="form-section-title">État et notes d'exploitation</span>
         </div>
         <div class="form-section-grid">
           <div class="form-toggle-group full">
-            <div class="form-toggle"><label>{{ form.is_active }} Serveur actif</label></div>
+            <div class="form-toggle"><label>{{ form.is_active }} <strong>Serveur actif</strong> (supervision et déploiements activés)</label></div>
           </div>
           <div class="field full">
             <label for="id_notes">Notes d’exploitation</label>
             {{ form.notes }}
+            {{ form.notes.errors }}
           </div>
         </div>
       </div>
@@ -92,7 +103,10 @@
 
     <div class="form-actions">
       <a class="btn btn-ghost" href="{% url 'servers:list' %}">Annuler</a>
-      <button class="btn btn-primary" type="submit">Enregistrer le serveur</button>
+      <button class="btn btn-primary" type="submit">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer le serveur
+      </button>
     </div>
   </form>
 </section>

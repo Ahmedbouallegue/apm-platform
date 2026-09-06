@@ -1,62 +1,84 @@
 {% extends "accounts/app_base.html" %}
 
 {% block page_title %}Utilisateurs{% endblock %}
-{% block header_title %}Gestion des utilisateurs{% endblock %}
-{% block header_sub %}Comptes, rôles et accès à la plateforme APM{% endblock %}
+{% block header_title %}Gestion des comptes & Accès{% endblock %}
+{% block header_sub %}Rôles RBAC · Comptes d'exploitation · Permissions de la plateforme APM{% endblock %}
 
 {% block content %}
-<section class="panel" style="margin-bottom:16px">
-  <div class="panel-head"><strong>Rôles &amp; droits</strong></div>
+<section class="panel page-enter" style="margin-bottom:20px">
+  <div class="panel-head">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;border-radius:10px;background:rgba(21,32,90,0.08);display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--navy)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <strong>Matrice des rôles &amp; privilèges (RBAC)</strong>
+    </div>
+  </div>
   <div class="table-wrap">
     <table class="data">
       <thead>
         <tr>
-          <th>Rôle</th>
-          <th>Acteur</th>
-          <th>Droits</th>
+          <th>Rôle système</th>
+          <th>Profil type</th>
+          <th>Périmètre des droits accordés</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><span class="badge badge-admin">Administrateur</span></td>
-          <td>Administrateur</td>
-          <td>Utilisateurs, rôles, import/export CSV</td>
+          <td><span class="badge badge-danger">Administrateur</span></td>
+          <td>Directeur DSI / Lead Sysadmin</td>
+          <td>Gestion complète des utilisateurs, attribution des rôles, import/export CSV et audit global</td>
         </tr>
         <tr>
           <td><span class="badge badge-manager">Administrateur DSI</span></td>
-          <td>Administrateur DSI</td>
-          <td>Patrimoine complet, paramètres globaux — pas de gestion des comptes</td>
+          <td>Responsable de domaine / Chef de projet</td>
+          <td>Gestion intégrale du patrimoine (apps, envs, serveurs, certificats, contrats) — hors comptes</td>
         </tr>
         <tr>
-          <td><span class="badge badge-viewer">Administrateur Système</span></td>
-          <td>Administrateur Système</td>
-          <td>Environnements et serveurs (infrastructure)</td>
+          <td><span class="badge badge-dsi">Administrateur Système</span></td>
+          <td>Ingénieur Infrastructure / DevOps</td>
+          <td>Supervision et gestion des environnements et serveurs physiques / VM</td>
         </tr>
       </tbody>
     </table>
   </div>
 </section>
 
-<section class="panel">
-  <div class="panel-head panel-head-tools">
-    <form class="filters filters-with-action" method="get">
-      <input class="field-input" type="search" name="q" value="{{ q }}" placeholder="Rechercher…">
-      <select class="field-input" name="role">
+<section class="panel page-enter" style="animation-delay:.08s">
+  <div class="panel-head panel-head-tools" style="flex-wrap:wrap;gap:12px">
+    <form class="filters filters-with-action" method="get" style="flex:1;margin-bottom:0;border:none;padding:0;background:none">
+      <div style="position:relative;flex:1;min-width:180px">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input class="field-input" style="padding-left:36px;width:100%" type="search" name="q" value="{{ q }}" placeholder="Nom, email, identifiant…">
+      </div>
+      <select class="field-input" name="role" style="min-width:140px">
         <option value="">Tous les rôles</option>
         {% for value, label in roles %}
           <option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
-      <select class="field-input" name="active">
+      <select class="field-input" name="active" style="min-width:130px">
         <option value="">Tous les statuts</option>
         <option value="1" {% if active == "1" %}selected{% endif %}>Actifs</option>
         <option value="0" {% if active == "0" %}selected{% endif %}>Inactifs</option>
       </select>
-      <button class="btn btn-primary" type="submit">Filtrer</button>
-      <a class="btn btn-ghost" href="{% url 'web:user-export-csv' %}?q={{ q }}&role={{ role }}&active={{ active }}">Exporter CSV</a>
+      <button class="btn btn-primary" type="submit" style="white-space:nowrap">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+        Filtrer
+      </button>
+      <a class="btn btn-ghost btn-sm" href="{% url 'web:user-export-csv' %}?q={{ q }}&role={{ role }}&active={{ active }}" style="white-space:nowrap">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </a>
       {% if can_write %}
-        <a class="btn btn-ghost" href="{% url 'web:user-import-csv' %}">Importer CSV</a>
-        <a class="btn btn-accent filters-action" href="{% url 'web:user-create' %}">Nouvel utilisateur</a>
+        <a class="btn btn-ghost btn-sm" href="{% url 'web:user-import-csv' %}" style="white-space:nowrap">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Import CSV
+        </a>
+        <a class="btn btn-accent btn-sm filters-action" href="{% url 'web:user-create' %}" style="white-space:nowrap">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+          Nouvel utilisateur
+        </a>
       {% endif %}
     </form>
   </div>
@@ -66,9 +88,9 @@
     <table class="data">
       <thead>
         <tr>
-          <th>Utilisateur</th>
-          <th>Email</th>
-          <th>Rôle</th>
+          <th>Collaborateur</th>
+          <th>Adresse e-mail</th>
+          <th>Rôle attribué</th>
           <th>Département</th>
           <th>Statut</th>
           <th>Actions</th>
@@ -78,38 +100,55 @@
         {% for u in users %}
         <tr>
           <td>
-            <strong>{{ u.get_full_name|default:u.username }}</strong>
-            <div style="color:var(--muted);font-size:.84rem">@{{ u.username }}</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,rgba(21,32,90,0.1),rgba(18,183,235,0.2));display:grid;place-items:center;font-weight:700;color:var(--navy-deep);font-size:.85rem;flex-shrink:0">
+                {{ u.username|slice:":2"|upper }}
+              </span>
+              <div>
+                <strong style="color:var(--navy-deep);font-size:.92rem">{{ u.get_full_name|default:u.username }}</strong>
+                <div style="color:var(--muted);font-size:.8rem;font-family:monospace">@{{ u.username }}</div>
+              </div>
+            </div>
           </td>
           <td>{{ u.email|default:"—" }}</td>
-          <td><span class="badge badge-{{ u.role }}">{{ u.get_role_display }}</span></td>
-          <td>{{ u.department|default:"—" }}</td>
+          <td><span class="badge badge-manager">{{ u.get_role_display }}</span></td>
+          <td>{{ u.department|default:"DSI" }}</td>
           <td>
             {% if u.is_active %}
-              <span class="badge badge-on">Actif</span>
+              <span class="badge badge-success"><span class="status-dot is-online"></span>Actif</span>
             {% else %}
-              <span class="badge badge-off">Inactif</span>
+              <span class="badge badge-muted"><span class="status-dot"></span>Inactif</span>
             {% endif %}
           </td>
           <td>
             {% if can_write %}
             <div class="row-actions">
-              <a class="btn btn-ghost" href="{% url 'web:user-edit' u.pk %}">Modifier</a>
-              <form method="post" action="{% url 'web:user-toggle' u.pk %}">
+              <a class="btn btn-ghost btn-sm" href="{% url 'web:user-edit' u.pk %}">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Modifier
+              </a>
+              <form method="post" action="{% url 'web:user-toggle' u.pk %}" style="display:inline">
                 {% csrf_token %}
                 {% if u.is_active %}
-                  <button class="btn btn-danger" type="submit" {% if u.pk == request.user.pk %}disabled{% endif %}>Désactiver</button>
+                  <button class="btn btn-ghost btn-sm" type="submit" {% if u.pk == request.user.pk %}disabled title="Impossible de désactiver votre propre compte"{% endif %} style="color:#dc2626">
+                    Désactiver
+                  </button>
                 {% else %}
-                  <button class="btn btn-primary" type="submit">Réactiver</button>
+                  <button class="btn btn-ghost btn-sm" type="submit" style="color:#059669">
+                    Réactiver
+                  </button>
                 {% endif %}
               </form>
-              <form method="post" action="{% url 'web:user-delete' u.pk %}" onsubmit="return confirm('Supprimer définitivement « {{ u.username }} » ? Cette action est irréversible.');">
+              <form method="post" action="{% url 'web:user-delete' u.pk %}" onsubmit="return confirm('Supprimer définitivement « {{ u.username }} » ? Cette action est irréversible.');" style="display:inline">
                 {% csrf_token %}
-                <button class="btn btn-danger" type="submit" {% if u.pk == request.user.pk %}disabled{% endif %}>Supprimer</button>
+                <button class="btn btn-danger btn-sm" type="submit" {% if u.pk == request.user.pk %}disabled title="Impossible de supprimer votre propre compte"{% endif %}>
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  Supprimer
+                </button>
               </form>
             </div>
             {% else %}
-              —
+              <span style="color:var(--muted)">Lecture seule</span>
             {% endif %}
           </td>
         </tr>
@@ -119,19 +158,27 @@
   </div>
 
   {% if page_obj.has_other_pages %}
-  <div class="pagination">
+  <div class="pagination" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 20px;border-top:1px solid rgba(21,32,90,0.06)">
     {% if page_obj.has_previous %}
-      <a class="btn btn-ghost" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&role={{ role }}&active={{ active }}">Précédent</a>
+      <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&role={{ role }}&active={{ active }}">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        Précédent
+      </a>
     {% endif %}
-    <span style="align-self:center;color:var(--muted)">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    <span style="color:var(--muted);font-size:.88rem;font-weight:600">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
     {% if page_obj.has_next %}
-      <a class="btn btn-ghost" href="?page={{ page_obj.next_page_number }}&q={{ q }}&role={{ role }}&active={{ active }}">Suivant</a>
+      <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.next_page_number }}&q={{ q }}&role={{ role }}&active={{ active }}">
+        Suivant
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
     {% endif %}
   </div>
   {% endif %}
 
   {% else %}
-    <div class="empty">Aucun utilisateur trouvé pour ces critères.</div>
+    <div class="empty" style="padding:48px 20px;text-align:center">
+      <p style="color:var(--muted);font-size:.95rem">Aucun utilisateur trouvé pour ces critères de recherche.</p>
+    </div>
   {% endif %}
 </section>
 {% endblock %}

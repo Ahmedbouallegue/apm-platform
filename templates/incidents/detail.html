@@ -5,29 +5,105 @@
 {% block header_sub %}{{ incident.application.name }} · {{ incident.get_status_display }}{% endblock %}
 
 {% block header_actions %}
-  <a class="btn btn-ghost" href="{% url 'incidents:list' %}">Retour</a>
-  {% if can_write %}<a class="btn btn-primary" href="{% url 'incidents:edit' incident.pk %}">Modifier</a>{% endif %}
+  <a class="btn btn-ghost" href="{% url 'incidents:list' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour
+  </a>
+  {% if can_write %}
+    <a class="btn btn-primary" href="{% url 'incidents:edit' incident.pk %}">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Modifier
+    </a>
+  {% endif %}
 {% endblock %}
 
 {% block content %}
-<section class="stats" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
-  <article class="stat"><div class="label">Impact</div><div class="value" style="font-size:1.1rem">{{ incident.get_impact_display }}</div></article>
-  <article class="stat"><div class="label">Statut</div><div class="value" style="font-size:1.1rem">{{ incident.get_status_display }}</div></article>
-  <article class="stat"><div class="label">Survenu le</div><div class="value" style="font-size:1.1rem">{{ incident.occurred_at|date:"d/m/Y H:i" }}</div></article>
-  <article class="stat"><div class="label">Signalé par</div><div class="value" style="font-size:1.1rem">{% if incident.reported_by %}{{ incident.reported_by.get_full_name|default:incident.reported_by.username }}{% else %}—{% endif %}</div></article>
+{# ── KPI Cards ── #}
+<section class="stats page-enter" style="grid-template-columns: repeat(4, minmax(0, 1fr));margin-bottom:20px">
+  <article class="stat">
+    <div class="label">Niveau d'impact</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">
+      {% if incident.impact == "critique" or incident.impact == "bloquant" %}
+        <span class="badge badge-danger">{{ incident.get_impact_display }}</span>
+      {% elif incident.impact == "majeur" %}
+        <span class="badge badge-warning">{{ incident.get_impact_display }}</span>
+      {% else %}
+        <span class="badge badge-muted">{{ incident.get_impact_display }}</span>
+      {% endif %}
+    </div>
+  </article>
+  <article class="stat">
+    <div class="label">Statut du ticket</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">
+      {% if incident.status == "resolu" or incident.status == "clos" %}
+        <span class="badge badge-success"><span class="status-dot is-online"></span>{{ incident.get_status_display }}</span>
+      {% elif incident.status == "en_cours" %}
+        <span class="badge badge-warning"><span class="status-dot" style="background:#f59e0b"></span>{{ incident.get_status_display }}</span>
+      {% else %}
+        <span class="badge badge-danger"><span class="status-dot is-offline"></span>{{ incident.get_status_display }}</span>
+      {% endif %}
+    </div>
+  </article>
+  <article class="stat">
+    <div class="label">Survenu le</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">{{ incident.occurred_at|date:"d/m/Y H:i" }}</div>
+  </article>
+  <article class="stat">
+    <div class="label">Signalé par</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">
+      {% if incident.reported_by %}
+        {{ incident.reported_by.get_full_name|default:incident.reported_by.username }}
+      {% else %}
+        <span style="color:var(--muted)">Automatique</span>
+      {% endif %}
+    </div>
+  </article>
 </section>
-<section class="panel">
-  <div class="panel-head"><strong>Fiche incident</strong></div>
-  <div class="form-grid">
-    <div><div style="color:var(--muted);font-size:.84rem">Application</div><div><a href="{% url 'applications:detail' incident.application_id %}">{{ incident.application.name }}</a></div></div>
-    <div class="full"><div style="color:var(--muted);font-size:.84rem">Description</div><div style="white-space:pre-wrap">{{ incident.description }}</div></div>
-    <div class="full"><div style="color:var(--muted);font-size:.84rem">Cause racine</div><div style="white-space:pre-wrap">{{ incident.root_cause|default:"—" }}</div></div>
-    <div class="full"><div style="color:var(--muted);font-size:.84rem">Solution</div><div style="white-space:pre-wrap">{{ incident.solution|default:"—" }}</div></div>
+
+{# ── Fiche détail ── #}
+<section class="panel page-enter" style="animation-delay:.06s">
+  <div class="panel-head">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;border-radius:10px;background:rgba(239,68,68,0.12);display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#dc2626" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <strong>Rapport d'incident & Analyse post-mortem</strong>
+    </div>
   </div>
+
+  <div style="padding:18px 24px;border-top:1px solid rgba(21,32,90,0.06)">
+    <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Application impactée</div>
+    <div>
+      <a href="{% url 'applications:detail' incident.application_id %}" style="font-weight:700;color:var(--navy-deep);display:inline-flex;align-items:center;gap:6px">
+        {{ incident.application.name }}
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div style="padding:20px 24px;border-top:1px solid rgba(21,32,90,0.05)">
+    <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Description des faits constatés</div>
+    <div style="white-space:pre-wrap;color:var(--ink);line-height:1.6">{{ incident.description }}</div>
+  </div>
+
+  <div style="padding:20px 24px;border-top:1px solid rgba(21,32,90,0.05);background:rgba(245,158,11,0.04)">
+    <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#b45309;margin-bottom:8px">Analyse de la cause racine (RCA)</div>
+    <div style="white-space:pre-wrap;color:var(--ink);line-height:1.6">{{ incident.root_cause|default:"Cause racine en cours d'investigation." }}</div>
+  </div>
+
+  <div style="padding:20px 24px;border-top:1px solid rgba(21,32,90,0.05);background:rgba(16,185,129,0.04)">
+    <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#059669;margin-bottom:8px">Solution apportée & Actions correctives</div>
+    <div style="white-space:pre-wrap;color:var(--ink);line-height:1.6">{{ incident.solution|default:"Plan d'action correctif en cours de validation." }}</div>
+  </div>
+
   {% if can_write %}
-  <div class="form-actions">
-    <form method="post" action="{% url 'incidents:delete' incident.pk %}" onsubmit="return confirm('Archiver cet incident ?');">
-      {% csrf_token %}<button class="btn btn-danger" type="submit">Archiver</button>
+  <div style="display:flex;justify-content:flex-end;padding:16px 24px;border-top:1px solid rgba(21,32,90,0.06);background:rgba(246,249,254,0.3)">
+    <form method="post" action="{% url 'incidents:delete' incident.pk %}" onsubmit="return confirm('Archiver définitivement cet incident ?');">
+      {% csrf_token %}
+      <button class="btn btn-danger btn-sm" type="submit">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Archiver l'incident
+      </button>
     </form>
   </div>
   {% endif %}

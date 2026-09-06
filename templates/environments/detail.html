@@ -1,91 +1,141 @@
 {% extends "accounts/app_base.html" %}
 
-{% block page_title %}{{ environment }}{% endblock %}
+{% block page_title %}{{ environment.name }}{% endblock %}
 {% block header_title %}{{ environment.name }}{% endblock %}
 {% block header_sub %}{{ environment.application.name }} · {{ environment.get_env_type_display }}{% endblock %}
 
 {% block header_actions %}
-  <a class="btn btn-ghost" href="{% url 'environments:list' %}">Retour</a>
+  <a class="btn btn-ghost" href="{% url 'environments:list' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour
+  </a>
   {% if can_write %}
-    <a class="btn btn-primary" href="{% url 'environments:edit' environment.pk %}">Modifier</a>
+    <a class="btn btn-primary" href="{% url 'environments:edit' environment.pk %}">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Modifier
+    </a>
   {% endif %}
 {% endblock %}
 
 {% block content %}
-<section class="stats" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+{# ── KPI Cards ── #}
+<section class="stats page-enter" style="grid-template-columns: repeat(4, minmax(0, 1fr));margin-bottom:20px">
   <article class="stat">
-    <div class="label">Type</div>
-    <div class="value" style="font-size:1.15rem">
+    <div class="label">Type d'environnement</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">
       <span class="badge badge-env-{{ environment.env_type }}">{{ environment.get_env_type_display }}</span>
     </div>
   </article>
   <article class="stat">
-    <div class="label">Statut</div>
-    <div class="value" style="font-size:1.15rem">
+    <div class="label">Statut d'exploitation</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">
       {% if environment.is_active %}
-        <span class="badge badge-on">Actif</span>
+        <span class="badge badge-success">
+          <span class="status-dot is-online"></span>Actif
+        </span>
       {% else %}
-        <span class="badge badge-off">Inactif</span>
+        <span class="badge badge-muted">
+          <span class="status-dot"></span>Inactif
+        </span>
       {% endif %}
     </div>
   </article>
   <article class="stat">
-    <div class="label">Docker</div>
-    <div class="value" style="font-size:1.2rem">{% if environment.docker %}Oui{% else %}Non{% endif %}</div>
+    <div class="label">Conteneur Docker</div>
+    <div class="value" style="font-size:1.2rem">
+      {% if environment.docker %}
+        <span class="badge badge-dsi" style="font-size:.9rem;padding:4px 12px">Oui</span>
+      {% else %}
+        <span style="color:var(--muted);font-size:1rem;font-weight:600">Non</span>
+      {% endif %}
+    </div>
   </article>
   <article class="stat">
-    <div class="label">Kubernetes</div>
-    <div class="value" style="font-size:1.2rem">{% if environment.kubernetes %}Oui{% else %}Non{% endif %}</div>
+    <div class="label">Orchestration K8s</div>
+    <div class="value" style="font-size:1.2rem">
+      {% if environment.kubernetes %}
+        <span class="badge badge-manager" style="font-size:.9rem;padding:4px 12px">Oui</span>
+      {% else %}
+        <span style="color:var(--muted);font-size:1rem;font-weight:600">Non</span>
+      {% endif %}
+    </div>
   </article>
 </section>
 
-<section class="panel">
-  <div class="panel-head"><strong>Détails techniques</strong></div>
-  <div class="form-grid">
-    <div>
-      <div style="color:var(--muted);font-size:.84rem">Application</div>
-      <div><a href="{% url 'applications:detail' environment.application_id %}">{{ environment.application.name }}</a></div>
+{# ── Fiche technique ── #}
+<section class="panel page-enter" style="animation-delay:.06s">
+  <div class="panel-head">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,rgba(16,185,129,0.14),rgba(21,32,90,0.1));display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#059669" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      </div>
+      <strong>Détails techniques et hébergement</strong>
     </div>
-    <div>
-      <div style="color:var(--muted);font-size:.84rem">Serveur</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:0;border-top:1px solid rgba(21,32,90,0.06)">
+    <div style="padding:18px 24px;border-right:1px solid rgba(21,32,90,0.05);border-bottom:1px solid rgba(21,32,90,0.05)">
+      <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Application parente</div>
+      <div>
+        <a href="{% url 'applications:detail' environment.application_id %}" style="font-weight:700;color:var(--navy-deep);display:inline-flex;align-items:center;gap:6px">
+          {{ environment.application.name }}
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+    <div style="padding:18px 24px;border-right:1px solid rgba(21,32,90,0.05);border-bottom:1px solid rgba(21,32,90,0.05)">
+      <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Serveur hôte</div>
       <div>
         {% if environment.server %}
-          <a href="{% url 'servers:detail' environment.server_id %}">{{ environment.server.name }}</a>
-          <span style="color:var(--muted)">({{ environment.server.ip_address }})</span>
-        {% else %}—{% endif %}
+          <a href="{% url 'servers:detail' environment.server_id %}" style="font-weight:700;color:var(--navy-deep)">{{ environment.server.name }}</a>
+          <span style="color:var(--muted);font-family:monospace;font-size:.84rem">({{ environment.server.ip_address }})</span>
+        {% else %}
+          <span style="color:var(--muted)">Aucun serveur assigné</span>
+        {% endif %}
       </div>
     </div>
-    <div>
-      <div style="color:var(--muted);font-size:.84rem">Hébergeur</div>
-      <div>{{ environment.hosting_provider|default:"—" }}</div>
+    <div style="padding:18px 24px;border-right:1px solid rgba(21,32,90,0.05);border-bottom:1px solid rgba(21,32,90,0.05)">
+      <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Fournisseur d'hébergement</div>
+      <div style="font-weight:600;color:var(--navy-deep)">{{ environment.hosting_provider|default:"—" }}</div>
     </div>
-    <div>
-      <div style="color:var(--muted);font-size:.84rem">URL</div>
+    <div style="padding:18px 24px;border-bottom:1px solid rgba(21,32,90,0.05)">
+      <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Point d'accès URL</div>
       <div>
         {% if environment.url %}
-          <a href="{{ environment.url }}" target="_blank" rel="noopener">{{ environment.url }}</a>
-        {% else %}—{% endif %}
+          <a href="{{ environment.url }}" target="_blank" rel="noopener" style="font-family:monospace;font-size:.85rem;display:inline-flex;align-items:center;gap:4px">
+            {{ environment.url }}
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        {% else %}
+          <span style="color:var(--muted)">—</span>
+        {% endif %}
       </div>
     </div>
-    <div>
-      <div style="color:var(--muted);font-size:.84rem">Adresse IP</div>
-      <div>{{ environment.ip_address|default:"—" }}</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:0;background:rgba(246,249,254,0.4)">
+    <div style="padding:18px 24px;border-right:1px solid rgba(21,32,90,0.05)">
+      <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Adresse IP directe</div>
+      <div style="font-family:monospace;font-weight:600;color:var(--navy-deep)">{{ environment.ip_address|default:"—" }}</div>
     </div>
-    <div>
-      <div style="color:var(--muted);font-size:.84rem">OS</div>
-      <div>{{ environment.os|default:"—" }}</div>
+    <div style="padding:18px 24px;border-right:1px solid rgba(21,32,90,0.05)">
+      <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Système d'exploitation</div>
+      <div style="font-weight:600;color:var(--navy-deep)">{{ environment.os|default:"—" }}</div>
     </div>
-    <div>
-      <div style="color:var(--muted);font-size:.84rem">CPU / RAM</div>
-      <div>{{ environment.cpu|default:"—" }} · {{ environment.ram|default:"—" }}</div>
+    <div style="padding:18px 24px">
+      <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Allocation CPU / RAM</div>
+      <div style="font-weight:600;color:var(--navy-deep)">{{ environment.cpu|default:"—" }} <span style="opacity:.4">/</span> {{ environment.ram|default:"—" }}</div>
     </div>
   </div>
 
   {% if can_write %}
-  <div class="form-actions">
-    <form method="post" action="{% url 'environments:delete' environment.pk %}" onsubmit="return confirm('Supprimer cet environnement ?');">
+  <div style="display:flex;justify-content:flex-end;padding:16px 24px;border-top:1px solid rgba(21,32,90,0.06);background:rgba(246,249,254,0.3)">
+    <form method="post" action="{% url 'environments:delete' environment.pk %}" onsubmit="return confirm('Supprimer définitivement cet environnement ?');">
       {% csrf_token %}
-      <button class="btn btn-danger" type="submit">Supprimer</button>
+      <button class="btn btn-danger btn-sm" type="submit">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Supprimer l'environnement
+      </button>
     </form>
   </div>
   {% endif %}

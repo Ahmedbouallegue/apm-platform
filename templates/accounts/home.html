@@ -2,28 +2,39 @@
 {% load static %}
 
 {% block page_title %}Accueil{% endblock %}
-{% block header_title %}Accueil{% endblock %}
-{% block header_sub %}Pilotage avancé du patrimoine applicatif Topnet{% endblock %}
+{% block header_title %}Tableau de bord exécutif{% endblock %}
+{% block header_sub %}Pilotage stratégique et opérationnel du patrimoine applicatif Topnet{% endblock %}
 
 {% block header_actions %}
-  <a class="btn btn-ghost" href="{% url 'dashboard:home' %}">Analyses détaillées</a>
+  <a class="btn btn-ghost" href="{% url 'dashboard:home' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Analyses détaillées
+  </a>
   {% if can_write %}
-    <a class="btn btn-accent" href="{% url 'applications:create' %}">Nouvelle application</a>
+    <a class="btn btn-accent" href="{% url 'applications:create' %}">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+      Nouvelle application
+    </a>
   {% endif %}
 {% endblock %}
 
 {% block content %}
-<section class="home-hero home-hero--{{ stats.health.level }}">
+{# ── Hero Banner avec Health Score ── #}
+<section class="home-hero home-hero--{{ stats.health.level }} page-enter">
   <div class="home-hero-main">
-    <p class="hero-kicker">Topnet DSI · Synthèse temps réel</p>
+    <p class="hero-kicker">Topnet DSI · Synthèse opérationnelle</p>
     <h2>Bonjour, {{ request.user.get_full_name|default:request.user.username }}</h2>
     <p>
-      Vue consolidée du SI : santé globale, échéances critiques, répartition applicative
-      et pression opérationnelle.
+      Surveillance proactive du système d'information : disponibilité, santé des applications,
+      échéances critiques SSL et pression opérationnelle.
     </p>
     <div class="home-hero-actions">
-      <a class="btn btn-primary" href="{% url 'applications:list' %}">Applications</a>
+      <a class="btn btn-primary" href="{% url 'applications:list' %}">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+        Catalogue Applications
+      </a>
       <a class="btn btn-ghost hero-ghost" href="{% url 'notifications:list' %}">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         Notifications
         {% if stats.notifications_unread %}
           <span class="hero-count">{{ stats.notifications_unread }}</span>
@@ -40,17 +51,18 @@
     </div>
     <div class="health-meta">
       <span class="health-badge health-badge--{{ stats.health.level }}">{{ stats.health.label }}</span>
-      <p>Score calculé à partir des incidents ouverts et des échéances SSL / DNS / contrats.</p>
+      <p>Score synthétique pondérant les incidents ouverts et les échéances SSL, DNS et contrats.</p>
     </div>
   </div>
 </section>
 
-<section class="stats home-kpi-row">
+{# ── KPI Row ── #}
+<section class="stats home-kpi-row page-enter" style="animation-delay:.05s">
   <article class="stat accent-cyan kpi-advanced">
     <div class="label">Taux en production</div>
     <div class="value">{{ stats.apps_production_pct }}%</div>
     <div class="kpi-bar"><span style="width:{{ stats.apps_production_pct }}%"></span></div>
-    <div class="stat-hint">{{ stats.apps_production }} / {{ stats.apps_total }} applications</div>
+    <div class="stat-hint">{{ stats.apps_production }} / {{ stats.apps_total }} applications actives</div>
   </article>
   <article class="stat {% if stats.expiry_pressure %}accent-warn{% else %}accent-green{% endif %} kpi-advanced">
     <div class="label">Pression échéances (30 j)</div>
@@ -60,20 +72,21 @@
     </div>
   </article>
   <article class="stat {% if stats.incidents_open %}accent-danger{% else %}accent-green{% endif %} kpi-advanced">
-    <div class="label">Incidents ouverts</div>
+    <div class="label">Incidents en cours</div>
     <div class="value">{{ stats.incidents_open }}</div>
     <div class="stat-hint {% if stats.incidents_critical %}warn{% endif %}">
-      {{ stats.incidents_critical }} critique{{ stats.incidents_critical|pluralize }}
+      {{ stats.incidents_critical }} critique{{ stats.incidents_critical|pluralize }} à traiter
     </div>
   </article>
   <article class="stat accent-orange kpi-advanced">
-    <div class="label">Apps critiques / hautes</div>
+    <div class="label">Applications critiques</div>
     <div class="value">{{ stats.apps_critical }}</div>
-    <div class="stat-hint">Sur {{ stats.apps_total }} au catalogue</div>
+    <div class="stat-hint">Sur {{ stats.apps_total }} au catalogue global</div>
   </article>
 </section>
 
-<section class="home-grid">
+{# ── Grille de Widgets & Graphiques ── #}
+<section class="home-grid page-enter" style="animation-delay:.1s">
   <article class="panel home-panel">
     <div class="panel-head">
       <strong>Répartition des applications</strong>
@@ -98,23 +111,23 @@
 
   <article class="panel home-panel">
     <div class="panel-head">
-      <strong>Horizon SSL</strong>
-      <span class="panel-sub">Buckets d’expiration</span>
+      <strong>Horizon SSL / TLS</strong>
+      <span class="panel-sub">Validité des certificats</span>
     </div>
     <div class="chart-canvas-wrap chart-canvas-home">
       <canvas id="home-chart-certs" aria-label="Échéances certificats SSL"></canvas>
     </div>
     <div class="home-mini-stats">
       <div><span>Valides (&gt;30 j)</span><strong>{{ stats.certs_valid }}</strong></div>
-      <div><span>Expirés</span><strong>{{ stats.certs_expired }}</strong></div>
+      <div><span>Expirés</span><strong {% if stats.certs_expired %}style="color:#dc2626"{% endif %}>{{ stats.certs_expired }}</strong></div>
       <div><span>Total actifs</span><strong>{{ stats.certs_total }}</strong></div>
     </div>
   </article>
 
   <article class="panel home-panel">
     <div class="panel-head">
-      <strong>Tendance 6 mois</strong>
-      <span class="panel-sub">Applications &amp; incidents créés</span>
+      <strong>Tendance d'activité sur 6 mois</strong>
+      <span class="panel-sub">Créations d'applications vs incidents</span>
     </div>
     <div class="chart-canvas-wrap chart-canvas-home">
       <canvas id="home-chart-trends" aria-label="Tendances sur 6 mois"></canvas>
@@ -123,8 +136,8 @@
 
   <article class="panel home-panel">
     <div class="panel-head">
-      <strong>Prochaines échéances</strong>
-      <span class="panel-sub">60 jours · SSL, domaines, contrats</span>
+      <strong>Prochaines échéances (60 jours)</strong>
+      <span class="panel-sub">Certificats, domaines, contrats</span>
     </div>
     {% if stats.upcoming_expiries %}
     <div class="table-wrap home-deadlines">
@@ -134,18 +147,18 @@
             <th>Ressource</th>
             <th>Type</th>
             <th>Échéance</th>
-            <th>J-</th>
+            <th style="text-align:center">Délai</th>
           </tr>
         </thead>
         <tbody>
           {% for item in stats.upcoming_expiries %}
           <tr>
             <td><a href="{{ item.url }}"><strong>{{ item.name }}</strong></a></td>
-            <td><span class="badge badge-home-{{ item.kind_key }}">{{ item.kind }}</span></td>
+            <td><span class="badge badge-manager">{{ item.kind }}</span></td>
             <td>{{ item.date|date:"d/m/Y" }}</td>
-            <td>
+            <td style="text-align:center">
               <span class="days-left {% if item.days_left <= 7 %}is-hot{% elif item.days_left <= 30 %}is-warn{% endif %}">
-                {{ item.days_left }}
+                J-{{ item.days_left }}
               </span>
             </td>
           </tr>
@@ -154,13 +167,16 @@
       </table>
     </div>
     {% else %}
-      <div class="empty-inline" style="padding:18px">Aucune échéance dans les 60 prochains jours.</div>
+      <div class="empty-inline" style="padding:24px;text-align:center;color:var(--muted)">
+        Aucune ressource arrivant à échéance sous 60 jours.
+      </div>
     {% endif %}
   </article>
 </section>
 
-<section class="section-title">Infrastructure &amp; patrimoine</section>
-<section class="stats home-infra">
+{# ── Infrastructure & Inventaire ── #}
+<div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Infrastructure & Inventaire matériel</div>
+<section class="stats home-infra page-enter" style="animation-delay:.15s">
   <article class="stat accent-navy">
     <div class="label">Serveurs</div>
     <div class="value">{{ stats.servers_total }}</div>
@@ -195,22 +211,43 @@
   </article>
 </section>
 
-<section class="quick-grid">
-  <a class="quick-card" href="{% url 'certificates:list' %}">
-    <strong>Certificats SSL</strong>
-    <span>{{ stats.certs_expiring }} à surveiller sous 30 jours</span>
+{# ── Quick links ── #}
+<section class="quick-grid page-enter" style="animation-delay:.18s">
+  <a class="quick-card" href="{% url 'certificates:list' %}" style="display:flex;align-items:flex-start;gap:14px">
+    <div style="width:38px;height:38px;border-radius:10px;background:rgba(18,183,235,0.12);display:grid;place-items:center;flex-shrink:0">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--cyan)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <div>
+      <strong style="display:block;color:var(--navy-deep);font-size:.95rem">Certificats SSL / TLS</strong>
+      <span style="color:var(--muted);font-size:.82rem">{{ stats.certs_expiring }} certificat{{ stats.certs_expiring|pluralize }} sous 30 jours</span>
+    </div>
   </a>
-  <a class="quick-card" href="{% url 'incidents:list' %}">
-    <strong>Incidents</strong>
-    <span>{{ stats.incidents_open }} ouvert{{ stats.incidents_open|pluralize }}</span>
+  <a class="quick-card" href="{% url 'incidents:list' %}" style="display:flex;align-items:flex-start;gap:14px">
+    <div style="width:38px;height:38px;border-radius:10px;background:rgba(239,68,68,0.12);display:grid;place-items:center;flex-shrink:0">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#dc2626" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div>
+      <strong style="display:block;color:var(--navy-deep);font-size:.95rem">Incidents & Pannes</strong>
+      <span style="color:var(--muted);font-size:.82rem">{{ stats.incidents_open }} ticket{{ stats.incidents_open|pluralize }} ouvert{{ stats.incidents_open|pluralize }}</span>
+    </div>
   </a>
-  <a class="quick-card" href="{% url 'documents:list' %}">
-    <strong>Documentation</strong>
-    <span>{{ stats.documents_total }} document{{ stats.documents_total|pluralize }}</span>
+  <a class="quick-card" href="{% url 'documents:list' %}" style="display:flex;align-items:flex-start;gap:14px">
+    <div style="width:38px;height:38px;border-radius:10px;background:rgba(21,32,90,0.08);display:grid;place-items:center;flex-shrink:0">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--navy)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    </div>
+    <div>
+      <strong style="display:block;color:var(--navy-deep);font-size:.95rem">Base Documentaire</strong>
+      <span style="color:var(--muted);font-size:.82rem">{{ stats.documents_total }} document{{ stats.documents_total|pluralize }} classé{{ stats.documents_total|pluralize }}</span>
+    </div>
   </a>
-  <a class="quick-card" href="{% url 'dashboard:home' %}">
-    <strong>Analyses</strong>
-    <span>Graphiques KPI complets</span>
+  <a class="quick-card" href="{% url 'dashboard:home' %}" style="display:flex;align-items:flex-start;gap:14px">
+    <div style="width:38px;height:38px;border-radius:10px;background:rgba(245,138,18,0.12);display:grid;place-items:center;flex-shrink:0">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ea580c" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </div>
+    <div>
+      <strong style="display:block;color:var(--navy-deep);font-size:.95rem">Analyses & Graphiques</strong>
+      <span style="color:var(--muted);font-size:.82rem">Indicateurs consolidés & tendances</span>
+    </div>
   </a>
 </section>
 

@@ -1,29 +1,98 @@
 {% extends "accounts/app_base.html" %}
-{% block page_title %}Dépendance{% endblock %}
+
+{% block page_title %}Dépendance applicative{% endblock %}
 {% block header_title %}{{ dependency.source_application.name }} → {% if dependency.target_application %}{{ dependency.target_application.name }}{% else %}{{ dependency.target_external }}{% endif %}{% endblock %}
-{% block header_sub %}{{ dependency.get_dependency_type_display }}{% endblock %}
+{% block header_sub %}Flux d'intégration · {{ dependency.get_dependency_type_display }}{% endblock %}
+
 {% block header_actions %}
-  <a class="btn btn-ghost" href="{% url 'dependencies:list' %}">Retour</a>
-  {% if can_write %}<a class="btn btn-primary" href="{% url 'dependencies:edit' dependency.pk %}">Modifier</a>{% endif %}
-{% endblock %}
-{% block content %}
-<section class="stats" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
-  <article class="stat"><div class="label">Type</div><div class="value" style="font-size:1.1rem">{{ dependency.get_dependency_type_display }}</div></article>
-  <article class="stat"><div class="label">Actif</div><div class="value" style="font-size:1.1rem">{% if dependency.is_active %}Oui{% else %}Non{% endif %}</div></article>
-  <article class="stat"><div class="label">Cible</div><div class="value" style="font-size:1.1rem">{% if dependency.target_application %}Application{% else %}Externe{% endif %}</div></article>
-</section>
-<section class="panel">
-  <div class="panel-head"><strong>Fiche dépendance</strong></div>
-  <div class="form-grid">
-    <div><div style="color:var(--muted);font-size:.84rem">Application source</div><div><a href="{% url 'applications:detail' dependency.source_application_id %}">{{ dependency.source_application.name }}</a></div></div>
-    <div><div style="color:var(--muted);font-size:.84rem">Application cible</div><div>{% if dependency.target_application %}<a href="{% url 'applications:detail' dependency.target_application_id %}">{{ dependency.target_application.name }}</a>{% else %}—{% endif %}</div></div>
-    <div><div style="color:var(--muted);font-size:.84rem">Cible externe</div><div>{{ dependency.target_external|default:"—" }}</div></div>
-    <div class="full"><div style="color:var(--muted);font-size:.84rem">Description</div><div style="white-space:pre-wrap">{{ dependency.description|default:"—" }}</div></div>
-  </div>
+  <a class="btn btn-ghost" href="{% url 'dependencies:list' %}">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Retour
+  </a>
   {% if can_write %}
-  <div class="form-actions">
-    <form method="post" action="{% url 'dependencies:delete' dependency.pk %}" onsubmit="return confirm('Archiver cette dépendance ?');">
-      {% csrf_token %}<button class="btn btn-danger" type="submit">Archiver</button>
+    <a class="btn btn-primary" href="{% url 'dependencies:edit' dependency.pk %}">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Modifier
+    </a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+{# ── KPI Cards ── #}
+<section class="stats page-enter" style="grid-template-columns: repeat(3, minmax(0, 1fr));margin-bottom:20px">
+  <article class="stat">
+    <div class="label">Type d'intégration</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">
+      <span class="badge badge-manager">{{ dependency.get_dependency_type_display }}</span>
+    </div>
+  </article>
+  <article class="stat">
+    <div class="label">État du flux</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">
+      {% if dependency.is_active %}
+        <span class="badge badge-success"><span class="status-dot is-online"></span>Actif</span>
+      {% else %}
+        <span class="badge badge-muted"><span class="status-dot"></span>Inactif</span>
+      {% endif %}
+    </div>
+  </article>
+  <article class="stat">
+    <div class="label">Périmètre cible</div>
+    <div class="value" style="font-size:1.15rem;margin-top:6px">
+      {% if dependency.target_application %}
+        <span class="badge badge-dsi">Interne (Catalogue)</span>
+      {% else %}
+        <span class="badge badge-muted">Service Externe</span>
+      {% endif %}
+    </div>
+  </article>
+</section>
+
+{# ── Visualisation du flux ── #}
+<section class="panel page-enter" style="animation-delay:.06s;margin-bottom:20px">
+  <div class="panel-head">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,rgba(18,183,235,0.15),rgba(21,32,90,0.1));display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </div>
+      <strong>Schéma d'interconnexion</strong>
+    </div>
+  </div>
+
+  <div style="padding:24px;display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;background:rgba(246,249,254,0.6)">
+    <div style="background:#fff;border:1px solid rgba(21,32,90,0.1);padding:14px 20px;border-radius:14px;box-shadow:0 4px 12px rgba(11,16,40,0.04);text-align:center">
+      <div style="font-size:.74rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Source</div>
+      <a href="{% url 'applications:detail' dependency.source_application_id %}" style="font-weight:700;font-size:1.05rem;color:var(--navy-deep)">{{ dependency.source_application.name }}</a>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <span class="badge badge-manager" style="font-size:.78rem">{{ dependency.get_dependency_type_display }}</span>
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--cyan)" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </div>
+
+    <div style="background:#fff;border:1px solid rgba(21,32,90,0.1);padding:14px 20px;border-radius:14px;box-shadow:0 4px 12px rgba(11,16,40,0.04);text-align:center">
+      <div style="font-size:.74rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Cible</div>
+      {% if dependency.target_application %}
+        <a href="{% url 'applications:detail' dependency.target_application_id %}" style="font-weight:700;font-size:1.05rem;color:var(--navy-deep)">{{ dependency.target_application.name }}</a>
+      {% else %}
+        <span style="font-weight:700;font-size:1.05rem;color:var(--navy-deep)">{{ dependency.target_external }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="padding:22px 24px;border-top:1px solid rgba(21,32,90,0.06)">
+    <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Description du flux & Protocoles</div>
+    <div style="white-space:pre-wrap;color:var(--ink);line-height:1.6">{{ dependency.description|default:"Aucune description détaillée enregistrée pour ce flux." }}</div>
+  </div>
+
+  {% if can_write %}
+  <div style="display:flex;justify-content:flex-end;padding:16px 24px;border-top:1px solid rgba(21,32,90,0.06);background:rgba(246,249,254,0.3)">
+    <form method="post" action="{% url 'dependencies:delete' dependency.pk %}" onsubmit="return confirm('Archiver définitivement cette dépendance ?');">
+      {% csrf_token %}
+      <button class="btn btn-danger btn-sm" type="submit">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Archiver la dépendance
+      </button>
     </form>
   </div>
   {% endif %}
