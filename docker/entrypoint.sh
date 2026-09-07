@@ -48,6 +48,13 @@ if [ "${RUN_MIGRATIONS:-0}" = "1" ]; then
   python manage.py migrate --noinput
 fi
 
+if [ "${RUN_SEED:-0}" = "1" ]; then
+  echo "Seeding initial enterprise and demo data..."
+  python manage.py bootstrap_admin || true
+  python manage.py seed_demo_data --force || true
+  python manage.py add_enterprise_data || true
+fi
+
 if [ "${RUN_COLLECTSTATIC:-0}" = "1" ]; then
   echo "Collecting static files..."
   python manage.py collectstatic --noinput
