@@ -1,58 +1,44 @@
-{% extends "base.html" %}
+{% extends "accounts/app_base.html" %}
 {% load static %}
 
-{% block title %}Assistant IA DSI · Topnet APM{% endblock %}
+{% block page_title %}Assistant IA DSI{% endblock %}
+{% block header_title %}Assistant IA DSI{% endblock %}
+{% block header_sub %}Intelligence artificielle pour le diagnostic et le pilotage du patrimoine applicatif Topnet{% endblock %}
 
-{% block body %}
-{% include "accounts/partials/navbar.html" %}
+{% block header_actions %}
+  <button id="clearHistoryBtn" type="button" class="btn btn-ghost" title="Effacer l'historique de conversation">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+    </svg>
+    Effacer la conversation
+  </button>
+{% endblock %}
 
-<div class="chat-page">
-  <!-- Header -->
-  <div class="chat-page-header">
-    <div class="chat-page-header-inner">
-      <div class="chat-ai-avatar-lg">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4z"/>
-          <circle cx="9" cy="11" r="1" fill="currentColor"/>
-          <circle cx="15" cy="11" r="1" fill="currentColor"/>
-          <path d="M9 16s1 1 3 1 3-1 3-1"/>
-        </svg>
-      </div>
-      <div>
-        <h1 class="chat-page-title">Assistant IA DSI</h1>
-        <p class="chat-page-subtitle">Posez vos questions sur le patrimoine applicatif Topnet</p>
-      </div>
-      <div class="chat-page-actions">
-        <button id="clearHistoryBtn" class="btn-chat-clear" title="Effacer la conversation">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
-          </svg>
-          Effacer
-        </button>
-      </div>
-    </div>
-  </div>
-
+{% block content %}
+<div class="chat-page-card">
   <!-- Suggestions rapides -->
   <div class="chat-suggestions" id="chatSuggestions">
-    <p class="suggestions-label">Suggestions :</p>
+    <div class="suggestions-header">
+      <span class="suggestions-icon" aria-hidden="true">💡</span>
+      <span class="suggestions-label">Suggestions de requêtes en direct :</span>
+    </div>
     <div class="suggestions-grid">
-      <button class="suggestion-chip" data-q="Quelles applications ont un certificat SSL qui expire dans les 30 prochains jours ?">
+      <button type="button" class="suggestion-chip" data-q="Quelles applications ont un certificat SSL qui expire dans les 30 prochains jours ?">
         🔐 Certificats SSL expirants
       </button>
-      <button class="suggestion-chip" data-q="Quels sont les incidents ouverts en ce moment ?">
+      <button type="button" class="suggestion-chip" data-q="Quels sont les incidents ouverts en ce moment ?">
         🚨 Incidents ouverts
       </button>
-      <button class="suggestion-chip" data-q="Quel est le coût total annuel des contrats actifs ?">
+      <button type="button" class="suggestion-chip" data-q="Quel est le coût total annuel des contrats actifs ?">
         💰 Coût des contrats
       </button>
-      <button class="suggestion-chip" data-q="Quelles sont les applications critiques en production ?">
+      <button type="button" class="suggestion-chip" data-q="Quelles sont les applications critiques en production ?">
         ⚡ Applications critiques
       </button>
-      <button class="suggestion-chip" data-q="Quels contrats arrivent à échéance dans les 60 prochains jours ?">
+      <button type="button" class="suggestion-chip" data-q="Quels contrats arrivent à échéance dans les 60 prochains jours ?">
         📋 Contrats à renouveler
       </button>
-      <button class="suggestion-chip" data-q="Donne-moi un résumé de l'état global du SI.">
+      <button type="button" class="suggestion-chip" data-q="Donne-moi un résumé de l'état global du SI.">
         📊 Résumé du SI
       </button>
     </div>
@@ -65,18 +51,19 @@
       <div class="chat-bubble chat-bubble--ai">
         <div class="chat-bubble-header">
           <span class="chat-bubble-sender">🤖 Assistant DSI</span>
+          <span class="badge badge-cyan" style="font-size: 0.72rem; padding: 2px 8px;">Gemini 2.0 Flash</span>
         </div>
         <div class="chat-bubble-content">
           <p>Bonjour <strong>{{ request.user.get_full_name|default:request.user.username }}</strong> 👋</p>
-          <p>Je suis votre assistant IA spécialisé dans la gestion du patrimoine applicatif Topnet. Je peux vous aider à :</p>
+          <p>Je suis votre assistant IA connecté en direct aux données du patrimoine applicatif et de l'infrastructure Topnet. Je peux vous aider à :</p>
           <ul>
-            <li>🔐 Suivre les certificats SSL (expiration, renouvellement)</li>
-            <li>🚨 Analyser les incidents en cours et historiques</li>
-            <li>📋 Gérer les contrats et fournisseurs</li>
-            <li>⚡ Évaluer la criticité des applications</li>
-            <li>📊 Générer des rapports et indicateurs KPI</li>
+            <li>🔐 <strong>Suivre les certificats SSL :</strong> Expirations imminentes, renouvellements et domaines associés</li>
+            <li>🚨 <strong>Analyser les incidents :</strong> Incidents critiques en cours, causes et historique</li>
+            <li>📋 <strong>Gérer les contrats & fournisseurs :</strong> Échéances à 30/60 jours, montants et prestataires</li>
+            <li>⚡ <strong>Cartographier les applications :</strong> Criticité, statut de production et technologies</li>
+            <li>📊 <strong>Générer des synthèses de pilotage :</strong> Rapports de santé du SI et indicateurs DSI</li>
           </ul>
-          <p>Posez-moi votre question ci-dessous !</p>
+          <p>Cliquez sur une suggestion ci-dessus ou posez votre question en langage naturel ci-dessous !</p>
         </div>
       </div>
     </div>
@@ -105,27 +92,26 @@
       <textarea
         id="chatInput"
         class="chat-textarea"
-        placeholder="Posez votre question sur le patrimoine applicatif..."
+        placeholder="Posez votre question sur le patrimoine applicatif (ex: Quels contrats expirent bientôt ?)..."
         rows="1"
         maxlength="2000"
       ></textarea>
-      <button id="chatSendBtn" class="chat-send-btn" disabled>
+      <button id="chatSendBtn" class="chat-send-btn" disabled title="Envoyer le message">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
         </svg>
       </button>
     </div>
-    <p class="chat-hint">Entrée pour envoyer · Maj+Entrée pour nouvelle ligne · Modèle : Gemini 2.0 Flash</p>
+    <p class="chat-hint">Entrée pour envoyer · Maj+Entrée pour saut de ligne · Données connectées au SI Topnet</p>
   </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
+{{ block.super }}
 <link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
 <script src="{% static 'js/chatbot.js' %}"></script>
 <script>
-  // Initialiser le chatbot en mode page complète
   window.APM_CHATBOT_CONFIG = {
     askUrl: "{% url 'chatbot:ask' %}",
     clearUrl: "{% url 'chatbot:clear' %}",
@@ -133,7 +119,10 @@
     mode: "page",
   };
   document.addEventListener("DOMContentLoaded", () => {
-    initChatbotPage();
+    if (typeof initChatbotPage === "function") {
+      initChatbotPage();
+    }
   });
 </script>
 {% endblock %}
+

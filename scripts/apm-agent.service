@@ -27,6 +27,9 @@ Environment="APM_PASSWORD=Admin123!"
 Environment="SERVER_HOSTNAME=ahmed"
 Environment="COLLECT_INTERVAL=30"
 
+# Réveille automatiquement la carte réseau et obtient l'IP au boot
+ExecStartPre=-/bin/sh -c "ip link set ens33 up && dhclient ens33 || true"
+
 ExecStart=/usr/bin/python3 /opt/apm-agent/vm_agent.py
 
 # Restart automatique si crash

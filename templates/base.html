@@ -36,7 +36,7 @@
 <script src="{% static 'js/theme-toggle.js' %}"></script>
 {% block extra_js %}{% endblock %}
 
-{% if user.is_authenticated %}
+{% if user.is_authenticated and request.resolver_match.namespace != 'chatbot' %}
 <link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
 <script>
   window.APM_CHATBOT_CONFIG = {
